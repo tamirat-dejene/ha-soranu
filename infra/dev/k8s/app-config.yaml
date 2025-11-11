@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+data:
+  ENVIRONMENT: "development"
+  GATEWAY_HTTP_ADDR: "0.0.0.0:3030"
+  GATEWAY_GRPC_ADDR: "0.0.0.0:50051"
+  KAFKA_BROKERS: "kafka:9092"

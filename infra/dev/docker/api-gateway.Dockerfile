@@ -1,23 +1,8 @@
-# Use a minimal base image
-FROM alpine:3.22
-
-# Add necessary runtime dependencies (if your Go binary uses net/http, DNS, etc.)
-RUN apk add --no-cache ca-certificates tzdata && update-ca-certificates
-
-# Set working directory
+FROM alpine:3.23
 WORKDIR /app
 
-# Copy in the Go binary and related directories
-COPY ./bin/api-gateway .
-COPY shared ./shared
-COPY build ./build
+COPY shared /app/shared
+COPY bin/api-gateway /app/bin/api-gateway
 
-# Set non-root user for security
-RUN adduser -D -g '' appuser
-USER appuser
-
-# Expose HTTP and gRPC ports
-EXPOSE 3030 50051
-
-# Command to run the service
-ENTRYPOINT ["./api-gateway"]
+EXPOSE 8080
+CMD ["/app/bin/api-gateway"]

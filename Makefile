@@ -1,5 +1,5 @@
-PROTO_SRC = proto
-PROTO_DEST = shared/proto
+PROTO_SRC = protos
+PROTO_DEST = shared/protos
 
 proto:
 	protoc --proto_path=$(PROTO_SRC) \

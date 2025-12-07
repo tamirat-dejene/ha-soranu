@@ -1,8 +1,0 @@
-bin/
-vendor/
-.env
-.env.*
-*.log
-*.out
-.idea/
-.vscode/

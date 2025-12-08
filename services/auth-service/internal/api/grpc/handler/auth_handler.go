@@ -21,7 +21,8 @@ func NewGrpcAuthHandler(s *grpc.Server, usecase domain.AuthUsecase) {
 	authpb.RegisterAuthServiceServer(s, handler)
 }
 
-func (a *authHandler) Login(ctx context.Context, req *authpb.LoginRequest) (*authpb.LoginResponse, error) {
+// LoginWithEmailAndPassword implements authpb.AuthServiceServer.
+func (a *authHandler) LoginWithEmailAndPassword(ctx context.Context, req *authpb.EPLoginRequest) (*authpb.EPLoginResponse, error) {
 	if req == nil {
 		return nil, errs.ErrInvalidRequest
 	}
@@ -29,7 +30,7 @@ func (a *authHandler) Login(ctx context.Context, req *authpb.LoginRequest) (*aut
 	creds := dto.CreateLoginCredentialsFromProto(req)
 
 	// Call usecase to login user
-	token, err := a.usecase.Login(ctx, creds)
+	token, err := a.usecase.LoginWithEP(ctx, creds)
 	if err != nil {
 		return nil, err
 	}
@@ -38,6 +39,33 @@ func (a *authHandler) Login(ctx context.Context, req *authpb.LoginRequest) (*aut
 	resp := dto.AuthTokenToProto(token)
 
 	return resp, nil
+}
+
+// LoginWithGoogle implements authpb.AuthServiceServer.
+func (a *authHandler) LoginWithGoogle(ctx context.Context, req *authpb.GLoginRequest) (*authpb.GLoginResponse, error) {
+	if req == nil {
+		return nil, errs.ErrInvalidRequest
+	}
+
+	// Convert proto request to domain Google token
+	googleToken := req.GetGoogleToken()
+
+	// Call usecase to login user with Google
+	userInfo, token, err := a.usecase.LoginWithGoogle(ctx, googleToken)
+	if err != nil {
+		return nil, err
+	}
+
+	// Convert domain response to proto response
+	resp := &authpb.GLoginResponse{
+		Username:     userInfo.Username,
+		Email:        userInfo.Email,
+		AccessToken:  token.AccessToken,
+		RefreshToken: token.RefreshToken,
+	}
+
+	return resp, nil
+	
 }
 
 // Logout implements authpb.AuthServiceServer.
@@ -67,13 +95,13 @@ func (a *authHandler) Refresh(ctx context.Context, req *authpb.RefreshRequest) (
 	refreshToken := req.GetRefreshToken()
 
 	// Call usecase to refresh tokens
-	newAccessToken, err := a.usecase.RefreshTokens(ctx, refreshToken)
+	new_auth, err := a.usecase.RefreshTokens(ctx, refreshToken)
 	if err != nil {
 		return nil, err
 	}
 
 	// Convert domain response to proto response
-	return dto.AuthTokenToProtoRefresh(newAccessToken), nil
+	return dto.AuthTokenToProtoRefresh(new_auth.AccessToken, new_auth.RefreshToken), nil
 }
 
 // Register implements authpb.AuthServiceServer.

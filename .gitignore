@@ -33,4 +33,5 @@ go.work.sum
 .vscode/
 
 # config files
-*_config.yaml
+*.local.yaml
+secrets.yaml

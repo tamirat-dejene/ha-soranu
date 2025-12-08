@@ -52,14 +52,18 @@ docker_build_with_restart(
 k8s_yaml([
     'infra/dev/k8s/api-gateway-deployment.yaml',
     'infra/dev/k8s/auth-service-deployment.yaml',
-    'infra/dev/k8s/app-config.yaml',
-    'infra/dev/k8s/secret.yaml',
+    'infra/dev/k8s/postgres-deployment.yaml',
+    'infra/dev/k8s/redis-deployment.yaml',
+    'infra/dev/k8s/config-map.yaml',
+    'infra/dev/k8s/secrets.yaml',
 ])
 
 # --- Port Forwards ---
 # Expose services to localhost
 k8s_resource('api-gateway', port_forwards=['8080:8080'])
 k8s_resource('auth-service', port_forwards=['9090:9090'])
+k8s_resource('db', port_forwards=['5432:5432'])
+k8s_resource('redis', port_forwards=['6379:6379'])
 
 # --- End of File ---
 print("Tiltfile loaded successfully — monitoring api-gateway, and auth-service.")

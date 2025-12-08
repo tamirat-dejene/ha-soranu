@@ -24,12 +24,13 @@ spec:
               cpu: "250m"
           ports:
             - containerPort: 9090
-          env:
-            - name: USER_SERVICE_ADDR
-              valueFrom:
-                configMapKeyRef:
-                  name: app-config
-                  key: USER_SERVICE_ADDR
+
+          # Load all env variables from K8s
+          envFrom:
+            - configMapRef:
+                name: auth-service-config
+            - secretRef:
+                name: auth-service-secrets
 ---
 apiVersion: v1
 kind: Service

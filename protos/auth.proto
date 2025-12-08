@@ -6,7 +6,8 @@ option go_package = "/authpb;authpb";
 
 service AuthService {
   rpc Register(RegisterRequest) returns (RegisterResponse);
-  rpc Login(LoginRequest) returns (LoginResponse);
+  rpc LoginWithEmailAndPassword(EPLoginRequest) returns (EPLoginResponse);
+  rpc LoginWithGoogle(GLoginRequest) returns (GLoginResponse);
   rpc Logout(LogoutRequest) returns (LogoutResponse);
   rpc Refresh(RefreshRequest) returns (RefreshResponse);
 }
@@ -20,17 +21,28 @@ message RegisterRequest {
 
 message RegisterResponse {
   string user_id = 1;
-  LoginResponse tokens = 2;
+  EPLoginResponse tokens = 2;
 }
 
-message LoginRequest {
+message EPLoginRequest {
   string email = 1;
   string password = 2;
 }
 
-message LoginResponse {
+message EPLoginResponse {
   string access_token = 1;
   string refresh_token = 2;
+}
+
+message GLoginRequest {
+  string google_token = 1;
+}
+
+message GLoginResponse {
+  string username = 1;
+  string email = 2;
+  string access_token = 3;
+  string refresh_token = 4;
 }
 
 message LogoutRequest {
@@ -47,4 +59,5 @@ message RefreshRequest {
 
 message RefreshResponse {
   string access_token = 1;
+  string refresh_token = 2;
 }

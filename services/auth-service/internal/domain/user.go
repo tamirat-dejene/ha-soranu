@@ -40,7 +40,9 @@ type DeleteUserRequest struct {
 /* ----- User Usecase ----- */
 
 type UserUsecase interface {
+	CreateUser(ctx context.Context, req CreateUserRequest) (string, error)
 	GetUserByID(ctx context.Context, id string) (UserResponse, error)
+	GetUserHashedPassword(ctx context.Context, email string) (string, error)
 	UpdateUser(ctx context.Context, id string, req UpdateUserRequest) (UserResponse, error)
 	DeleteUser(ctx context.Context, id string) error
 
@@ -52,9 +54,12 @@ type UserUsecase interface {
 /* ----- User Repository ----- */
 
 type UserRepository interface {
+	CreateUser(ctx context.Context, req CreateUserRequest) (string, error)
 	FindByID(ctx context.Context, id string) (User, error)
+	FindByEmail(ctx context.Context, email string) (User, error)
 	Update(ctx context.Context, user User) (User, error)
 	Delete(ctx context.Context, id string) error
+	GetHashedPassword(ctx context.Context, email string) (string, error)
 
 	GetAddresses(ctx context.Context, id string) ([]string, error)
 	AddAddress(ctx context.Context, id string, address string) error

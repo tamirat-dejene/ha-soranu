@@ -16,22 +16,22 @@ func CreateUserRequestFromProto(protoReq *authpb.RegisterRequest) domain.CreateU
 func RegisterResponseToProto(userID string, token domain.AuthToken) *authpb.RegisterResponse {
 	return &authpb.RegisterResponse{
 		UserId: userID,
-		Tokens: &authpb.LoginResponse{
+		Tokens: &authpb.EPLoginResponse{
 			AccessToken:  token.AccessToken,
 			RefreshToken: token.RefreshToken,
 		},
 	}
 }
 
-func CreateLoginCredentialsFromProto(protoReq *authpb.LoginRequest) domain.LoginCredentials {
+func CreateLoginCredentialsFromProto(protoReq *authpb.EPLoginRequest) domain.LoginCredentials {
 	return domain.LoginCredentials{
 		Email:    protoReq.GetEmail(),
 		Password: protoReq.GetPassword(),
 	}
 }
 
-func AuthTokenToProto(token domain.AuthToken) *authpb.LoginResponse {
-	return &authpb.LoginResponse{
+func AuthTokenToProto(token domain.AuthToken) *authpb.EPLoginResponse {
+	return &authpb.EPLoginResponse{
 		AccessToken:  token.AccessToken,
 		RefreshToken: token.RefreshToken,
 	}
@@ -43,8 +43,9 @@ func NewLogoutResponseProto(message string) *authpb.LogoutResponse {
 	}
 }
 
-func AuthTokenToProtoRefresh(accesstoken string) *authpb.RefreshResponse {
+func AuthTokenToProtoRefresh(accesstoken string, refreshtoken string) *authpb.RefreshResponse {
 	return &authpb.RefreshResponse{
 		AccessToken:  accesstoken,
+		RefreshToken: refreshtoken,
 	}
 }

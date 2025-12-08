@@ -19,10 +19,11 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	AuthService_Register_FullMethodName = "/auth.AuthService/Register"
-	AuthService_Login_FullMethodName    = "/auth.AuthService/Login"
-	AuthService_Logout_FullMethodName   = "/auth.AuthService/Logout"
-	AuthService_Refresh_FullMethodName  = "/auth.AuthService/Refresh"
+	AuthService_Register_FullMethodName                  = "/auth.AuthService/Register"
+	AuthService_LoginWithEmailAndPassword_FullMethodName = "/auth.AuthService/LoginWithEmailAndPassword"
+	AuthService_LoginWithGoogle_FullMethodName           = "/auth.AuthService/LoginWithGoogle"
+	AuthService_Logout_FullMethodName                    = "/auth.AuthService/Logout"
+	AuthService_Refresh_FullMethodName                   = "/auth.AuthService/Refresh"
 )
 
 // AuthServiceClient is the client API for AuthService service.
@@ -30,7 +31,8 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AuthServiceClient interface {
 	Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterResponse, error)
-	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
+	LoginWithEmailAndPassword(ctx context.Context, in *EPLoginRequest, opts ...grpc.CallOption) (*EPLoginResponse, error)
+	LoginWithGoogle(ctx context.Context, in *GLoginRequest, opts ...grpc.CallOption) (*GLoginResponse, error)
 	Logout(ctx context.Context, in *LogoutRequest, opts ...grpc.CallOption) (*LogoutResponse, error)
 	Refresh(ctx context.Context, in *RefreshRequest, opts ...grpc.CallOption) (*RefreshResponse, error)
 }
@@ -53,10 +55,20 @@ func (c *authServiceClient) Register(ctx context.Context, in *RegisterRequest, o
 	return out, nil
 }
 
-func (c *authServiceClient) Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error) {
+func (c *authServiceClient) LoginWithEmailAndPassword(ctx context.Context, in *EPLoginRequest, opts ...grpc.CallOption) (*EPLoginResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(LoginResponse)
-	err := c.cc.Invoke(ctx, AuthService_Login_FullMethodName, in, out, cOpts...)
+	out := new(EPLoginResponse)
+	err := c.cc.Invoke(ctx, AuthService_LoginWithEmailAndPassword_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authServiceClient) LoginWithGoogle(ctx context.Context, in *GLoginRequest, opts ...grpc.CallOption) (*GLoginResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GLoginResponse)
+	err := c.cc.Invoke(ctx, AuthService_LoginWithGoogle_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -88,7 +100,8 @@ func (c *authServiceClient) Refresh(ctx context.Context, in *RefreshRequest, opt
 // for forward compatibility.
 type AuthServiceServer interface {
 	Register(context.Context, *RegisterRequest) (*RegisterResponse, error)
-	Login(context.Context, *LoginRequest) (*LoginResponse, error)
+	LoginWithEmailAndPassword(context.Context, *EPLoginRequest) (*EPLoginResponse, error)
+	LoginWithGoogle(context.Context, *GLoginRequest) (*GLoginResponse, error)
 	Logout(context.Context, *LogoutRequest) (*LogoutResponse, error)
 	Refresh(context.Context, *RefreshRequest) (*RefreshResponse, error)
 	mustEmbedUnimplementedAuthServiceServer()
@@ -104,8 +117,11 @@ type UnimplementedAuthServiceServer struct{}
 func (UnimplementedAuthServiceServer) Register(context.Context, *RegisterRequest) (*RegisterResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method Register not implemented")
 }
-func (UnimplementedAuthServiceServer) Login(context.Context, *LoginRequest) (*LoginResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method Login not implemented")
+func (UnimplementedAuthServiceServer) LoginWithEmailAndPassword(context.Context, *EPLoginRequest) (*EPLoginResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method LoginWithEmailAndPassword not implemented")
+}
+func (UnimplementedAuthServiceServer) LoginWithGoogle(context.Context, *GLoginRequest) (*GLoginResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method LoginWithGoogle not implemented")
 }
 func (UnimplementedAuthServiceServer) Logout(context.Context, *LogoutRequest) (*LogoutResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method Logout not implemented")
@@ -152,20 +168,38 @@ func _AuthService_Register_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
-func _AuthService_Login_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(LoginRequest)
+func _AuthService_LoginWithEmailAndPassword_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(EPLoginRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AuthServiceServer).Login(ctx, in)
+		return srv.(AuthServiceServer).LoginWithEmailAndPassword(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: AuthService_Login_FullMethodName,
+		FullMethod: AuthService_LoginWithEmailAndPassword_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AuthServiceServer).Login(ctx, req.(*LoginRequest))
+		return srv.(AuthServiceServer).LoginWithEmailAndPassword(ctx, req.(*EPLoginRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AuthService_LoginWithGoogle_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GLoginRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServiceServer).LoginWithGoogle(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuthService_LoginWithGoogle_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).LoginWithGoogle(ctx, req.(*GLoginRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -218,8 +252,12 @@ var AuthService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _AuthService_Register_Handler,
 		},
 		{
-			MethodName: "Login",
-			Handler:    _AuthService_Login_Handler,
+			MethodName: "LoginWithEmailAndPassword",
+			Handler:    _AuthService_LoginWithEmailAndPassword_Handler,
+		},
+		{
+			MethodName: "LoginWithGoogle",
+			Handler:    _AuthService_LoginWithGoogle_Handler,
 		},
 		{
 			MethodName: "Logout",

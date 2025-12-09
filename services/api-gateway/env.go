@@ -1,0 +1,47 @@
+package apigateway
+
+import (
+	"log"
+	"os"
+	"strconv"
+)
+
+type Env struct {
+	// Service settings
+	SRV_ENV          string `mapstructure:"SRV_ENV"`
+	AUTH_SRV_NAME    string `mapstructure:"AUTH_SRV_NAME"`
+	AUTH_SRV_PORT    string `mapstructure:"AUTH_SRV_PORT"`
+	API_GATEWAY_PORT string `mapstructure:"API_GATEWAY_PORT"`
+}
+
+func getString(key string, defaultValue string) string {
+	value := os.Getenv(key)
+	if value == "" {
+		return defaultValue
+	}
+	return value
+}
+
+func getInt(key string, defaultValue int) int {
+	valueStr := os.Getenv(key)
+	if valueStr == "" {
+		return defaultValue
+	}
+	value, err := strconv.Atoi(valueStr)
+	if err != nil {
+		log.Printf("Invalid integer for %s: %s, using default %d", key, valueStr, defaultValue)
+		return defaultValue
+	}
+	return value
+}
+
+func GetEnv() (*Env, error) {
+	env := Env{
+		SRV_ENV:          getString("SRV_ENV", "development"),
+		AUTH_SRV_NAME:    getString("AUTH_SRV_NAME", "auth-service"),
+		AUTH_SRV_PORT:    getString("AUTH_SRV_PORT", "9090"),
+		API_GATEWAY_PORT: getString("API_GATEWAY_PORT", "8080"),
+	}
+
+	return &env, nil
+}

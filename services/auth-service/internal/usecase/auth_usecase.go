@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"time"
 
+	authservice "github.com/tamirat-dejene/ha-soranu/services/auth-service"
 	"github.com/tamirat-dejene/ha-soranu/services/auth-service/internal/domain"
 	internalutil "github.com/tamirat-dejene/ha-soranu/services/auth-service/internal/util"
-	"github.com/tamirat-dejene/ha-soranu/shared/env"
 	"github.com/tamirat-dejene/ha-soranu/shared/redis"
 )
 
@@ -16,7 +16,7 @@ type authUsecase struct {
 	userUsecase domain.UserUsecase
 	redisClient redis.RedisClient
 	userRepo    domain.UserRepository
-	environment env.Env
+	environment authservice.Env
 }
 
 // LoginWithGoogle implements domain.AuthUsecase.
@@ -270,7 +270,7 @@ func NewAuthUsecase(
 	userUsecase domain.UserUsecase,
 	redisClient redis.RedisClient,
 	timeout time.Duration,
-	env env.Env,
+	env authservice.Env,
 ) domain.AuthUsecase {
 	return &authUsecase{
 		ctxTimeout:  timeout,

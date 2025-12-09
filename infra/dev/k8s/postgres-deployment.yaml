@@ -1,29 +1,35 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  labels:
-    app: db
   name: db
+  labels:
+    app.kubernetes.io/name: postgres
+    app.kubernetes.io/instance: db
+    app.kubernetes.io/component: database
+    app.kubernetes.io/managed-by: kubectl
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: db
+      app.kubernetes.io/instance: db
+      app.kubernetes.io/component: database
   template:
     metadata:
       labels:
-        app: db
+        app.kubernetes.io/name: postgres
+        app.kubernetes.io/instance: db
+        app.kubernetes.io/component: database
+        app.kubernetes.io/managed-by: kubectl
     spec:
       containers:
-      - image: postgres:16-alpine
-        name: postgres
+      - name: postgres
+        image: postgres:16-alpine
         env:
         - name: POSTGRES_USER
           valueFrom:
             secretKeyRef:
               name: postgres-credentials
               key: pgusername
-          
         - name: POSTGRES_PASSWORD
           valueFrom:
             secretKeyRef:
@@ -33,8 +39,8 @@ spec:
         - containerPort: 5432
           name: postgres
         volumeMounts:
-        - mountPath: /var/lib/postgresql/data
-          name: db-data
+        - name: db-data
+          mountPath: /var/lib/postgresql/data
         resources:
           requests:
             cpu: "100m"
@@ -44,20 +50,38 @@ spec:
             memory: "512Mi"
       volumes:
       - name: db-data
-        emptyDir: {} 
+        persistentVolumeClaim:
+          claimName: db-pvc
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: db-pvc
+  labels:
+    app.kubernetes.io/name: postgres
+    app.kubernetes.io/instance: db
+    app.kubernetes.io/component: database
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  labels:
-    app: db
   name: db
+  labels:
+    app.kubernetes.io/name: postgres
+    app.kubernetes.io/instance: db
+    app.kubernetes.io/component: database
 spec:
   type: ClusterIP
-  ports:  
-  - name: "postgres-service"
+  ports:
+  - name: postgres-service
     port: 5432
     targetPort: 5432
   selector:
-    app: db
-   
+    app.kubernetes.io/instance: db
+    app.kubernetes.io/component: database

@@ -15,6 +15,11 @@ spec:
       containers:
       - name: api-gateway
         image: ha-soranu/api-gateway
+        envFrom:
+          - configMapRef:
+              name: api-gateway-config
+          - secretRef:
+              name: api-gateway-secrets
         ports:
           - containerPort: 8080
         resources:

@@ -2,25 +2,25 @@ package server
 
 import (
 	"github.com/gin-gonic/gin"
+	apigateway "github.com/tamirat-dejene/ha-soranu/services/api-gateway"
 	"github.com/tamirat-dejene/ha-soranu/services/api-gateway/internal/api/handler"
 	"github.com/tamirat-dejene/ha-soranu/services/api-gateway/internal/client"
-	"github.com/tamirat-dejene/ha-soranu/services/api-gateway/internal/config"
 )
 
 type Server struct {
 	router      *gin.Engine
 	authHandler *handler.AuthHandler
-	config      config.Config
+	config      apigateway.Env
 }
 
-func NewServer(cfg config.Config, authClient *client.AuthClient) *Server {
+func NewServer(cfg *apigateway.Env, authClient *client.AuthClient) *Server {
 	router := gin.Default()
 	authHandler := handler.NewAuthHandler(authClient)
 
 	return &Server{
 		router:      router,
 		authHandler: authHandler,
-		config:      cfg,
+		config:      *cfg,
 	}
 }
 
@@ -35,8 +35,22 @@ func (s *Server) SetupRoutes() {
 			auth.POST("/refresh", s.authHandler.Refresh)
 		}
 	}
+
+	// Health check endpoint
+	s.router.GET("/health", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"status": "OK",
+		})
+	})
+
+	// Home endpoint
+	s.router.GET("/", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"message": "Welcome to the API Gateway, where all your requests find their way!",
+		})
+	})
 }
 
 func (s *Server) Run() error {
-	return s.router.Run(":" + s.config.ServerPort)
+	return s.router.Run(":" + s.config.API_GATEWAY_PORT)
 }

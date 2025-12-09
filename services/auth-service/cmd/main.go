@@ -8,18 +8,18 @@ import (
 
 	"google.golang.org/grpc"
 
+	authservice "github.com/tamirat-dejene/ha-soranu/services/auth-service"
 	"github.com/tamirat-dejene/ha-soranu/services/auth-service/internal/api/grpc/handler"
 	"github.com/tamirat-dejene/ha-soranu/services/auth-service/internal/repository"
 	"github.com/tamirat-dejene/ha-soranu/services/auth-service/internal/usecase"
 	postgres "github.com/tamirat-dejene/ha-soranu/shared/db/pg"
-	"github.com/tamirat-dejene/ha-soranu/shared/env"
 	"github.com/tamirat-dejene/ha-soranu/shared/redis"
 )
 
 func main() {
 	fmt.Println("Auth Service is running...")
 
-	env, err := env.LoadEnv()
+	env, err := authservice.GetEnv()
 	if err != nil {
 		panic(err)
 	}
@@ -34,7 +34,7 @@ func main() {
 	defer pgClient.Close()
 
 	// 2. Initialize Redis
-	redisClient := redis.NewRedisClient(env.RedisAddr, 6379, env.RedisPassword, env.RedisDB)
+	redisClient := redis.NewRedisClient(env.RedisHOST, env.RedisPort, env.RedisPassword, env.RedisDB)
 	defer redisClient.Close()
 
 	// 3. Initialize Repositories
@@ -46,7 +46,7 @@ func main() {
 	authUsecase := usecase.NewAuthUsecase(userUsecase, redisClient, timeout, *env)
 
 	// 5. Initialize gRPC Server
-	lis, err := net.Listen("tcp", ":9090")
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", env.AUTH_SRV_PORT))
 	if err != nil {
 		log.Fatalf("Failed to listen: %v", err)
 	}
@@ -58,7 +58,7 @@ func main() {
 	handler.NewGrpcUserHandler(s, userUsecase)
 
 	// 7. Start Server
-	log.Printf("Auth Service listening on :9090")
+	log.Printf("Auth Service listening on port %s", env.AUTH_SRV_PORT)
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("Failed to serve: %v", err)
 	}

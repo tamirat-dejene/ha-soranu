@@ -267,15 +267,17 @@ func (a *authUsecase) RefreshTokens(ctx context.Context, refreshToken string) (d
 
 // NewAuthUsecase constructor
 func NewAuthUsecase(
-	userUsecase domain.UserUsecase,
-	redisClient redis.RedisClient,
-	timeout time.Duration,
-	env authservice.Env,
+    userRepo domain.UserRepository,
+    userUsecase domain.UserUsecase,
+    redisClient redis.RedisClient,
+    timeout time.Duration,
+    env authservice.Env,
 ) domain.AuthUsecase {
-	return &authUsecase{
-		ctxTimeout:  timeout,
-		userUsecase: userUsecase,
-		redisClient: redisClient,
-		environment: env,
-	}
+    return &authUsecase{
+        ctxTimeout:  timeout,
+        userUsecase: userUsecase,
+        redisClient: redisClient,
+        userRepo:    userRepo,
+        environment: env,
+    }
 }

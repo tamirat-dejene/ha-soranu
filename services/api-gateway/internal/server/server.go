@@ -1,6 +1,7 @@
 package server
 
 import (
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	apigateway "github.com/tamirat-dejene/ha-soranu/services/api-gateway"
 	"github.com/tamirat-dejene/ha-soranu/services/api-gateway/internal/api/handler"
@@ -14,9 +15,16 @@ type Server struct {
 }
 
 func NewServer(cfg *apigateway.Env, authClient *client.AuthClient) *Server {
-	router := gin.Default()
-	authHandler := handler.NewAuthHandler(authClient)
+	router := gin.New()
+	router.Use(gin.Recovery())
+	router.Use(GinLogger())
+	router.Use(cors.New(cors.Config{
+		AllowAllOrigins: true,
+		AllowMethods:    []string{"*"},
+		AllowHeaders:    []string{"*"},
+	}))
 
+	authHandler := handler.NewAuthHandler(authClient)
 	return &Server{
 		router:      router,
 		authHandler: authHandler,
@@ -31,6 +39,7 @@ func (s *Server) SetupRoutes() {
 		{
 			auth.POST("/register", s.authHandler.Register)
 			auth.POST("/login", s.authHandler.Login)
+			auth.POST("/google", s.authHandler.LoginWithGoogle)
 			auth.POST("/logout", s.authHandler.Logout)
 			auth.POST("/refresh", s.authHandler.Refresh)
 		}

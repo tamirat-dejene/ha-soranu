@@ -10,6 +10,7 @@ func CreateUserRequestFromProto(protoReq *authpb.RegisterRequest) domain.CreateU
 		Username: protoReq.GetUsername(),
 		Email:    protoReq.GetEmail(),
 		Password: protoReq.GetPassword(),
+		Addressess: protoReq.GetAddresses(),
 	}
 }
 

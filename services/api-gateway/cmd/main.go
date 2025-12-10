@@ -9,30 +9,31 @@ import (
 )
 
 func main() {
-	// 1. Initialize Logger
-	logger.InitLogger()
-	defer logger.Log.Sync()
-	logger.Log.Info("Starting API Gateway...")
-
-	// 2. Load Configuration
+	// 1. Load Configuration
 	cfg, err := apigateway.GetEnv()
 	if err != nil {
-		logger.Log.Fatal("Failed to load config", zap.Error(err))
+		// Fallback to standard logger if config fails
+		panic("Failed to load config: " + err.Error())
 	}
+
+	// 2. Initialize Logger
+	logger.InitLogger(cfg.SRV_ENV)
+	defer logger.Log.Sync()
+	logger.Info("Starting API Gateway...", zap.String("env", cfg.SRV_ENV))
 
 	// 3. Initialize Auth Service Client
 	authClient, err := client.NewAuthClient(cfg.AUTH_SRV_NAME + ":" + cfg.AUTH_SRV_PORT)
 	if err != nil {
-		logger.Log.Fatal("Failed to connect to Auth Service", zap.Error(err))
+		logger.Fatal("Failed to connect to Auth Service", zap.Error(err))
 	}
-	logger.Log.Info("Connected to Auth Service", zap.String("addr", cfg.AUTH_SRV_NAME+":"+cfg.AUTH_SRV_PORT))
+	logger.Info("Connected to Auth Service", zap.String("addr", cfg.AUTH_SRV_NAME+":"+cfg.AUTH_SRV_PORT))
 
 	// 4. Initialize and Run Server
 	srv := server.NewServer(cfg, authClient)
 	srv.SetupRoutes()
 
-	logger.Log.Info("API Gateway listening", zap.String("port", cfg.API_GATEWAY_PORT))
+	logger.Info("API Gateway listening", zap.String("port", cfg.API_GATEWAY_PORT))
 	if err := srv.Run(); err != nil {
-		logger.Log.Fatal("Server failed to run", zap.Error(err))
+		logger.Fatal("Server failed to run", zap.Error(err))
 	}
 }

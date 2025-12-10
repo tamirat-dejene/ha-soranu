@@ -68,7 +68,7 @@ func GetEnv() (*Env, error) {
 		RefreshTokenSecret: getString("REFRESH_TOKEN_SECRET", "default_refresh_secret"),
 		AccessTokenTTL:     getString("ACCESS_TOKEN_TTL", "15m"),
 		RefreshTokenTTL:    getString("REFRESH_TOKEN_TTL", "7d"),
-		DBHost:             getString("POSTGRES_HOST", "localhost"),
+		DBHost:             getString("POSTGRES_HOST", "postgres-db-"),
 		DBPort:             getString("POSTGRES_PORT", "5432"),
 		DBUser:             getString("POSTGRES_USER", "postgres"),
 		DBPassword:         getString("POSTGRES_PASSWORD", "password"),

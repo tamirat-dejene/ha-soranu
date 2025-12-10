@@ -7,7 +7,9 @@ import (
 	"github.com/tamirat-dejene/ha-soranu/services/auth-service/internal/domain"
 	constants "github.com/tamirat-dejene/ha-soranu/services/auth-service/internal/domain/const"
 	errs "github.com/tamirat-dejene/ha-soranu/services/auth-service/internal/domain/err"
+	"github.com/tamirat-dejene/ha-soranu/shared/pkg/logger"
 	"github.com/tamirat-dejene/ha-soranu/shared/protos/authpb"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 )
 
@@ -32,8 +34,10 @@ func (a *authHandler) LoginWithEmailAndPassword(ctx context.Context, req *authpb
 	// Call usecase to login user
 	token, err := a.usecase.LoginWithEP(ctx, creds)
 	if err != nil {
+		logger.Error("Login failed", zap.String("email", creds.Email), zap.Error(err))
 		return nil, err
 	}
+	logger.Info("User logged in successfully", zap.String("email", creds.Email))
 
 	// Convert domain response to proto response
 	resp := dto.AuthTokenToProto(token)
@@ -53,8 +57,10 @@ func (a *authHandler) LoginWithGoogle(ctx context.Context, req *authpb.GLoginReq
 	// Call usecase to login user with Google
 	userInfo, token, err := a.usecase.LoginWithGoogle(ctx, googleToken)
 	if err != nil {
+		logger.Error("Google login failed", zap.Error(err))
 		return nil, err
 	}
+	logger.Info("User logged in with Google successfully", zap.String("email", userInfo.Email))
 
 	// Convert domain response to proto response
 	resp := &authpb.GLoginResponse{
@@ -65,7 +71,7 @@ func (a *authHandler) LoginWithGoogle(ctx context.Context, req *authpb.GLoginReq
 	}
 
 	return resp, nil
-	
+
 }
 
 // Logout implements authpb.AuthServiceServer.
@@ -78,8 +84,10 @@ func (a *authHandler) Logout(ctx context.Context, req *authpb.LogoutRequest) (*a
 	// Call usecase to logout user
 	err := a.usecase.Logout(ctx, req.GetAccessToken())
 	if err != nil {
+		logger.Error("Logout failed", zap.Error(err))
 		return nil, err
 	}
+	logger.Info("User logged out successfully")
 
 	return dto.NewLogoutResponseProto(constants.LogoutSuccessMessage), nil
 }
@@ -117,8 +125,10 @@ func (a *authHandler) Register(ctx context.Context, req *authpb.RegisterRequest)
 	// Call usecase to register user
 	userID, token, err := a.usecase.Register(ctx, domainReq)
 	if err != nil {
+		logger.Error("Registration failed", zap.String("email", domainReq.Email), zap.Error(err))
 		return nil, err
 	}
+	logger.Info("User registered successfully", zap.String("user_id", userID), zap.String("email", domainReq.Email))
 
 	// Convert domain response to proto response
 	return dto.RegisterResponseToProto(userID, token), nil

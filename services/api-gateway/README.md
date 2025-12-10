@@ -70,6 +70,7 @@ curl -X POST http://localhost:8080/api/v1/auth/register \
 
 - `POST /api/v1/auth/register` — create an account via auth service; returns `user_id`
 - `POST /api/v1/auth/login` — authenticate; returns a JWT token
+- `POST /api/v1/auth/google` — exchange Google ID token for backend JWTs
 - `GET /api/v1/user/profile` — protected example; requires `Authorization: Bearer <token>` header and echoes `user_id`
 
 Swagger sketch lives in `docs/swagger.yaml`; update it if you add routes.

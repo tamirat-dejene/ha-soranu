@@ -21,6 +21,7 @@ func (u *userRepository) CreateUser(ctx context.Context, req domain.CreateUserRe
 	if err != nil {
 		return "", fmt.Errorf("failed to start transaction: %w", err)
 	}
+
 	defer func() {
 		if err != nil {
 			tx.Rollback(ctx)

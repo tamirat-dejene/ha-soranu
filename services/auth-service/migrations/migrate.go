@@ -1,0 +1,51 @@
+package migrations
+
+import (
+	"context"
+	"database/sql"
+	"fmt"
+	"strings"
+
+	_ "github.com/jackc/pgx/v5/stdlib"
+	_ "github.com/lib/pq"
+	goose "github.com/pressly/goose/v3"
+	authservice "github.com/tamirat-dejene/ha-soranu/services/auth-service"
+)
+
+type migrator struct {
+	env authservice.Env
+}
+
+func NewMigrator(env authservice.Env) *migrator {
+	return &migrator{env: env}
+}
+
+func (f *migrator) Migrate(ctx context.Context, dir string) error {
+	dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/postgres?sslmode=disable",
+		f.env.DBUser, f.env.DBPassword, f.env.DBHost, f.env.DBPort)
+	db, err := sql.Open("postgres", dsn)
+	if err != nil {
+		return fmt.Errorf("failed to connect to Postgres: %w", err)
+	}
+	defer db.Close()
+	_, err = db.Exec(fmt.Sprintf("CREATE DATABASE %s", f.env.DBName))
+	if err != nil {
+		if !strings.Contains(err.Error(), "already exists") {
+			return fmt.Errorf("failed to create database: %w", err)
+		}
+	}
+	db.Close()
+
+	dsn = fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable",
+		f.env.DBUser, f.env.DBPassword, f.env.DBHost, f.env.DBPort, f.env.DBName)
+	db, err = sql.Open("postgres", dsn)
+	if err != nil {
+		return fmt.Errorf("failed to connect to DB: %w", err)
+	}
+	defer db.Close()
+
+	if err := goose.Up(db, dir); err != nil {
+		return fmt.Errorf("migrations failed: %w", err)
+	}
+	return nil
+}

@@ -5,7 +5,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/tamirat-dejene/ha-soranu/services/api-gateway/internal/client"
+	"github.com/tamirat-dejene/ha-soranu/shared/pkg/logger"
 	"github.com/tamirat-dejene/ha-soranu/shared/protos/authpb"
+	"go.uber.org/zap"
 )
 
 type AuthHandler struct {
@@ -19,6 +21,7 @@ func NewAuthHandler(client *client.AuthClient) *AuthHandler {
 }
 
 func (h *AuthHandler) Register(c *gin.Context) {
+	logger.Info("Register request received")
 	var req authpb.RegisterRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -27,6 +30,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 
 	res, err := h.client.Client.Register(c.Request.Context(), &req)
 	if err != nil {
+		logger.Error("Failed to register user", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -43,6 +47,24 @@ func (h *AuthHandler) Login(c *gin.Context) {
 
 	res, err := h.client.Client.LoginWithEmailAndPassword(c.Request.Context(), &req)
 	if err != nil {
+		logger.Error("Failed to login user", zap.Error(err))
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, res)
+}
+
+func (h *AuthHandler) LoginWithGoogle(c *gin.Context) {
+	var req authpb.GLoginRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	res, err := h.client.Client.LoginWithGoogle(c.Request.Context(), &req)
+	if err != nil {
+		logger.Error("Failed to login with google", zap.Error(err))
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
@@ -59,6 +81,7 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 
 	res, err := h.client.Client.Logout(c.Request.Context(), &req)
 	if err != nil {
+		logger.Error("Failed to logout user", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -75,6 +98,7 @@ func (h *AuthHandler) Refresh(c *gin.Context) {
 
 	res, err := h.client.Client.Refresh(c.Request.Context(), &req)
 	if err != nil {
+		logger.Error("Failed to refresh token", zap.Error(err))
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}

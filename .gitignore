@@ -35,3 +35,5 @@ go.work.sum
 # config files
 *.local.yaml
 secrets.yaml
+
+web

@@ -7,7 +7,9 @@ import (
 	"github.com/tamirat-dejene/ha-soranu/services/auth-service/internal/domain"
 	constants "github.com/tamirat-dejene/ha-soranu/services/auth-service/internal/domain/const"
 	errs "github.com/tamirat-dejene/ha-soranu/services/auth-service/internal/domain/err"
+	"github.com/tamirat-dejene/ha-soranu/shared/pkg/logger"
 	"github.com/tamirat-dejene/ha-soranu/shared/protos/userpb"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 )
 
@@ -22,10 +24,12 @@ func (u *userHandler) AddUserAddress(ctx context.Context, req *userpb.AddUserAdd
 		return nil, errs.ErrInvalidRequest
 	}
 	// address := dto.AddUserAddressRequestFromProto(req)
-	err := u.userUsecase.AddUserAddress(ctx, req.GetAddress(), req.GetAddress())
+	err := u.userUsecase.AddUserAddress(ctx, req.GetUserId(), req.GetAddress())
 	if err != nil {
+		logger.Error("Failed to add user address", zap.String("user_id", req.GetUserId()), zap.Error(err))
 		return nil, err
 	}
+	logger.Info("User address added successfully", zap.String("user_id", req.GetUserId()))
 	return &userpb.AddUserAddressResponse{
 		Message: constants.AddressAddSuccessMessage,
 	}, nil
@@ -44,9 +48,9 @@ func (u *userHandler) GetUser(ctx context.Context, req *userpb.GetUserRequest) (
 
 	return &userpb.GetUserResponse{
 		User: dto.UserResponseToProto(domain.User{
-			ID:        user.ID,
-			Username:  user.Username,
-			Email:     user.Email,
+			ID:         user.ID,
+			Username:   user.Username,
+			Email:      user.Email,
 			Addressess: user.Addressess,
 		}),
 	}, nil
@@ -80,8 +84,10 @@ func (u *userHandler) RemoveUserAddress(ctx context.Context, req *userpb.RemoveU
 
 	err := u.userUsecase.RemoveUserAddress(ctx, req.GetUserId(), req.GetAddress())
 	if err != nil {
+		logger.Error("Failed to remove user address", zap.String("user_id", req.GetUserId()), zap.Error(err))
 		return nil, err
 	}
+	logger.Info("User address removed successfully", zap.String("user_id", req.GetUserId()))
 
 	return &userpb.RemoveUserAddressResponse{
 		Message: constants.AddressRemoveSuccessMessage,

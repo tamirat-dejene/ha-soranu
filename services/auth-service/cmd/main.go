@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/tamirat-dejene/ha-soranu/services/auth-service/internal/api/grpc/interceptor"
+	"github.com/tamirat-dejene/ha-soranu/services/auth-service/migrations"
 	"github.com/tamirat-dejene/ha-soranu/shared/pkg/logger"
 	"go.uber.org/zap"
 
@@ -16,7 +17,6 @@ import (
 	"github.com/tamirat-dejene/ha-soranu/services/auth-service/internal/api/grpc/handler"
 	"github.com/tamirat-dejene/ha-soranu/services/auth-service/internal/repository"
 	"github.com/tamirat-dejene/ha-soranu/services/auth-service/internal/usecase"
-	"github.com/tamirat-dejene/ha-soranu/services/auth-service/migrations"
 	postgres "github.com/tamirat-dejene/ha-soranu/shared/db/pg"
 	"github.com/tamirat-dejene/ha-soranu/shared/redis"
 )
@@ -33,7 +33,7 @@ func main() {
 	defer logger.Log.Sync()
 	logger.Info("Auth Service is running...", zap.String("env", env.SRV_ENV))
 
-	// 3. Initialize Migrations
+	// // 3. Initialize Migrations
 	migrate := migrations.NewMigrator(*env)
 	if err := migrate.Migrate(context.Background(), "/app/migrations"); err != nil {
 		logger.Fatal("migrations failed", zap.Error(err))
@@ -48,21 +48,6 @@ func main() {
 		logger.Fatal("Failed to connect to Postgres", zap.Error(err))
 	}
 	defer pgClient.Close()
-
-	// Testing purpose: count # of rows in users table and log
-	// This would typically be done after pgClient is initialized.
-	// For demonstration, if we were to count rows here, we'd need a temporary connection or
-	// move this block after pgClient initialization.
-	// Example of how it would look:
-	if pgClient != nil {
-		var count int
-		err := pgClient.QueryRow(context.Background(), "SELECT COUNT(*) FROM users").Scan(&count)
-		if err != nil {
-			logger.Error("Failed to count rows in users table", zap.Error(err))
-		} else {
-			logger.Info("Number of rows in users table", zap.Int("count", count))
-		}
-	}
 
 	// 5. Initialize Redis
 	redisClient := redis.NewRedisClient(env.RedisHOST, env.RedisPort, env.RedisPassword, env.RedisDB)

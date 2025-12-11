@@ -27,7 +27,7 @@ func (u *userHandler) AddUserAddress(ctx context.Context, req *userpb.AddUserAdd
 	err := u.userUsecase.AddUserAddress(ctx, req.GetUserId(), req.GetAddress())
 	if err != nil {
 		logger.Error("Failed to add user address", zap.String("user_id", req.GetUserId()), zap.Error(err))
-		return nil, err
+		return nil, errs.ToGRPCError(err)
 	}
 	logger.Info("User address added successfully", zap.String("user_id", req.GetUserId()))
 	return &userpb.AddUserAddressResponse{
@@ -43,7 +43,8 @@ func (u *userHandler) GetUser(ctx context.Context, req *userpb.GetUserRequest) (
 
 	user, err := u.userUsecase.GetUserByID(ctx, req.GetUserId())
 	if err != nil {
-		return nil, err
+		logger.Error("Failed to get user", zap.String("user_id", req.GetUserId()), zap.Error(err))
+		return nil, errs.ToGRPCError(err)
 	}
 
 	return &userpb.GetUserResponse{
@@ -64,7 +65,8 @@ func (u *userHandler) GetUserAddresses(ctx context.Context, req *userpb.GetUserA
 
 	addresses, err := u.userUsecase.GetUserAddresses(ctx, req.GetUserId())
 	if err != nil {
-		return nil, err
+		logger.Error("Failed to get user addresses", zap.String("user_id", req.GetUserId()), zap.Error(err))
+		return nil, errs.ToGRPCError(err)
 	}
 
 	var protoAddresses []*userpb.Address
@@ -85,7 +87,7 @@ func (u *userHandler) RemoveUserAddress(ctx context.Context, req *userpb.RemoveU
 	err := u.userUsecase.RemoveUserAddress(ctx, req.GetUserId(), req.GetAddress())
 	if err != nil {
 		logger.Error("Failed to remove user address", zap.String("user_id", req.GetUserId()), zap.Error(err))
-		return nil, err
+		return nil, errs.ToGRPCError(err)
 	}
 	logger.Info("User address removed successfully", zap.String("user_id", req.GetUserId()))
 

@@ -35,7 +35,7 @@ func (a *authHandler) LoginWithEmailAndPassword(ctx context.Context, req *authpb
 	token, err := a.usecase.LoginWithEP(ctx, creds)
 	if err != nil {
 		logger.Error("Login failed", zap.String("email", creds.Email), zap.Error(err))
-		return nil, err
+		return nil, errs.ToGRPCError(err)
 	}
 	logger.Info("User logged in successfully", zap.String("email", creds.Email))
 
@@ -58,7 +58,7 @@ func (a *authHandler) LoginWithGoogle(ctx context.Context, req *authpb.GLoginReq
 	userInfo, token, err := a.usecase.LoginWithGoogle(ctx, googleToken)
 	if err != nil {
 		logger.Error("Google login failed", zap.Error(err))
-		return nil, err
+		return nil, errs.ToGRPCError(err)
 	}
 	logger.Info("User logged in with Google successfully", zap.String("email", userInfo.Email))
 
@@ -85,7 +85,7 @@ func (a *authHandler) Logout(ctx context.Context, req *authpb.LogoutRequest) (*a
 	err := a.usecase.Logout(ctx, req.GetAccessToken())
 	if err != nil {
 		logger.Error("Logout failed", zap.Error(err))
-		return nil, err
+		return nil, errs.ToGRPCError(err)
 	}
 	logger.Info("User logged out successfully")
 
@@ -105,7 +105,8 @@ func (a *authHandler) Refresh(ctx context.Context, req *authpb.RefreshRequest) (
 	// Call usecase to refresh tokens
 	new_auth, err := a.usecase.RefreshTokens(ctx, refreshToken)
 	if err != nil {
-		return nil, err
+		logger.Error("Token refresh failed", zap.Error(err))
+		return nil, errs.ToGRPCError(err)
 	}
 
 	// Convert domain response to proto response
@@ -126,7 +127,7 @@ func (a *authHandler) Register(ctx context.Context, req *authpb.RegisterRequest)
 	userID, token, err := a.usecase.Register(ctx, domainReq)
 	if err != nil {
 		logger.Error("Registration failed", zap.String("email", domainReq.Email), zap.Error(err))
-		return nil, err
+		return nil, errs.ToGRPCError(err)
 	}
 	logger.Info("User registered successfully", zap.String("user_id", userID), zap.String("email", domainReq.Email))
 

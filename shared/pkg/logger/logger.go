@@ -7,13 +7,17 @@ import (
 var Log *zap.Logger
 
 func InitLogger(env string) {
-	var err error
+	var config zap.Config
+
 	if env == "production" {
-		Log, err = zap.NewProduction()
+		config = zap.NewProductionConfig()
 	} else {
-		Log, err = zap.NewDevelopment()
+		config = zap.NewDevelopmentConfig()
+		config.DisableStacktrace = true
 	}
 
+	var err error
+	Log, err = config.Build()
 	if err != nil {
 		panic(err)
 	}

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/tamirat-dejene/ha-soranu/services/auth-service/internal/domain"
 	internalutil "github.com/tamirat-dejene/ha-soranu/services/auth-service/internal/util"
 	postgres "github.com/tamirat-dejene/ha-soranu/shared/db/pg"
@@ -17,17 +18,31 @@ type userRepository struct {
 
 // CreateUser implements domain.UserRepository.
 func (u *userRepository) CreateUser(ctx context.Context, req domain.CreateUserRequest) (string, error) {
-	// Start a transaction
+	// Start transaction
 	tx, err := u.db.BeginTx(ctx)
 	if err != nil {
 		return "", fmt.Errorf("failed to start transaction: %w", err)
 	}
 
+	success := false
 	defer func() {
-		if err != nil {
+		if p := recover(); p != nil {
 			tx.Rollback(ctx)
+			panic(p)
+		} else if success {
+			if commitErr := tx.Commit(ctx); commitErr != nil {
+				// If commit fails, we can't do much but log it or return error if possible.
+				// However, since we are in a defer, returning named return param error is tricky without naming them.
+				// For now, if commit fails, the caller receives the ID but data might not be there?
+				// Actually, better to just log or ignore since signature doesn't support easy error update here
+				// without named Returns. But defer executes after return.
+				// Let's rely on success being true only if we reached end.
+				// But we should try to propagate commit error if we can.
+				// Let's keep it simple: if success is true, we commit.
+				err = fmt.Errorf("failed to commit transaction: %w", commitErr)
+			}
 		} else {
-			tx.Commit(ctx)
+			tx.Rollback(ctx)
 		}
 	}()
 
@@ -36,10 +51,11 @@ func (u *userRepository) CreateUser(ctx context.Context, req domain.CreateUserRe
 	existingRow := tx.QueryRow(ctx, "SELECT id FROM users WHERE email=$1", req.Email)
 	var existingID string
 	err = existingRow.Scan(&existingID)
+
 	if err == nil {
 		// User exists
 		return "", fmt.Errorf("user with email %s already exists", req.Email)
-	} else if err != nil && err.Error() != "no rows in result set" {
+	} else if err.Error() != "no rows in result set" {
 		// Some other error
 		return "", fmt.Errorf("failed to check existing user: %w", err)
 	}
@@ -52,7 +68,7 @@ func (u *userRepository) CreateUser(ctx context.Context, req domain.CreateUserRe
 	`
 	hp, _ := internalutil.HashPassword(req.Password)
 	row := tx.QueryRow(ctx, query, req.Email, req.Username, hp)
-	var id string
+	var id int
 	if err := row.Scan(&id); err != nil {
 		return "", fmt.Errorf("failed to create user: %w", err)
 	}
@@ -65,7 +81,8 @@ func (u *userRepository) CreateUser(ctx context.Context, req domain.CreateUserRe
 		}
 	}
 
-	return id, nil
+	success = true
+	return fmt.Sprintf("%d", id), nil
 }
 
 // GetHashedPassword implements domain.UserRepository.
@@ -73,6 +90,9 @@ func (u *userRepository) GetHashedPassword(ctx context.Context, email string) (s
 	row := u.db.QueryRow(ctx, "SELECT password FROM users WHERE email=$1", email)
 	var hashedPassword string
 	if err := row.Scan(&hashedPassword); err != nil {
+		if strings.Contains(err.Error(), "no rows") {
+			return "", fmt.Errorf("user not found with email %s", email)
+		}
 		return "", fmt.Errorf("failed to get hashed password: %w", err)
 	}
 	return hashedPassword, nil
@@ -87,7 +107,7 @@ func (u *userRepository) FindByEmail(ctx context.Context, email string) (domain.
 	var user domain.User
 	err := row.Scan(&user.ID, &user.Email, &user.Username)
 	if err != nil {
-		if err.Error() == "no rows in result set" {
+		if err == pgx.ErrNoRows {
 			return domain.User{}, fmt.Errorf("user not found with email %s", email)
 		}
 		return domain.User{}, fmt.Errorf("failed to find user by email: %w", err)

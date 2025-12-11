@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -11,8 +12,9 @@ type PostgresClient interface {
 	QueryRow(ctx context.Context, query string, args ...any) Row
 	Query(ctx context.Context, query string, args ...any) (Rows, error)
 	Exec(ctx context.Context, query string, args ...any) (int, error)
-	Close()
 	BeginTx(ctx context.Context) (Tx, error)
+	LogConnectionInfo()
+	Close()
 }
 
 type Tx interface {
@@ -45,6 +47,16 @@ func (p *pgClient) BeginTx(ctx context.Context) (Tx, error) {
 		return nil, err
 	}
 	return &pgTx{tx: tx}, nil
+}
+
+func (p *pgClient) LogConnectionInfo() {
+	config := p.pool.Config()
+	fmt.Printf("Connected to DB Host: %s, Port: %d, Database: %s, User: %s\n",
+		config.ConnConfig.Host,
+		config.ConnConfig.Port,
+		config.ConnConfig.Database,
+		config.ConnConfig.User,
+	)
 }
 
 type pgRow struct {

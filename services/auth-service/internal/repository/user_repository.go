@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/tamirat-dejene/ha-soranu/services/auth-service/internal/domain"
 	internalutil "github.com/tamirat-dejene/ha-soranu/services/auth-service/internal/util"
@@ -31,6 +32,7 @@ func (u *userRepository) CreateUser(ctx context.Context, req domain.CreateUserRe
 	}()
 
 	// Check if user already exists
+	req.Email = strings.ToLower(req.Email)
 	existingRow := tx.QueryRow(ctx, "SELECT id FROM users WHERE email=$1", req.Email)
 	var existingID string
 	err = existingRow.Scan(&existingID)
@@ -78,6 +80,7 @@ func (u *userRepository) GetHashedPassword(ctx context.Context, email string) (s
 
 // FindByEmail implements domain.UserRepository.
 func (u *userRepository) FindByEmail(ctx context.Context, email string) (domain.User, error) {
+	email = strings.ToLower(email)
 	query := "SELECT id, email, username FROM users WHERE email=$1"
 	row := u.db.QueryRow(ctx, query, email)
 

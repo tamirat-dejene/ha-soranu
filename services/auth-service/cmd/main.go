@@ -49,6 +49,21 @@ func main() {
 	}
 	defer pgClient.Close()
 
+	// Testing purpose: count # of rows in users table and log
+	// This would typically be done after pgClient is initialized.
+	// For demonstration, if we were to count rows here, we'd need a temporary connection or
+	// move this block after pgClient initialization.
+	// Example of how it would look:
+	if pgClient != nil {
+		var count int
+		err := pgClient.QueryRow(context.Background(), "SELECT COUNT(*) FROM users").Scan(&count)
+		if err != nil {
+			logger.Error("Failed to count rows in users table", zap.Error(err))
+		} else {
+			logger.Info("Number of rows in users table", zap.Int("count", count))
+		}
+	}
+
 	// 5. Initialize Redis
 	redisClient := redis.NewRedisClient(env.RedisHOST, env.RedisPort, env.RedisPassword, env.RedisDB)
 	defer redisClient.Close()

@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	authservice "github.com/tamirat-dejene/ha-soranu/services/auth-service"
@@ -84,6 +85,7 @@ func (a *authUsecase) Register(ctx context.Context, req domain.CreateUserRequest
 	defer cancel()
 
 	// Create user using UserRepository
+	req.Email = strings.ToLower(req.Email)
 	userID, err := a.userRepo.CreateUser(c, req)
 	if err != nil {
 		return "", domain.AuthToken{}, err
@@ -138,7 +140,7 @@ func (a *authUsecase) LoginWithEP(ctx context.Context, creds domain.LoginCredent
 	_, cancel := context.WithTimeout(ctx, a.ctxTimeout)
 	defer cancel()
 
-	email, password := creds.Email, creds.Password
+	email, password := strings.ToLower(creds.Email), creds.Password
 
 	hashedPassword, err := a.userUsecase.GetUserHashedPassword(ctx, email)
 	if err != nil {
@@ -267,17 +269,17 @@ func (a *authUsecase) RefreshTokens(ctx context.Context, refreshToken string) (d
 
 // NewAuthUsecase constructor
 func NewAuthUsecase(
-    userRepo domain.UserRepository,
-    userUsecase domain.UserUsecase,
-    redisClient redis.RedisClient,
-    timeout time.Duration,
-    env authservice.Env,
+	userRepo domain.UserRepository,
+	userUsecase domain.UserUsecase,
+	redisClient redis.RedisClient,
+	timeout time.Duration,
+	env authservice.Env,
 ) domain.AuthUsecase {
-    return &authUsecase{
-        ctxTimeout:  timeout,
-        userUsecase: userUsecase,
-        redisClient: redisClient,
-        userRepo:    userRepo,
-        environment: env,
-    }
+	return &authUsecase{
+		ctxTimeout:  timeout,
+		userUsecase: userUsecase,
+		redisClient: redisClient,
+		userRepo:    userRepo,
+		environment: env,
+	}
 }

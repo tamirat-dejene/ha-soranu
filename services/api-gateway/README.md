@@ -1,101 +1,301 @@
 # API Gateway
 
-HTTP entrypoint for the microservices stack. It fronts the auth and user services, handles authentication via the auth service gRPC API, and exposes a small set of HTTP endpoints built on Gin. The code follows a lightweight clean-architecture layout and uses generated protobuf clients from the shared `authpb` package.
+## Overview
 
-## Responsibilities
+The API Gateway is an HTTP/REST service that serves as the entry point for the Ha-Soranu microservices application. It provides a unified RESTful API interface to clients while internally communicating with backend gRPC services. The gateway handles request/response transformation between HTTP/JSON and gRPC protocols, making the microservices easily accessible to web and mobile clients.
 
-- Expose REST endpoints for authentication and basic user operations
-- Forward auth flows to `auth-service` over gRPC and propagate JWTs
-- Enforce authentication on protected routes via middleware (`Authorization: Bearer <token>`)
-- Provide a single HTTP surface for clients and a place to hang cross-cutting middleware
+## Architecture
 
-## Tech Stack
+### Technology Stack
 
-- Go (module `github.com/tamirat-dejene/ha-soranu`, Go version per `go.mod`)
-- Gin for HTTP routing
-- gRPC (insecure transport for internal service-to-service calls)
-- Viper for configuration
-- Zap-backed logger (via shared `pkg/logger`)
+- **Framework**: [Gin Web Framework](https://github.com/gin-gonic/gin) - High-performance HTTP router
+- **Communication Protocol**: gRPC for backend service communication
+- **Language**: Go 1.x
+- **Logging**: Uber Zap (structured logging)
 
-## Project Layout
+### Project Structure
 
-- `main.go` — process entrypoint; loads config, connects to auth service, starts Gin
-- `internal/server` — HTTP server wiring and route registration
-- `internal/api/handler` — HTTP handlers (auth)
-- `internal/api/middleware` — auth middleware backed by the auth service
-- `shared/` — shared configuration, logger, and generated protobuf clients
-- `docs/swagger.yaml` — simple OpenAPI sketch of exposed endpoints
+```
+api-gateway/
+├── cmd/
+│   └── main.go              # Application entry point
+├── internal/
+│   ├── api/
+│   │   ├── dto/             # Data Transfer Objects
+│   │   │   ├── auth_dto.go  # Authentication DTOs
+│   │   │   ├── user_dto.go  # User management DTOs
+│   │   │   └── err_dto.go   # Error response DTOs
+│   │   └── handler/         # HTTP request handlers
+│   │       ├── auth_handler.go
+│   │       └── user_handler.go
+│   ├── client/
+│   │   └── auth_user_client.go  # gRPC client wrapper
+│   ├── domain/
+│   │   └── auth_domain.go   # Domain models
+│   ├── errs/
+│   │   └── errors.go        # Error definitions
+│   └── server/
+│       ├── server.go        # Server setup and routing
+│       └── middleware.go    # Gin logger middleware
+├── env.go                   # Environment configuration
+└── README.md
+```
+
+### Key Components
+
+#### 1. **Server** (`internal/server/server.go`)
+- Initializes Gin router with recovery and logging middleware
+- Configures CORS to allow cross-origin requests from all origins
+- Sets up route groups and endpoints
+- Manages server lifecycle
+
+#### 2. **Handlers** (`internal/api/handler/`)
+- **AuthHandler**: Manages authentication-related HTTP endpoints
+  - User registration
+  - Email/password login
+  - Google OAuth login
+  - Logout
+  - Token refresh
+- **UserHandler**: Manages user profile operations
+  - Get user details
+  - Manage phone numbers (add, update, remove)
+  - Manage addresses (get, add, remove)
+
+#### 3. **DTOs** (`internal/api/dto/`)
+- Transform between HTTP JSON and gRPC protocol buffer messages
+- Contains request and response data structures for:
+  - Authentication operations
+  - User operations
+  - Error responses
+
+#### 4. **gRPC Client** (`internal/client/auth_user_client.go`)
+- `UAServiceClient` (User-Auth Service Client) connects to auth-service
+- Maintains gRPC connections to `AuthService` and `UserService`
+- Uses insecure credentials (suitable for internal microservice communication)
+
+#### 5. **Middleware** (`internal/server/middleware.go`)
+- Custom Gin logger that integrates with Zap structured logging
+- Logs request details: method, path, status code, duration, client IP
+
+## API Endpoints
+
+### Base URL
+```
+http://localhost:8080
+```
+
+### Health & Info Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/` | Welcome message |
+| GET | `/health` | Health check endpoint |
+
+### Authentication Endpoints (`/api/v1/auth`)
+
+| Method | Endpoint | Description | Request Body |
+|--------|----------|-------------|--------------|
+| POST | `/api/v1/auth/register` | Register new user | `{ "email", "password", "username", "phone_number" }` |
+| POST | `/api/v1/auth/login` | Login with email/password | `{ "email", "password" }` |
+| POST | `/api/v1/auth/google` | Login with Google OAuth | `{ "id_token" }` |
+| POST | `/api/v1/auth/logout` | Logout user | `{ "refresh_token" }` |
+| POST | `/api/v1/auth/refresh` | Refresh access token | `{ "refresh_token" }` |
+
+### User Management Endpoints (`/api/v1/user`)
+
+| Method | Endpoint | Description | Query Params |
+|--------|----------|-------------|--------------|
+| GET | `/api/v1/user/` | Get user details | `user_id` |
+| GET | `/api/v1/user/phone-number` | Get phone number | `user_id` |
+| POST | `/api/v1/user/phone-number` | Add phone number | Body: `{ "user_id", "phone_number" }` |
+| PUT | `/api/v1/user/phone-number` | Update phone number | Body: `{ "user_id", "phone_number" }` |
+| DELETE | `/api/v1/user/phone-number` | Remove phone number | Body: `{ "user_id" }` |
+| GET | `/api/v1/user/addresses` | Get all addresses | `user_id` |
+| POST | `/api/v1/user/addresses` | Add new address | Body: Address details |
+| DELETE | `/api/v1/user/addresses` | Remove address | Body: `{ "user_id", "address_id" }` |
 
 ## Configuration
 
-Set environment variables (usually via `app.env` next to `main.go`, Kubernetes ConfigMap, or Docker `-e` flags):
+### Environment Variables
 
-| Variable | Purpose | Default if missing |
-| --- | --- | --- |
-| `SERVER_PORT` | HTTP port the gateway listens on | `8080` |
-| `AUTH_SERVICE_ADDR` | gRPC address of `auth-service` | `localhost:9090` |
-| `USER_SERVICE_ADDR` | gRPC address of `user-service` (reserved for future routes) | none |
-| `JWT_SECRET` | Shared JWT signing key (used by downstream services) | none |
-| `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME` | Present for compatibility with shared config; currently unused by the gateway | none |
+The API Gateway uses the following environment variables (defined in [`env.go`](file:///home/tamirat-dejene/Documents/dis-sys/ha-soranu/services/api-gateway/env.go)):
 
-Kubernetes dev manifests also expect `GATEWAY_HTTP_ADDR`, `GATEWAY_GRPC_ADDR`, and `KAFKA_BROKERS` keys in the `app-config` ConfigMap (`infra/dev/k8s/app-config.yaml`).
+| Variable | Description | Default Value |
+|----------|-------------|---------------|
+| `SRV_ENV` | Service environment (development/production) | `development` |
+| `AUTH_SRV_NAME` | Hostname/service name of auth-service | `auth-service` |
+| `AUTH_SRV_PORT` | Port of auth-service gRPC server | `9090` |
+| `API_GATEWAY_PORT` | HTTP port for the API Gateway | `8080` |
 
-## Quickstart (local)
+### Configuration Loading
 
-1) Install prerequisites: Go toolchain, `protoc` with `protoc-gen-go` and `protoc-gen-go-grpc`, and `make`.
-2) From repo root, move into the service: `cd services/api-gateway`.
-3) Provide config (example `app.env`):
+Configuration is loaded via the `GetEnv()` function which reads environment variables and provides sensible defaults. Helper functions:
+- `getString(key, defaultValue)`: Get string environment variable
+- `getInt(key, defaultValue)`: Get integer environment variable with validation
 
-```env
-SERVER_PORT=8080
-AUTH_SERVICE_ADDR=localhost:9090
-USER_SERVICE_ADDR=localhost:9091
-JWT_SECRET=dev-secret
+## Request/Response Flow
+
+1. **Client → API Gateway**: Client sends HTTP/JSON request to a REST endpoint
+2. **Gateway → Handler**: Gin router forwards request to appropriate handler
+3. **Handler → DTO**: Handler binds JSON to DTO and validates
+4. **DTO → Proto**: DTO converts to gRPC protobuf message
+5. **Gateway → Backend**: gRPC client sends request to auth-service
+6. **Backend → Gateway**: auth-service responds with gRPC message
+7. **Proto → DTO**: Response converted from protobuf to DTO
+8. **Gateway → Client**: Handler returns HTTP/JSON response
+
+## Error Handling
+
+### Error Response Format
+
+All errors are returned in a consistent JSON format:
+
+```json
+{
+  "error": "Error message description"
+}
 ```
 
-4) Run the gateway:
+### Error Types
 
-- Fast path: `go run .` (or `go run ./main.go`)
-- With Makefile target (expects a `cmd` entrypoint): `make run`
+- **400 Bad Request**: Invalid request body or parameters
+- **500 Internal Server Error**: Backend service errors or internal failures
 
-5) Hit an endpoint:
+The `ErrorResponseFromGRPCError()` function in DTOs translates gRPC errors to HTTP error responses.
+
+## Dependencies
+
+### Go Modules
+
+Key dependencies include:
+
+```go
+require (
+    github.com/gin-contrib/cors      // CORS middleware
+    github.com/gin-gonic/gin         // HTTP web framework
+    go.uber.org/zap                  // Structured logging
+    google.golang.org/grpc           // gRPC client
+)
+```
+
+### Internal Dependencies
+
+- `shared/pkg/logger`: Centralized logger initialization
+- `shared/protos/authpb`: Generated gRPC code for AuthService
+- `shared/protos/userpb`: Generated gRPC code for UserService
+
+## Running the Service
+
+### Prerequisites
+
+1. Go 1.x installed
+2. Auth-service running on configured host:port
+3. Environment variables set (optional, defaults provided)
+
+### Local Development
 
 ```bash
-curl -X POST http://localhost:8080/api/v1/auth/register \
-	-H "Content-Type: application/json" \
-	-d '{"name":"Jane","email":"jane@example.com","password":"secret123"}'
+# From project root
+cd services/api-gateway
+
+# Run the service
+go run cmd/main.go
 ```
 
-## HTTP Surface
-
-- `POST /api/v1/auth/register` — create an account via auth service; returns `user_id`
-- `POST /api/v1/auth/login` — authenticate; returns a JWT token
-- `POST /api/v1/auth/google` — exchange Google ID token for backend JWTs
-- `GET /api/v1/user/profile` — protected example; requires `Authorization: Bearer <token>` header and echoes `user_id`
-
-Swagger sketch lives in `docs/swagger.yaml`; update it if you add routes.
-
-## gRPC Client Generation
-
-`make proto-gen` regenerates Go stubs for any `.proto` files placed under `services/api-gateway/proto/` into `internal/api/grpc/pb`. It requires `protoc` and the Go plugins in `PATH`.
-
-## Testing and Quality
-
-- Unit tests: `make test`
-- Lint (if `golangci-lint` is installed): `make lint`
-
-## Container & Deployment Notes
-
-- Development Dockerfile: `infra/dev/docker/api-gateway.Dockerfile` (expects a prebuilt binary at `bin/api-gateway` and copies shared packages).
-- Kubernetes dev manifest: `infra/dev/k8s/api-gateway-deployment.yaml` (LoadBalancer on port `8080`, env from `app-config` ConfigMap).
-- When running a container locally, supply required env vars, e.g.:
+### Using Make (from project root)
 
 ```bash
-docker build -f infra/dev/docker/api-gateway.Dockerfile -t api-gateway .
-docker run --rm -p 8080:8080 -e AUTH_SERVICE_ADDR=host.docker.internal:9090 api-gateway
+make run-gateway
 ```
+
+### Docker/Kubernetes
+
+The service is containerized and deployed via Tilt for local Kubernetes development. See the root `Tiltfile` for deployment configuration.
+
+## Logging
+
+The API Gateway uses structured logging via Uber Zap:
+
+- **Startup logs**: Service initialization and configuration
+- **Request logs**: Each HTTP request (method, path, status, duration, IP)
+- **Error logs**: Detailed error information with context
+- **Connection logs**: gRPC client connection events
+
+Logs are written to stdout in JSON format (production) or console format (development).
+
+## CORS Configuration
+
+CORS is configured to allow:
+- **All origins**: `AllowAllOrigins: true`
+- **All methods**: GET, POST, PUT, DELETE, OPTIONS, etc.
+- **All headers**: Custom headers permitted
+
+> [!WARNING]
+> The current CORS configuration allows all origins for development convenience. In production, restrict `AllowOrigins` to specific trusted domains.
+
+## Security Considerations
+
+> [!CAUTION]
+> **Development Mode**: The following security measures should be implemented for production:
+
+1. **Authentication Middleware**: Currently, no authentication is enforced at the gateway level. Implement JWT validation middleware for protected endpoints.
+
+2. **Rate Limiting**: Add rate limiting to prevent abuse.
+
+3. **HTTPS/TLS**: Use TLS certificates for production deployments.
+
+4. **CORS**: Restrict allowed origins to trusted domains.
+
+5. **Input Validation**: Add comprehensive request validation beyond basic JSON binding.
+
+6. **gRPC Security**: Use TLS credentials instead of `insecure.NewCredentials()` for gRPC connections.
+
+## Future Enhancements
+
+- [ ] JWT validation middleware at gateway level
+- [ ] Request rate limiting
+- [ ] API versioning strategy
+- [ ] OpenAPI/Swagger documentation generation
+- [ ] Circuit breaker pattern for gRPC calls
+- [ ] Request/Response caching
+- [ ] Metrics and monitoring (Prometheus)
+- [ ] Distributed tracing (OpenTelemetry)
+
+## Related Services
+
+- **auth-service**: Backend gRPC service for authentication and user management
+- **user-service**: (Future) Separate user management service
+
+## Proto Definitions
+
+The API Gateway interfaces with backend services using Protocol Buffers defined in:
+- [`protos/auth.proto`](file:///home/tamirat-dejene/Documents/dis-sys/ha-soranu/protos/auth.proto) - AuthService RPCs
+- [`protos/user.proto`](file:///home/tamirat-dejene/Documents/dis-sys/ha-soranu/protos/user.proto) - UserService RPCs
 
 ## Troubleshooting
 
-- Cannot connect to auth service: verify `AUTH_SERVICE_ADDR` is reachable from the gateway container/host.
-- 401 on protected routes: ensure `Authorization: Bearer <token>` header is present and the token is issued by `auth-service`.
+### Common Issues
+
+**Problem**: Cannot connect to auth-service  
+**Solution**: Verify auth-service is running and `AUTH_SRV_NAME:AUTH_SRV_PORT` is correct
+
+**Problem**: CORS errors in browser  
+**Solution**: Verify CORS middleware is configured (should allow all origins by default)
+
+**Problem**: 400 Bad Request errors  
+**Solution**: Check request body format matches expected DTO structure
+
+**Problem**: 500 Internal Server Error  
+**Solution**: Check API Gateway logs and auth-service logs for detailed error information
+
+## Contributing
+
+When adding new endpoints:
+1. Define DTOs in `internal/api/dto/`
+2. Create/update handler in `internal/api/handler/`
+3. Add route in `server.SetupRoutes()`
+4. Update this README with endpoint documentation
+
+## License
+
+Part of the Ha-Soranu microservices platform.

@@ -22,14 +22,15 @@ func main() {
 	logger.Info("Starting API Gateway...", zap.String("env", cfg.SRV_ENV))
 
 	// 3. Initialize Auth Service Client
-	authClient, err := client.NewAuthClient(cfg.AUTH_SRV_NAME + ":" + cfg.AUTH_SRV_PORT)
+	uaServiceClient, err := client.NewUAServiceClient(cfg.AUTH_SRV_NAME + ":" + cfg.AUTH_SRV_PORT)
 	if err != nil {
 		logger.Fatal("Failed to connect to Auth Service", zap.Error(err))
 	}
 	logger.Info("Connected to Auth Service", zap.String("addr", cfg.AUTH_SRV_NAME+":"+cfg.AUTH_SRV_PORT))
+	defer uaServiceClient.Close()
 
 	// 4. Initialize and Run Server
-	srv := server.NewServer(cfg, authClient)
+	srv := server.NewServer(cfg, uaServiceClient)
 	srv.SetupRoutes()
 
 	logger.Info("API Gateway listening", zap.String("port", cfg.API_GATEWAY_PORT))

@@ -10,6 +10,8 @@ import (
 	_ "github.com/lib/pq"
 	goose "github.com/pressly/goose/v3"
 	authservice "github.com/tamirat-dejene/ha-soranu/services/auth-service"
+	"github.com/tamirat-dejene/ha-soranu/shared/pkg/logger"
+	"go.uber.org/zap"
 )
 
 type migrator struct {
@@ -45,7 +47,7 @@ func (f *migrator) Migrate(ctx context.Context, dir string) error {
 	defer db.Close()
 
 	if err := goose.Up(db, dir); err != nil {
-		return fmt.Errorf("migrations failed: %w", err)
+		logger.Error("Failed to run migrations", zap.Error(err))
 	}
 	return nil
 }

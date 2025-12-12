@@ -4,6 +4,7 @@ import (
 	"errors"
 	"strings"
 
+	"github.com/jackc/pgx/v5/pgconn"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -114,4 +115,66 @@ func ToGRPCError(err error) error {
 	default:
 		return status.Error(codes.Internal, MsgInternalError)
 	}
+}
+
+func OptimizedDbError(err error) error {
+	if err == nil {
+		return nil
+	}
+
+	var pgErr *pgconn.PgError
+	if errors.As(err, &pgErr) {
+		switch pgErr.Code {
+
+		// 23505 — unique_violation
+		case "23505":
+			// Try to extract which field failed (email, username, etc.)
+			field := extractFieldFromConstraint(pgErr.ConstraintName)
+			if field != "" {
+				return errors.New(strings.Title(field) + " already exists")
+			}
+			return errors.New("duplicate value violates unique constraint")
+
+		// 23503 — foreign_key_violation
+		case "23503":
+			return errors.New("invalid reference: related record not found")
+
+		// 23502 — not_null_violation
+		case "23502":
+			return errors.New("required field '" + pgErr.ColumnName + "' is missing")
+
+		// 23514 — check_violation
+		case "23514":
+			return errors.New("one or more fields failed validation checks")
+
+		// 42601 — syntax_error
+		case "42601":
+			return errors.New("database query syntax error")
+
+		default:
+			// Unhandled Postgres error code
+			return errors.New("database error: " + pgErr.Message)
+		}
+	}
+
+	// Not a pg error → return generic error
+	return errors.New("internal database error")
+}
+
+// Try to extract column from constraint naming patterns
+func extractFieldFromConstraint(constraint string) string {
+	lower := strings.ToLower(constraint)
+
+	// Common patterns
+	if strings.Contains(lower, "email") {
+		return "email"
+	}
+	if strings.Contains(lower, "username") {
+		return "username"
+	}
+	if strings.Contains(lower, "phone") {
+		return "phone number"
+	}
+
+	return ""
 }

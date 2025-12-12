@@ -11,10 +11,11 @@ import (
 type Server struct {
 	router      *gin.Engine
 	authHandler *handler.AuthHandler
+	userHandler *handler.UserHandler
 	config      apigateway.Env
 }
 
-func NewServer(cfg *apigateway.Env, authClient *client.AuthClient) *Server {
+func NewServer(cfg *apigateway.Env, uaClient *client.UAServiceClient) *Server {
 	router := gin.New()
 	router.Use(gin.Recovery())
 	router.Use(GinLogger())
@@ -24,26 +25,25 @@ func NewServer(cfg *apigateway.Env, authClient *client.AuthClient) *Server {
 		AllowHeaders:    []string{"*"},
 	}))
 
-	authHandler := handler.NewAuthHandler(authClient)
+	authHandler := handler.NewAuthHandler(uaClient)
+	userHandler := handler.NewUserHandler(uaClient)
 	return &Server{
 		router:      router,
 		authHandler: authHandler,
+		userHandler: userHandler,
 		config:      *cfg,
 	}
 }
 
 func (s *Server) SetupRoutes() {
 	v1 := s.router.Group("/api/v1")
-	{
-		auth := v1.Group("/auth")
-		{
-			auth.POST("/register", s.authHandler.Register)
-			auth.POST("/login", s.authHandler.Login)
-			auth.POST("/google", s.authHandler.LoginWithGoogle)
-			auth.POST("/logout", s.authHandler.Logout)
-			auth.POST("/refresh", s.authHandler.Refresh)
-		}
-	}
+
+	// Home endpoint
+	s.router.GET("/", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"message": "Welcome to the API Gateway, where all your requests find their way!",
+		})
+	})
 
 	// Health check endpoint
 	s.router.GET("/health", func(c *gin.Context) {
@@ -52,12 +52,32 @@ func (s *Server) SetupRoutes() {
 		})
 	})
 
-	// Home endpoint
-	s.router.GET("/", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "Welcome to the API Gateway, where all your requests find their way!",
-		})
-	})
+	// Auth routes
+	{
+		auth := v1.Group("/auth")
+		{
+			auth.POST("/register", s.authHandler.Register)
+			auth.POST("/login", s.authHandler.LoginWithEmailAndPassword)
+			auth.POST("/google", s.authHandler.LoginWithGoogle)
+			auth.POST("/logout", s.authHandler.Logout)
+			auth.POST("/refresh", s.authHandler.Refresh)
+		}
+	}
+
+	// User routes
+	{
+		user := v1.Group("/user")
+		{
+			user.GET("/", s.userHandler.GetUser)
+			user.GET("/phone-number", s.userHandler.GetPhoneNumber)
+			user.POST("/phone-number", s.userHandler.AddPhoneNumber)
+			user.PUT("/phone-number", s.userHandler.UpdatePhoneNumber)
+			user.DELETE("/phone-number", s.userHandler.RemovePhoneNumber)
+			user.GET("/addresses", s.userHandler.GetAddresses)
+			user.POST("/addresses", s.userHandler.AddAddress)
+			user.DELETE("/addresses", s.userHandler.RemoveAddress)
+		}
+	}
 }
 
 func (s *Server) Run() error {

@@ -8,105 +8,112 @@ import (
 	"github.com/tamirat-dejene/ha-soranu/services/api-gateway/internal/client"
 	"github.com/tamirat-dejene/ha-soranu/services/api-gateway/internal/errs"
 	"github.com/tamirat-dejene/ha-soranu/shared/pkg/logger"
-	"github.com/tamirat-dejene/ha-soranu/shared/protos/authpb"
 	"go.uber.org/zap"
 )
 
 type AuthHandler struct {
-	client *client.AuthClient
+	client *client.UAServiceClient
 }
 
-func NewAuthHandler(client *client.AuthClient) *AuthHandler {
+func NewAuthHandler(client *client.UAServiceClient) *AuthHandler {
 	return &AuthHandler{
 		client: client,
 	}
 }
 
+/**
+	Register(ctx context.Context, in *UserRegisterRequest, opts ...grpc.CallOption) (*UserRegisterResponse, error)
+    LoginWithEmailAndPassword(ctx context.Context, in *EPLoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
+    LoginWithGoogle(ctx context.Context, in *GLoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
+    Logout(ctx context.Context, in *LogoutRequest, opts ...grpc.CallOption) (*userpb.MessageResponse, error)
+    Refresh(ctx context.Context, in *RefreshRequest, opts ...grpc.CallOption) (*RefreshResponse, error)
+*/
+
 func (h *AuthHandler) Register(c *gin.Context) {
 	logger.Info("Register request received")
-	var req authpb.RegisterRequest
+	var req *dto.UserRegisterRequestDTO
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, errs.NewErrorResponse(errs.MsgInvalidRequest))
 		return
 	}
 
-	res, err := h.client.Client.Register(c.Request.Context(), &req)
+	resp, err := h.client.AuthClient.Register(c.Request.Context(), req.ToProto())
 	if err != nil {
 		logger.Error("Failed to register user", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, dto.ErrorResponseFromGRPCError(err))
 		return
 	}
 
-	c.JSON(http.StatusOK, dto.RegisterResponseFromProto(res))
+	c.JSON(http.StatusOK, dto.UserRegisterResponseFromProto(resp))
 }
 
-func (h *AuthHandler) Login(c *gin.Context) {
-	var req authpb.EPLoginRequest
+func (h *AuthHandler) LoginWithEmailAndPassword(c *gin.Context) {
+	logger.Info("Email-password login request received")
+	var req *dto.EPLoginRequestDTO
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, errs.NewErrorResponse(errs.MsgInvalidRequest))
 		return
 	}
-
-	res, err := h.client.Client.LoginWithEmailAndPassword(c.Request.Context(), &req)
+	resp, err := h.client.AuthClient.LoginWithEmailAndPassword(c.Request.Context(), req.ToProto())
 	if err != nil {
-		logger.Error("Failed to login user", zap.Error(err))
-		c.JSON(http.StatusUnauthorized, dto.ErrorResponseFromGRPCError(err))
+		logger.Error("Failed to login with email and password", zap.String("email", req.Email), zap.Error(err))
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponseFromGRPCError(err))
 		return
 	}
 
-	c.JSON(http.StatusOK, dto.EPLoginResponseFromProto(res))
+	c.JSON(http.StatusOK, dto.LoginResponseFromProto(resp))
 }
 
 func (h *AuthHandler) LoginWithGoogle(c *gin.Context) {
-	var req authpb.GLoginRequest
+	logger.Info("Google login request received")
+	var req *dto.GoogleLoginRequestDTO
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, errs.NewErrorResponse(errs.MsgInvalidRequest))
 		return
 	}
 
-	res, err := h.client.Client.LoginWithGoogle(c.Request.Context(), &req)
+	resp, err := h.client.AuthClient.LoginWithGoogle(c.Request.Context(), req.ToProto())
 	if err != nil {
-		logger.Error("Failed to login with google", zap.Error(err))
-		c.JSON(http.StatusUnauthorized, errs.NewErrorResponse(errs.MsgInvalidCredentials))
+		logger.Error("Failed to login with Google", zap.String("id_token", req.IdToken), zap.Error(err))
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponseFromGRPCError(err))
 		return
 	}
 
-	c.JSON(http.StatusOK, dto.GLoginResponseFromProto(res))
+	c.JSON(http.StatusOK, dto.LoginResponseFromProto(resp))
 }
 
 func (h *AuthHandler) Logout(c *gin.Context) {
-	var req authpb.LogoutRequest
+	logger.Info("Logout request received")
+	var req *dto.LogoutRequestDTO
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, errs.NewErrorResponse(errs.MsgInvalidRequest))
 		return
 	}
 
-	res, err := h.client.Client.Logout(c.Request.Context(), &req)
+	_, err := h.client.AuthClient.Logout(c.Request.Context(), req.ToProto())
 	if err != nil {
-		logger.Error("Failed to logout user", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, errs.NewErrorResponse(errs.MsgInternalError))
+		logger.Error("Failed to logout user", zap.String("refresh_token", req.RefreshToken), zap.Error(err))
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponseFromGRPCError(err))
 		return
 	}
 
-	c.JSON(http.StatusOK, dto.LogoutResponseFromProto(res))
+	c.JSON(http.StatusOK, gin.H{"message": "Logout successful"})
 }
 
 func (h *AuthHandler) Refresh(c *gin.Context) {
-	var req authpb.RefreshRequest
+	logger.Info("Token refresh request received")
+	var req *dto.RefreshRequestDTO
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, errs.NewErrorResponse(errs.MsgInvalidRequest))
 		return
 	}
 
-	res, err := h.client.Client.Refresh(c.Request.Context(), &req)
+	resp, err := h.client.AuthClient.Refresh(c.Request.Context(), req.ToProto())
 	if err != nil {
-		logger.Error("Failed to refresh token", zap.Error(err))
-		c.JSON(http.StatusUnauthorized, errs.NewErrorResponse(errs.MsgInvalidCredentials))
+		logger.Error("Failed to refresh tokens", zap.String("refresh_token", req.RefreshToken), zap.Error(err))
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponseFromGRPCError(err))
 		return
 	}
 
-	c.JSON(http.StatusOK, dto.EPLoginResponseFromProto(&authpb.EPLoginResponse{
-		AccessToken:  res.AccessToken,
-		RefreshToken: res.RefreshToken,
-	}))
+	c.JSON(http.StatusOK, dto.RefreshResponseFromProto(resp))
 }

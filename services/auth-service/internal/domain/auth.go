@@ -2,42 +2,38 @@ package domain
 
 import "context"
 
-
-/* ----- Auth Entities ----- */
-
-type LoginCredentials struct {
-	Email    string
-	Password string
+type AuthTokens struct {
+    AccessToken  string
+    RefreshToken string
 }
 
-type AuthToken struct {
-	AccessToken  string
-	RefreshToken string
+type UserRegister struct {
+    Email       string
+    Password    string
+    Username    string
+    PhoneNumber string
 }
 
-type UserInfo struct {
-	Username string
-	Email    string
+type LoginWithEmail struct {
+    Email    string
+    Password string
 }
 
-type RefreshTokenRequest struct {
-	RefreshToken string
+type LoginWithGoogle struct {
+    IDToken string
 }
 
-/* ----- Auth Usecase ----- */
-
-type AuthUsecase interface {
-	Register(ctx context.Context, req CreateUserRequest) (string, AuthToken, error)
-	LoginWithEP(ctx context.Context, creds LoginCredentials) (AuthToken, error)
-	LoginWithGoogle(ctx context.Context, googleToken string) (UserInfo, AuthToken, error)
-	Logout(ctx context.Context, accessToken string) error
-	RefreshTokens(ctx context.Context, refreshToken string) (AuthToken, error)
+type AuthUseCase interface {
+    Register(ctx context.Context, input UserRegister) (*User, *AuthTokens, error)
+    LoginWithEmailAndPassword(ctx context.Context, input LoginWithEmail) (*User, *AuthTokens, error)
+    LoginWithGoogle(ctx context.Context, input LoginWithGoogle) (*User, *AuthTokens, error)
+    Logout(ctx context.Context, refreshToken string) error
+    RefreshTokens(ctx context.Context, refreshToken string) (*AuthTokens, error)
 }
-
-/* ----- Auth Repository ----- */
 
 type AuthRepository interface {
-	StoreRefreshToken(ctx context.Context, userID string, refreshToken string) error
-	DeleteRefreshToken(ctx context.Context, refreshToken string) error
-	ValidateRefreshToken(ctx context.Context, refreshToken string) (string, error)
+    SaveRefreshToken(userID string, tokenId string) error
+    DeleteRefreshToken(tokenId string) error
+    ValidateRefreshToken(tokenId string) (string, error)
+    ConsumeRefreshToken(tokenId string) (string, error)
 }

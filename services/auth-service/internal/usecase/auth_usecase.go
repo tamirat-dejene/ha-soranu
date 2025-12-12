@@ -2,284 +2,170 @@ package usecase
 
 import (
 	"context"
-	"fmt"
-	"strings"
 	"time"
 
 	authservice "github.com/tamirat-dejene/ha-soranu/services/auth-service"
 	"github.com/tamirat-dejene/ha-soranu/services/auth-service/internal/domain"
+	errs "github.com/tamirat-dejene/ha-soranu/services/auth-service/internal/domain/err"
 	internalutil "github.com/tamirat-dejene/ha-soranu/services/auth-service/internal/util"
-	"github.com/tamirat-dejene/ha-soranu/shared/redis"
 )
 
 type authUsecase struct {
-	ctxTimeout  time.Duration
-	userUsecase domain.UserUsecase
-	redisClient redis.RedisClient
-	userRepo    domain.UserRepository
-	environment authservice.Env
+	ctxTimeout time.Duration
+	authRepo   domain.AuthRepository
+	userRepo   domain.UserRepository
+	env        authservice.Env
 }
 
-// LoginWithGoogle implements domain.AuthUsecase.
-func (a *authUsecase) LoginWithGoogle(ctx context.Context, google_token string) (domain.UserInfo, domain.AuthToken, error) {
+// LoginWithEmailAndPassword implements domain.AuthUseCase.
+func (a *authUsecase) LoginWithEmailAndPassword(ctx context.Context, input domain.LoginWithEmail) (*domain.User, *domain.AuthTokens, error) {
 	c, cancel := context.WithTimeout(ctx, a.ctxTimeout)
 	defer cancel()
 
-	// Verify the Google token and get user info
-	userInfo, err := internalutil.VerifyGoogleToken(c, a.environment.GoogleClientID, google_token)
+	passwordHash, err := a.userRepo.GetUserPasswordHashByEmail(c, input.Email)
 	if err != nil {
-		return domain.UserInfo{}, domain.AuthToken{}, err
+		return nil, nil, errs.ErrInternalServer
 	}
 
-	email := userInfo.Email
-
-	// Parse token TTLs
-	attl, err := time.ParseDuration(a.environment.AccessTokenTTL)
+	err = internalutil.ComparePassword(passwordHash, input.Password)
 	if err != nil {
-		return domain.UserInfo{}, domain.AuthToken{}, err
+		return nil, nil, errs.ErrInvalidCredentials
 	}
-	rttl, err := time.ParseDuration(a.environment.RefreshTokenTTL)
+
+	authToken, refreshTokenID, err := internalutil.SignUser(input.Email, &a.env, nil)
 	if err != nil {
-		return domain.UserInfo{}, domain.AuthToken{}, err
+		return nil, nil, errs.ErrInternalServer
 	}
 
-	// Generate access token
-	accessToken, err := internalutil.CreateToken(
-		[]byte(a.environment.AccessTokenSecret),
-		email,
-		attl,
-		a.environment.AUTH_SRV_NAME,
-		nil,
-	)
+	err = a.authRepo.SaveRefreshToken(input.Email, refreshTokenID)
 	if err != nil {
-		return domain.UserInfo{}, domain.AuthToken{}, err
+		return nil, nil, errs.ErrInternalServer
 	}
 
-	// Generate refresh token
-	refreshToken, err := internalutil.CreateToken(
-		[]byte(a.environment.RefreshTokenSecret),
-		email,
-		rttl,
-		a.environment.AUTH_SRV_NAME,
-		nil,
-	)
+	user, err := a.userRepo.GetUserByEmail(c, input.Email)
 	if err != nil {
-		return domain.UserInfo{}, domain.AuthToken{}, err
+		return nil, nil, errs.ErrInternalServer
 	}
 
-	// Store refresh token in Redis
-	redisKey := fmt.Sprintf("refresh:%s", refreshToken)
-	if err := a.redisClient.Set(redisKey, email, rttl); err != nil {
-		return domain.UserInfo{}, domain.AuthToken{}, err
-	}
-
-	return userInfo, domain.AuthToken{
-		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
-	}, nil
+	return user, authToken, nil
 }
 
-// Register implements domain.AuthUsecase.
-func (a *authUsecase) Register(ctx context.Context, req domain.CreateUserRequest) (string, domain.AuthToken, error) {
+func (a *authUsecase) LoginWithGoogle(ctx context.Context, input domain.LoginWithGoogle) (*domain.User, *domain.AuthTokens, error) {
 	c, cancel := context.WithTimeout(ctx, a.ctxTimeout)
 	defer cancel()
 
-	// Create user using UserRepository
-	req.Email = strings.ToLower(req.Email)
-	userID, err := a.userRepo.CreateUser(c, req)
+	// 1. Validate Google token
+	claims, err := internalutil.ValidateGoogleIDToken(c, a.env.GoogleClientID, input.IDToken)
 	if err != nil {
-		return "", domain.AuthToken{}, err
+		return nil, nil, err
 	}
 
-	// Generate tokens upon successful registration
-	attl, err := time.ParseDuration(a.environment.AccessTokenTTL)
-	if err != nil {
-		return "", domain.AuthToken{}, err
-	}
-	rttl, err := time.ParseDuration(a.environment.RefreshTokenTTL)
-	if err != nil {
-		return "", domain.AuthToken{}, err
+	// 2. Try to find the user
+	user, err := a.userRepo.GetUserByEmail(c, claims.Email)
+
+	// 3. If user does not exist → create a new user
+	if err == nil && user == nil {
+		newUser := &domain.UserRegister{
+			Email:       claims.Email,
+			Username:    claims.Username,
+			PhoneNumber: "",
+			Password:    "",
+		}
+
+		user, err = a.userRepo.CreateUser(c, newUser)
+		if err != nil {
+			return nil, nil, err
+		}
+	} else {
+		// other DB errors
+		return nil, nil, err
 	}
 
-	accessToken, err := internalutil.CreateToken(
-		[]byte(a.environment.AccessTokenSecret),
-		req.Email,
-		attl,
-		a.environment.AUTH_SRV_NAME,
-		nil,
-	)
+	// 4. Generate JWT and refresh token
+	authToken, refreshTokenID, err := internalutil.SignUser(user.Email, &a.env, nil)
 	if err != nil {
-		return "", domain.AuthToken{}, err
+		return nil, nil, err
 	}
 
-	refreshToken, err := internalutil.CreateToken(
-		[]byte(a.environment.RefreshTokenSecret),
-		req.Email,
-		rttl,
-		a.environment.AUTH_SRV_NAME,
-		nil,
-	)
+	// 5. Store refresh token
+	err = a.authRepo.SaveRefreshToken(user.Email, refreshTokenID)
 	if err != nil {
-		return "", domain.AuthToken{}, err
+		return nil, nil, err
 	}
 
-	// Store refresh token in Redis
-	redisKey := fmt.Sprintf("refresh:%s", refreshToken)
-	if err := a.redisClient.Set(redisKey, req.Email, rttl); err != nil {
-		return "", domain.AuthToken{}, err
-	}
-
-	return userID, domain.AuthToken{
-		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
-	}, nil
+	// 6. Return user + tokens
+	return user, authToken, nil
 }
 
-// LoginWithEP implements domain.AuthUsecase.
-func (a *authUsecase) LoginWithEP(ctx context.Context, creds domain.LoginCredentials) (domain.AuthToken, error) {
-	_, cancel := context.WithTimeout(ctx, a.ctxTimeout)
-	defer cancel()
-
-	email, password := strings.ToLower(creds.Email), creds.Password
-
-	hashedPassword, err := a.userUsecase.GetUserHashedPassword(ctx, email)
-	if err != nil {
-		return domain.AuthToken{}, err
-	}
-
-	err = internalutil.ComparePassword(hashedPassword, password)
-	if err != nil {
-		return domain.AuthToken{}, err
-	}
-
-	attl, err := time.ParseDuration(a.environment.AccessTokenTTL)
-	if err != nil {
-		return domain.AuthToken{}, err
-	}
-	rttl, err := time.ParseDuration(a.environment.RefreshTokenTTL)
-	if err != nil {
-		return domain.AuthToken{}, err
-	}
-
-	// Generate tokens
-	accessToken, err := internalutil.CreateToken(
-		[]byte(a.environment.AccessTokenSecret),
-		email,
-		attl,
-		a.environment.AUTH_SRV_NAME,
-		nil,
-	)
-	if err != nil {
-		return domain.AuthToken{}, err
-	}
-
-	refreshToken, err := internalutil.CreateToken(
-		[]byte(a.environment.RefreshTokenSecret),
-		email,
-		rttl,
-		a.environment.AUTH_SRV_NAME,
-		nil,
-	)
-	if err != nil {
-		return domain.AuthToken{}, err
-	}
-
-	// Store refresh token in Redis
-	redisKey := fmt.Sprintf("refresh:%s", refreshToken)
-	err = a.redisClient.Set(redisKey, email, rttl)
-	if err != nil {
-		return domain.AuthToken{}, err
-	}
-
-	return domain.AuthToken{
-		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
-	}, nil
-}
-
-// Logout implements domain.AuthUsecase.
+// Logout implements domain.AuthUseCase.
 func (a *authUsecase) Logout(ctx context.Context, refreshToken string) error {
 	_, cancel := context.WithTimeout(ctx, a.ctxTimeout)
 	defer cancel()
 
-	redisKey := fmt.Sprintf("refresh:%s", refreshToken)
-	return a.redisClient.Delete(redisKey)
+	claims, err := internalutil.ValidateRefreshToken([]byte(a.env.RefreshTokenSecret), refreshToken)
+	if err != nil {
+		return errs.ErrTokenRevoked
+	}
+
+	return a.authRepo.DeleteRefreshToken(claims.TokenID)
 }
 
-// RefreshTokens implements domain.AuthUsecase.
-func (a *authUsecase) RefreshTokens(ctx context.Context, refreshToken string) (domain.AuthToken, error) {
+// RefreshTokens implements domain.AuthUseCase.
+func (a *authUsecase) RefreshTokens(ctx context.Context, refreshToken string) (*domain.AuthTokens, error) {
 	_, cancel := context.WithTimeout(ctx, a.ctxTimeout)
 	defer cancel()
 
-	redisKey := fmt.Sprintf("refresh:%s", refreshToken)
-
-	// Validate refresh token in Redis
-	userEmail, err := a.redisClient.Get(redisKey)
+	claims, err := internalutil.ValidateRefreshToken([]byte(a.env.RefreshTokenSecret), refreshToken)
 	if err != nil {
-		return domain.AuthToken{}, fmt.Errorf("invalid or expired refresh token")
+		return nil, errs.ErrTokenRevoked
+	}
+	_, err = a.authRepo.ConsumeRefreshToken(claims.TokenID)
+	if err != nil {
+		return nil, errs.ErrTokenRevoked
 	}
 
-	// Optional: delete old refresh token (rotation)
-	_ = a.redisClient.Delete(redisKey)
-
-	attl, err := time.ParseDuration(a.environment.AccessTokenTTL)
+	authToken, _, err := internalutil.SignUser(claims.UserEmail, &a.env, nil)
 	if err != nil {
-		return domain.AuthToken{}, err
+		return nil, errs.ErrInternalServer
 	}
 
-	accessToken, err := internalutil.CreateToken(
-		[]byte(a.environment.AccessTokenSecret),
-		userEmail,
-		attl,
-		a.environment.AUTH_SRV_NAME,
-		nil,
-	)
+	return authToken, nil
+}
+
+// Register implements domain.AuthUseCase.
+func (a *authUsecase) Register(ctx context.Context, input domain.UserRegister) (*domain.User, *domain.AuthTokens, error) {
+	c, cancel := context.WithTimeout(ctx, a.ctxTimeout)
+	defer cancel()
+
+	var err error
+	input.Password, err = internalutil.HashPassword(input.Password)
 	if err != nil {
-		return domain.AuthToken{}, err
+		return nil, nil, errs.ErrInternalServer
 	}
 
-	rttl, err := time.ParseDuration(a.environment.RefreshTokenTTL)
+	user, err := a.userRepo.CreateUser(c, &input)
 	if err != nil {
-		return domain.AuthToken{}, err
+		return nil, nil, errs.ErrInternalServer	
+	}
+	authToken, refreshTokenID, err := internalutil.SignUser(user.Email, &a.env, nil)
+	if err != nil {
+		return nil, nil, errs.ErrInternalServer
 	}
 
-	newRefreshToken, err := internalutil.CreateToken(
-		[]byte(a.environment.RefreshTokenSecret),
-		userEmail,
-		rttl,
-		a.environment.AUTH_SRV_NAME,
-		nil,
-	)
+	err = a.authRepo.SaveRefreshToken(user.UserID, refreshTokenID)
 	if err != nil {
-		return domain.AuthToken{}, err
+		return nil, nil, errs.ErrInternalServer
 	}
 
-	// Store new refresh token in Redis
-	newRedisKey := fmt.Sprintf("refresh:%s", newRefreshToken)
-	err = a.redisClient.Set(newRedisKey, userEmail, rttl)
-	if err != nil {
-		return domain.AuthToken{}, err
-	}
-
-	return domain.AuthToken{
-		AccessToken:  accessToken,
-		RefreshToken: newRefreshToken,
-	}, nil
+	return user, authToken, nil
 }
 
 // NewAuthUsecase constructor
-func NewAuthUsecase(
-	userRepo domain.UserRepository,
-	userUsecase domain.UserUsecase,
-	redisClient redis.RedisClient,
-	timeout time.Duration,
-	env authservice.Env,
-) domain.AuthUsecase {
+func NewAuthUsecase(ctxTimeout time.Duration, authRepo domain.AuthRepository, userRepo domain.UserRepository, env authservice.Env) domain.AuthUseCase {
 	return &authUsecase{
-		ctxTimeout:  timeout,
-		userUsecase: userUsecase,
-		redisClient: redisClient,
-		userRepo:    userRepo,
-		environment: env,
+		ctxTimeout: ctxTimeout,
+		authRepo:   authRepo,
+		userRepo:   userRepo,
+		env:        env,
 	}
 }

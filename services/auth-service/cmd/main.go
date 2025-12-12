@@ -13,6 +13,7 @@ import (
 
 	"google.golang.org/grpc"
 
+	_ "github.com/jackc/pgx/v5/stdlib"
 	authservice "github.com/tamirat-dejene/ha-soranu/services/auth-service"
 	"github.com/tamirat-dejene/ha-soranu/services/auth-service/internal/api/grpc/handler"
 	"github.com/tamirat-dejene/ha-soranu/services/auth-service/internal/repository"
@@ -33,7 +34,7 @@ func main() {
 	defer logger.Log.Sync()
 	logger.Info("Auth Service is running...", zap.String("env", env.SRV_ENV))
 
-	// // 3. Initialize Migrations
+	// 3. Initialize Migrations
 	migrate := migrations.NewMigrator(*env)
 	if err := migrate.Migrate(context.Background(), "/app/migrations"); err != nil {
 		logger.Fatal("migrations failed", zap.Error(err))
@@ -55,11 +56,12 @@ func main() {
 
 	// 6. Initialize Repositories
 	userRepo := repository.NewUserRepository(pgClient)
+	authRepo := repository.NewAuthRepository(redisClient, time.Duration(5)*time.Minute)
 
 	// 7. Initialize Usecases
 	timeout := time.Duration(5) * time.Second // Default timeout
 	userUsecase := usecase.NewUserUsecase(userRepo, timeout)
-	authUsecase := usecase.NewAuthUsecase(userRepo, userUsecase, redisClient, timeout, *env)
+	authUsecase := usecase.NewAuthUsecase(timeout, authRepo, userRepo, *env)
 
 	// 8. Initialize gRPC Server
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", env.AUTH_SRV_PORT))

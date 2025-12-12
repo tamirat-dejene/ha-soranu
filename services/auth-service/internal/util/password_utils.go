@@ -1,6 +1,10 @@
 package internalutil
 
-import "golang.org/x/crypto/bcrypt"
+import (
+	"unicode"
+
+	"golang.org/x/crypto/bcrypt"
+)
 
 // HashPassword hashes the given plain text password using bcrypt.
 func HashPassword(password string) (string, error) {
@@ -20,30 +24,33 @@ func ComparePassword(hashedPassword, password string) error {
 func IsPasswordStrong(password string) bool {
 	const minPasswordLength = 4
 	runes := []rune(password)
+
 	if len(runes) < minPasswordLength {
 		return false
 	}
 
 	var hasUpper, hasLower, hasDigit, hasSpecial bool
+
 	for _, r := range runes {
-		if r <= 32 { // disallow control chars and spaces
+		// Reject whitespace or control characters
+		if unicode.IsSpace(r) || r < 33 {
 			return false
 		}
+
 		switch {
-		case r >= 'A' && r <= 'Z':
+		case unicode.IsUpper(r):
 			hasUpper = true
-		case r >= 'a' && r <= 'z':
+		case unicode.IsLower(r):
 			hasLower = true
-		case r >= '0' && r <= '9':
+		case unicode.IsDigit(r):
 			hasDigit = true
 		default:
-			// treat other printable runes as special characters
-			if r > 32 {
-				hasSpecial = true
-			}
+			// Any other printable character counts as special
+			hasSpecial = true
 		}
 	}
 
+	// Count categories
 	categories := 0
 	if hasUpper {
 		categories++
@@ -58,8 +65,9 @@ func IsPasswordStrong(password string) bool {
 		categories++
 	}
 
-	// For very short passwords (>=4), require at least 2 different categories.
-	// For longer passwords (>=8), require at least 3 categories.
+	// Rules:
+	// - Short passwords (4-7 chars): at least 2 categories
+	// - Long passwords (8+ chars): at least 3 categories
 	if len(runes) < 8 {
 		return categories >= 2
 	}

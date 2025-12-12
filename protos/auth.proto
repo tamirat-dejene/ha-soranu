@@ -1,63 +1,72 @@
 syntax = "proto3";
 
 package auth;
+import "user.proto";
 
-option go_package = "/authpb;authpb";
+option go_package = "github.com/tamirat-dejene/ha-soranu/shared/protos/authpb;authpb";
 
+// AuthService defines the authentication-related RPC methods.
 service AuthService {
-  rpc Register(RegisterRequest) returns (RegisterResponse);
-  rpc LoginWithEmailAndPassword(EPLoginRequest) returns (EPLoginResponse);
-  rpc LoginWithGoogle(GLoginRequest) returns (GLoginResponse);
-  rpc Logout(LogoutRequest) returns (LogoutResponse);
+  // Registers a new user and returns the created user along with auth tokens.
+  rpc Register(UserRegisterRequest) returns (UserRegisterResponse);
+  // Logs in a user using email and password, returning user info and auth tokens.
+  rpc LoginWithEmailAndPassword(EPLoginRequest) returns (LoginResponse);
+  // Logs in a user using Google OAuth token, returning user info and auth tokens.
+  rpc LoginWithGoogle(GLoginRequest) returns (LoginResponse);
+  // Logs out a user by invalidating the provided refresh token.
+  rpc Logout(LogoutRequest) returns (user.MessageResponse);
+  // Refreshes authentication tokens using a valid refresh token.
   rpc Refresh(RefreshRequest) returns (RefreshResponse);
 }
 
-message RegisterRequest {
-  string username = 1;
+// AuthTokens holds the access and refresh tokens.
+message AuthTokens {
+  string access_token = 1;
+  string refresh_token = 2;
+}
+
+// UserRegisterRequest contains the information needed to register a new user.
+message UserRegisterRequest {
   string email = 2;
   string password = 3;
-  repeated string addresses = 4;
+  string username = 1;
+  string phone_number = 4;
 }
 
-message RegisterResponse {
-  string user_id = 1;
-  EPLoginResponse tokens = 2;
+// UserRegisterResponse contains the registered user and authentication tokens.
+message UserRegisterResponse {
+  user.User user = 1;
+  AuthTokens tokens = 2;
 }
 
+// EPLoginRequest contains the email and password for login.
 message EPLoginRequest {
   string email = 1;
   string password = 2;
 }
 
-message EPLoginResponse {
-  string access_token = 1;
-  string refresh_token = 2;
-}
-
+// GLoginRequest contains the Google ID token for login.
 message GLoginRequest {
-  string google_token = 1;
+  string id_token = 1;
 }
 
-message GLoginResponse {
-  string username = 1;
-  string email = 2;
-  string access_token = 3;
-  string refresh_token = 4;
+// LoginResponse contains the logged-in user and authentication tokens.
+message LoginResponse {
+  user.User user = 1;
+  AuthTokens tokens = 2;
 }
 
+// LogoutRequest contains the refresh token to be invalidated.
 message LogoutRequest {
-  string access_token = 1;
+  string refresh_token = 1;
 }
 
-message LogoutResponse {
-  string message = 1;
-}
-
+// RefreshRequest contains the refresh token for obtaining new auth tokens.
 message RefreshRequest {
   string refresh_token = 1;
 }
 
+// RefreshResponse contains the new authentication tokens.
 message RefreshResponse {
-  string access_token = 1;
-  string refresh_token = 2;
+  AuthTokens tokens = 1;
 }

@@ -1,52 +1,62 @@
 package dto
 
 import (
-	"github.com/tamirat-dejene/ha-soranu/services/auth-service/internal/domain"
-	"github.com/tamirat-dejene/ha-soranu/shared/protos/authpb"
+    "github.com/tamirat-dejene/ha-soranu/services/auth-service/internal/domain"
+    "github.com/tamirat-dejene/ha-soranu/shared/protos/authpb"
+    "github.com/tamirat-dejene/ha-soranu/shared/protos/userpb"
+    "google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func CreateUserRequestFromProto(protoReq *authpb.RegisterRequest) domain.CreateUserRequest {
-	return domain.CreateUserRequest{
-		Username: protoReq.GetUsername(),
-		Email:    protoReq.GetEmail(),
-		Password: protoReq.GetPassword(),
-		Addressess: protoReq.GetAddresses(),
-	}
+func ToDomainUserRegister(req *authpb.UserRegisterRequest) domain.UserRegister {
+    return domain.UserRegister{
+        Email:       req.Email,
+        Password:    req.Password,
+        Username:    req.Username,
+        PhoneNumber: req.PhoneNumber,
+    }
 }
 
-func RegisterResponseToProto(userID string, token domain.AuthToken) *authpb.RegisterResponse {
-	return &authpb.RegisterResponse{
-		UserId: userID,
-		Tokens: &authpb.EPLoginResponse{
-			AccessToken:  token.AccessToken,
-			RefreshToken: token.RefreshToken,
-		},
-	}
+func ToProtoUser(user *domain.User) *userpb.User {
+    addresses := make([]*userpb.Address, len(user.Addresses))
+    for i, a := range user.Addresses {
+        addresses[i] = &userpb.Address{
+            AddressId:  a.AddressID,
+            Street:     a.Street,
+            City:       a.City,
+            State:      a.State,
+            PostalCode: a.PostalCode,
+            Country:    a.Country,
+            Latitude:   a.Latitude,
+            Longitude:  a.Longitude,
+        }
+    }
+
+    return &userpb.User{
+        UserId:      user.UserID,
+        Email:       user.Email,
+        Username:    user.Username,
+        PhoneNumber: user.PhoneNumber,
+        Addresses:   addresses,
+        CreatedAt:   timestamppb.New(user.CreatedAt),
+    }
 }
 
-func CreateLoginCredentialsFromProto(protoReq *authpb.EPLoginRequest) domain.LoginCredentials {
-	return domain.LoginCredentials{
-		Email:    protoReq.GetEmail(),
-		Password: protoReq.GetPassword(),
-	}
+func ToProtoTokens(t *domain.AuthTokens) *authpb.AuthTokens {
+    return &authpb.AuthTokens{
+        AccessToken:  t.AccessToken,
+        RefreshToken: t.RefreshToken,
+    }
 }
 
-func AuthTokenToProto(token domain.AuthToken) *authpb.EPLoginResponse {
-	return &authpb.EPLoginResponse{
-		AccessToken:  token.AccessToken,
-		RefreshToken: token.RefreshToken,
-	}
+func ToDomainLoginWithGoogle(req *authpb.GLoginRequest) domain.LoginWithGoogle {
+    return domain.LoginWithGoogle{
+        IDToken: req.IdToken,
+    }
 }
 
-func NewLogoutResponseProto(message string) *authpb.LogoutResponse {
-	return &authpb.LogoutResponse{
-		Message: message,
-	}
-}
-
-func AuthTokenToProtoRefresh(accesstoken string, refreshtoken string) *authpb.RefreshResponse {
-	return &authpb.RefreshResponse{
-		AccessToken:  accesstoken,
-		RefreshToken: refreshtoken,
-	}
+func ToDomainLoginWithEmail(req *authpb.EPLoginRequest) domain.LoginWithEmail {
+    return domain.LoginWithEmail{
+        Email:    req.Email,
+        Password: req.Password,
+    }
 }

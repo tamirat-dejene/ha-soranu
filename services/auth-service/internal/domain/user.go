@@ -1,67 +1,54 @@
 package domain
 
-import "context"
+import (
+	"context"
+	"time"
+)
 
-/* ----- User Entity ----- */
+type Address struct {
+    AddressID  string
+    Street     string
+    City       string
+    State      string
+    PostalCode uint32
+    Country    string
+    Latitude   float32
+    Longitude  float32
+    CreatedAt  time.Time
+}
 
 type User struct {
-	ID       string
-	Username string
-	Email    string
-	Password string 
-	Addressess  []string
+    UserID      string
+    Email       string
+    Username    string
+    PhoneNumber string
+    Addresses   []Address
+    CreatedAt   time.Time
 }
 
-type CreateUserRequest struct {
-	Username string
-	Email    string
-	Password string
-	Addressess  []string
+type UserUseCase interface {
+    GetUser(ctx context.Context, userID string) (*User, error)
+
+    AddPhoneNumber(ctx context.Context, userID, phone string) error
+    UpdatePhoneNumber(ctx context.Context, userID, phone string) error
+    RemovePhoneNumber(ctx context.Context, userID string) error
+
+    GetAddresses(ctx context.Context, userID string) ([]Address, error)
+    AddAddress(ctx context.Context, userID string, address Address) (*Address, error)
+    RemoveAddress(ctx context.Context, userID, addressID string) error
 }
-
-type UpdateUserRequest struct {
-	Username *string
-	Email    *string
-	Password *string
-	Addressess  *[]string
-}
-
-type UserResponse struct {
-	ID       string
-	Username string
-	Email    string
-	Addressess  []string
-}
-
-type DeleteUserRequest struct {
-	ID string
-}
-
-/* ----- User Usecase ----- */
-
-type UserUsecase interface {
-	CreateUser(ctx context.Context, req CreateUserRequest) (string, error)
-	GetUserByID(ctx context.Context, id string) (UserResponse, error)
-	GetUserHashedPassword(ctx context.Context, email string) (string, error)
-	UpdateUser(ctx context.Context, id string, req UpdateUserRequest) (UserResponse, error)
-	DeleteUser(ctx context.Context, id string) error
-
-	GetUserAddresses(ctx context.Context, id string) ([]string, error)
-	AddUserAddress(ctx context.Context, id string, address string) error
-	RemoveUserAddress(ctx context.Context, id string, address string) error
-}
-
-/* ----- User Repository ----- */
 
 type UserRepository interface {
-	CreateUser(ctx context.Context, req CreateUserRequest) (string, error)
-	FindByID(ctx context.Context, id string) (User, error)
-	FindByEmail(ctx context.Context, email string) (User, error)
-	Update(ctx context.Context, user User) (User, error)
-	Delete(ctx context.Context, id string) error
-	GetHashedPassword(ctx context.Context, email string) (string, error)
+    CreateUser(ctx context.Context, user *UserRegister) (*User, error)
+    GetUserByID(ctx context.Context, userID string) (*User, error)
+    GetUserByEmail(ctx context.Context, email string) (*User, error)
+    GetUserPasswordHashByEmail(ctx context.Context, email string) (string, error)
 
-	GetAddresses(ctx context.Context, id string) ([]string, error)
-	AddAddress(ctx context.Context, id string, address string) error
-	RemoveAddress(ctx context.Context, id string, address string) error
+    UpdatePhoneNumber(ctx context.Context, userID string, phone string) error
+    AddPhoneNumber(ctx context.Context, userID string, phone string) error
+    RemovePhoneNumber(ctx context.Context, userID string) error
+
+    GetAddresses(ctx context.Context, userID string) ([]Address, error)
+    AddAddress(ctx context.Context, userID string, address Address) (Address, error)
+    RemoveAddress(ctx context.Context, userID, addressID string) error
 }

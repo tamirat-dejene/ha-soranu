@@ -20,10 +20,13 @@ const _ = grpc.SupportPackageIsVersion9
 
 const (
 	UserService_GetUser_FullMethodName           = "/user.UserService/GetUser"
-	UserService_UpdateUser_FullMethodName        = "/user.UserService/UpdateUser"
-	UserService_GetUserAddresses_FullMethodName  = "/user.UserService/GetUserAddresses"
-	UserService_AddUserAddress_FullMethodName    = "/user.UserService/AddUserAddress"
-	UserService_RemoveUserAddress_FullMethodName = "/user.UserService/RemoveUserAddress"
+	UserService_GetPhoneNumber_FullMethodName    = "/user.UserService/GetPhoneNumber"
+	UserService_AddPhoneNumber_FullMethodName    = "/user.UserService/AddPhoneNumber"
+	UserService_UpdatePhoneNumber_FullMethodName = "/user.UserService/UpdatePhoneNumber"
+	UserService_RemovePhoneNumber_FullMethodName = "/user.UserService/RemovePhoneNumber"
+	UserService_GetAddresses_FullMethodName      = "/user.UserService/GetAddresses"
+	UserService_AddAddress_FullMethodName        = "/user.UserService/AddAddress"
+	UserService_RemoveAddress_FullMethodName     = "/user.UserService/RemoveAddress"
 )
 
 // UserServiceClient is the client API for UserService service.
@@ -31,10 +34,13 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type UserServiceClient interface {
 	GetUser(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*GetUserResponse, error)
-	UpdateUser(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*UpdateUserResponse, error)
-	GetUserAddresses(ctx context.Context, in *GetUserAddressesRequest, opts ...grpc.CallOption) (*GetUserAddressesResponse, error)
-	AddUserAddress(ctx context.Context, in *AddUserAddressRequest, opts ...grpc.CallOption) (*AddUserAddressResponse, error)
-	RemoveUserAddress(ctx context.Context, in *RemoveUserAddressRequest, opts ...grpc.CallOption) (*RemoveUserAddressResponse, error)
+	GetPhoneNumber(ctx context.Context, in *GetPhoneNumberRequest, opts ...grpc.CallOption) (*GetPhoneNumberResponse, error)
+	AddPhoneNumber(ctx context.Context, in *AddPhoneNumberRequest, opts ...grpc.CallOption) (*MessageResponse, error)
+	UpdatePhoneNumber(ctx context.Context, in *UpdatePhoneNumberRequest, opts ...grpc.CallOption) (*MessageResponse, error)
+	RemovePhoneNumber(ctx context.Context, in *RemovePhoneNumberRequest, opts ...grpc.CallOption) (*MessageResponse, error)
+	GetAddresses(ctx context.Context, in *GetAddressesRequest, opts ...grpc.CallOption) (*GetAddressesResponse, error)
+	AddAddress(ctx context.Context, in *AddAddressRequest, opts ...grpc.CallOption) (*AddAddressResponse, error)
+	RemoveAddress(ctx context.Context, in *RemoveAddressRequest, opts ...grpc.CallOption) (*MessageResponse, error)
 }
 
 type userServiceClient struct {
@@ -55,40 +61,70 @@ func (c *userServiceClient) GetUser(ctx context.Context, in *GetUserRequest, opt
 	return out, nil
 }
 
-func (c *userServiceClient) UpdateUser(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*UpdateUserResponse, error) {
+func (c *userServiceClient) GetPhoneNumber(ctx context.Context, in *GetPhoneNumberRequest, opts ...grpc.CallOption) (*GetPhoneNumberResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(UpdateUserResponse)
-	err := c.cc.Invoke(ctx, UserService_UpdateUser_FullMethodName, in, out, cOpts...)
+	out := new(GetPhoneNumberResponse)
+	err := c.cc.Invoke(ctx, UserService_GetPhoneNumber_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *userServiceClient) GetUserAddresses(ctx context.Context, in *GetUserAddressesRequest, opts ...grpc.CallOption) (*GetUserAddressesResponse, error) {
+func (c *userServiceClient) AddPhoneNumber(ctx context.Context, in *AddPhoneNumberRequest, opts ...grpc.CallOption) (*MessageResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetUserAddressesResponse)
-	err := c.cc.Invoke(ctx, UserService_GetUserAddresses_FullMethodName, in, out, cOpts...)
+	out := new(MessageResponse)
+	err := c.cc.Invoke(ctx, UserService_AddPhoneNumber_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *userServiceClient) AddUserAddress(ctx context.Context, in *AddUserAddressRequest, opts ...grpc.CallOption) (*AddUserAddressResponse, error) {
+func (c *userServiceClient) UpdatePhoneNumber(ctx context.Context, in *UpdatePhoneNumberRequest, opts ...grpc.CallOption) (*MessageResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(AddUserAddressResponse)
-	err := c.cc.Invoke(ctx, UserService_AddUserAddress_FullMethodName, in, out, cOpts...)
+	out := new(MessageResponse)
+	err := c.cc.Invoke(ctx, UserService_UpdatePhoneNumber_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *userServiceClient) RemoveUserAddress(ctx context.Context, in *RemoveUserAddressRequest, opts ...grpc.CallOption) (*RemoveUserAddressResponse, error) {
+func (c *userServiceClient) RemovePhoneNumber(ctx context.Context, in *RemovePhoneNumberRequest, opts ...grpc.CallOption) (*MessageResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(RemoveUserAddressResponse)
-	err := c.cc.Invoke(ctx, UserService_RemoveUserAddress_FullMethodName, in, out, cOpts...)
+	out := new(MessageResponse)
+	err := c.cc.Invoke(ctx, UserService_RemovePhoneNumber_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) GetAddresses(ctx context.Context, in *GetAddressesRequest, opts ...grpc.CallOption) (*GetAddressesResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetAddressesResponse)
+	err := c.cc.Invoke(ctx, UserService_GetAddresses_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) AddAddress(ctx context.Context, in *AddAddressRequest, opts ...grpc.CallOption) (*AddAddressResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AddAddressResponse)
+	err := c.cc.Invoke(ctx, UserService_AddAddress_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) RemoveAddress(ctx context.Context, in *RemoveAddressRequest, opts ...grpc.CallOption) (*MessageResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(MessageResponse)
+	err := c.cc.Invoke(ctx, UserService_RemoveAddress_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -100,10 +136,13 @@ func (c *userServiceClient) RemoveUserAddress(ctx context.Context, in *RemoveUse
 // for forward compatibility.
 type UserServiceServer interface {
 	GetUser(context.Context, *GetUserRequest) (*GetUserResponse, error)
-	UpdateUser(context.Context, *UpdateUserRequest) (*UpdateUserResponse, error)
-	GetUserAddresses(context.Context, *GetUserAddressesRequest) (*GetUserAddressesResponse, error)
-	AddUserAddress(context.Context, *AddUserAddressRequest) (*AddUserAddressResponse, error)
-	RemoveUserAddress(context.Context, *RemoveUserAddressRequest) (*RemoveUserAddressResponse, error)
+	GetPhoneNumber(context.Context, *GetPhoneNumberRequest) (*GetPhoneNumberResponse, error)
+	AddPhoneNumber(context.Context, *AddPhoneNumberRequest) (*MessageResponse, error)
+	UpdatePhoneNumber(context.Context, *UpdatePhoneNumberRequest) (*MessageResponse, error)
+	RemovePhoneNumber(context.Context, *RemovePhoneNumberRequest) (*MessageResponse, error)
+	GetAddresses(context.Context, *GetAddressesRequest) (*GetAddressesResponse, error)
+	AddAddress(context.Context, *AddAddressRequest) (*AddAddressResponse, error)
+	RemoveAddress(context.Context, *RemoveAddressRequest) (*MessageResponse, error)
 	mustEmbedUnimplementedUserServiceServer()
 }
 
@@ -117,17 +156,26 @@ type UnimplementedUserServiceServer struct{}
 func (UnimplementedUserServiceServer) GetUser(context.Context, *GetUserRequest) (*GetUserResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetUser not implemented")
 }
-func (UnimplementedUserServiceServer) UpdateUser(context.Context, *UpdateUserRequest) (*UpdateUserResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method UpdateUser not implemented")
+func (UnimplementedUserServiceServer) GetPhoneNumber(context.Context, *GetPhoneNumberRequest) (*GetPhoneNumberResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetPhoneNumber not implemented")
 }
-func (UnimplementedUserServiceServer) GetUserAddresses(context.Context, *GetUserAddressesRequest) (*GetUserAddressesResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method GetUserAddresses not implemented")
+func (UnimplementedUserServiceServer) AddPhoneNumber(context.Context, *AddPhoneNumberRequest) (*MessageResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AddPhoneNumber not implemented")
 }
-func (UnimplementedUserServiceServer) AddUserAddress(context.Context, *AddUserAddressRequest) (*AddUserAddressResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method AddUserAddress not implemented")
+func (UnimplementedUserServiceServer) UpdatePhoneNumber(context.Context, *UpdatePhoneNumberRequest) (*MessageResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method UpdatePhoneNumber not implemented")
 }
-func (UnimplementedUserServiceServer) RemoveUserAddress(context.Context, *RemoveUserAddressRequest) (*RemoveUserAddressResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method RemoveUserAddress not implemented")
+func (UnimplementedUserServiceServer) RemovePhoneNumber(context.Context, *RemovePhoneNumberRequest) (*MessageResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method RemovePhoneNumber not implemented")
+}
+func (UnimplementedUserServiceServer) GetAddresses(context.Context, *GetAddressesRequest) (*GetAddressesResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetAddresses not implemented")
+}
+func (UnimplementedUserServiceServer) AddAddress(context.Context, *AddAddressRequest) (*AddAddressResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AddAddress not implemented")
+}
+func (UnimplementedUserServiceServer) RemoveAddress(context.Context, *RemoveAddressRequest) (*MessageResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method RemoveAddress not implemented")
 }
 func (UnimplementedUserServiceServer) mustEmbedUnimplementedUserServiceServer() {}
 func (UnimplementedUserServiceServer) testEmbeddedByValue()                     {}
@@ -168,74 +216,128 @@ func _UserService_GetUser_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
-func _UserService_UpdateUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateUserRequest)
+func _UserService_GetPhoneNumber_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetPhoneNumberRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(UserServiceServer).UpdateUser(ctx, in)
+		return srv.(UserServiceServer).GetPhoneNumber(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: UserService_UpdateUser_FullMethodName,
+		FullMethod: UserService_GetPhoneNumber_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServiceServer).UpdateUser(ctx, req.(*UpdateUserRequest))
+		return srv.(UserServiceServer).GetPhoneNumber(ctx, req.(*GetPhoneNumberRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _UserService_GetUserAddresses_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetUserAddressesRequest)
+func _UserService_AddPhoneNumber_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddPhoneNumberRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(UserServiceServer).GetUserAddresses(ctx, in)
+		return srv.(UserServiceServer).AddPhoneNumber(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: UserService_GetUserAddresses_FullMethodName,
+		FullMethod: UserService_AddPhoneNumber_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServiceServer).GetUserAddresses(ctx, req.(*GetUserAddressesRequest))
+		return srv.(UserServiceServer).AddPhoneNumber(ctx, req.(*AddPhoneNumberRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _UserService_AddUserAddress_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AddUserAddressRequest)
+func _UserService_UpdatePhoneNumber_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdatePhoneNumberRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(UserServiceServer).AddUserAddress(ctx, in)
+		return srv.(UserServiceServer).UpdatePhoneNumber(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: UserService_AddUserAddress_FullMethodName,
+		FullMethod: UserService_UpdatePhoneNumber_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServiceServer).AddUserAddress(ctx, req.(*AddUserAddressRequest))
+		return srv.(UserServiceServer).UpdatePhoneNumber(ctx, req.(*UpdatePhoneNumberRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _UserService_RemoveUserAddress_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(RemoveUserAddressRequest)
+func _UserService_RemovePhoneNumber_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RemovePhoneNumberRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(UserServiceServer).RemoveUserAddress(ctx, in)
+		return srv.(UserServiceServer).RemovePhoneNumber(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: UserService_RemoveUserAddress_FullMethodName,
+		FullMethod: UserService_RemovePhoneNumber_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServiceServer).RemoveUserAddress(ctx, req.(*RemoveUserAddressRequest))
+		return srv.(UserServiceServer).RemovePhoneNumber(ctx, req.(*RemovePhoneNumberRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_GetAddresses_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetAddressesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).GetAddresses(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_GetAddresses_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).GetAddresses(ctx, req.(*GetAddressesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_AddAddress_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddAddressRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).AddAddress(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_AddAddress_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).AddAddress(ctx, req.(*AddAddressRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_RemoveAddress_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RemoveAddressRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).RemoveAddress(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_RemoveAddress_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).RemoveAddress(ctx, req.(*RemoveAddressRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -252,20 +354,32 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _UserService_GetUser_Handler,
 		},
 		{
-			MethodName: "UpdateUser",
-			Handler:    _UserService_UpdateUser_Handler,
+			MethodName: "GetPhoneNumber",
+			Handler:    _UserService_GetPhoneNumber_Handler,
 		},
 		{
-			MethodName: "GetUserAddresses",
-			Handler:    _UserService_GetUserAddresses_Handler,
+			MethodName: "AddPhoneNumber",
+			Handler:    _UserService_AddPhoneNumber_Handler,
 		},
 		{
-			MethodName: "AddUserAddress",
-			Handler:    _UserService_AddUserAddress_Handler,
+			MethodName: "UpdatePhoneNumber",
+			Handler:    _UserService_UpdatePhoneNumber_Handler,
 		},
 		{
-			MethodName: "RemoveUserAddress",
-			Handler:    _UserService_RemoveUserAddress_Handler,
+			MethodName: "RemovePhoneNumber",
+			Handler:    _UserService_RemovePhoneNumber_Handler,
+		},
+		{
+			MethodName: "GetAddresses",
+			Handler:    _UserService_GetAddresses_Handler,
+		},
+		{
+			MethodName: "AddAddress",
+			Handler:    _UserService_AddAddress_Handler,
+		},
+		{
+			MethodName: "RemoveAddress",
+			Handler:    _UserService_RemoveAddress_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

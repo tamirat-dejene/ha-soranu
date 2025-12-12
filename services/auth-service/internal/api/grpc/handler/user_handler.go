@@ -5,33 +5,83 @@ import (
 
 	"github.com/tamirat-dejene/ha-soranu/services/auth-service/internal/api/grpc/dto"
 	"github.com/tamirat-dejene/ha-soranu/services/auth-service/internal/domain"
-	constants "github.com/tamirat-dejene/ha-soranu/services/auth-service/internal/domain/const"
 	errs "github.com/tamirat-dejene/ha-soranu/services/auth-service/internal/domain/err"
-	"github.com/tamirat-dejene/ha-soranu/shared/pkg/logger"
 	"github.com/tamirat-dejene/ha-soranu/shared/protos/userpb"
-	"go.uber.org/zap"
 	"google.golang.org/grpc"
 )
 
 type userHandler struct {
 	userpb.UnimplementedUserServiceServer
-	userUsecase domain.UserUsecase
+	userUsecase domain.UserUseCase
 }
 
-// AddUserAddress implements userpb.UserServiceServer.
-func (u *userHandler) AddUserAddress(ctx context.Context, req *userpb.AddUserAddressRequest) (*userpb.AddUserAddressResponse, error) {
+// AddAddress implements userpb.UserServiceServer.
+func (u *userHandler) AddAddress(ctx context.Context, req *userpb.AddAddressRequest) (*userpb.AddAddressResponse, error) {
 	if req == nil {
 		return nil, errs.ErrInvalidRequest
 	}
-	// address := dto.AddUserAddressRequestFromProto(req)
-	err := u.userUsecase.AddUserAddress(ctx, req.GetUserId(), req.GetAddress())
+
+	address, err := u.userUsecase.AddAddress(ctx, req.UserId, dto.ToDomainAddress(req))
 	if err != nil {
-		logger.Error("Failed to add user address", zap.String("user_id", req.GetUserId()), zap.Error(err))
-		return nil, errs.ToGRPCError(err)
+		return nil, err
 	}
-	logger.Info("User address added successfully", zap.String("user_id", req.GetUserId()))
-	return &userpb.AddUserAddressResponse{
-		Message: constants.AddressAddSuccessMessage,
+
+	return &userpb.AddAddressResponse{
+		Address: dto.ToProtoAddress(*address),
+	}, nil	
+
+}
+
+// AddPhoneNumber implements userpb.UserServiceServer.
+func (u *userHandler) AddPhoneNumber(ctx context.Context, req *userpb.AddPhoneNumberRequest) (*userpb.MessageResponse, error) {
+	if req == nil {
+		return nil, errs.ErrInvalidRequest
+	}
+
+	err := u.userUsecase.AddPhoneNumber(ctx, req.UserId, req.PhoneNumber)
+	if err != nil {
+		return nil, err
+	}
+
+	return &userpb.MessageResponse{
+		Message: "Phone number added successfully",
+	}, nil
+}
+
+// GetAddresses implements userpb.UserServiceServer.
+func (u *userHandler) GetAddresses(ctx context.Context, req *userpb.GetAddressesRequest) (*userpb.GetAddressesResponse, error) {
+	if req == nil {
+		return nil, errs.ErrInvalidRequest
+	}
+
+	addresses, err := u.userUsecase.GetAddresses(ctx, req.UserId)
+	if err != nil {
+		return nil, err
+	}
+
+	var protoAddresses []*userpb.Address
+	for _, addr := range addresses {
+		protoAddresses = append(protoAddresses, dto.ToProtoAddress(addr))
+	}
+
+	return &userpb.GetAddressesResponse{
+		Addresses: protoAddresses,
+	}, nil
+}
+
+// GetPhoneNumber implements userpb.UserServiceServer.
+func (u *userHandler) GetPhoneNumber(ctx context.Context, req *userpb.GetPhoneNumberRequest) (*userpb.GetPhoneNumberResponse, error) {
+	if req == nil {
+		return nil, errs.ErrInvalidRequest
+	}
+
+	user, err := u.userUsecase.GetUser(ctx, req.UserId)
+	if err != nil {
+		return nil, err
+	}
+
+	return &userpb.GetPhoneNumberResponse{
+		PhoneNumber: user.PhoneNumber,
 	}, nil
 }
 
@@ -41,67 +91,68 @@ func (u *userHandler) GetUser(ctx context.Context, req *userpb.GetUserRequest) (
 		return nil, errs.ErrInvalidRequest
 	}
 
-	user, err := u.userUsecase.GetUserByID(ctx, req.GetUserId())
-	if err != nil {
-		logger.Error("Failed to get user", zap.String("user_id", req.GetUserId()), zap.Error(err))
-		return nil, errs.ToGRPCError(err)
+	user, err := u.userUsecase.GetUser(ctx, req.UserId)
+	if err != nil || user == nil {
+		if err == nil {
+			err = errs.ErrUserNotFound
+		}
+		return nil, err
 	}
 
 	return &userpb.GetUserResponse{
-		User: dto.UserResponseToProto(domain.User{
-			ID:         user.ID,
-			Username:   user.Username,
-			Email:      user.Email,
-			Addressess: user.Addressess,
-		}),
+		User: dto.ToProtoUser(user),
 	}, nil
 }
 
-// GetUserAddresses implements userpb.UserServiceServer.
-func (u *userHandler) GetUserAddresses(ctx context.Context, req *userpb.GetUserAddressesRequest) (*userpb.GetUserAddressesResponse, error) {
+// RemoveAddress implements userpb.UserServiceServer.
+func (u *userHandler) RemoveAddress(ctx context.Context, req *userpb.RemoveAddressRequest) (*userpb.MessageResponse, error) {
 	if req == nil {
 		return nil, errs.ErrInvalidRequest
 	}
 
-	addresses, err := u.userUsecase.GetUserAddresses(ctx, req.GetUserId())
+	err := u.userUsecase.RemoveAddress(ctx, req.UserId, req.AddressId)
 	if err != nil {
-		logger.Error("Failed to get user addresses", zap.String("user_id", req.GetUserId()), zap.Error(err))
-		return nil, errs.ToGRPCError(err)
+		return nil, err
 	}
 
-	var protoAddresses []*userpb.Address
-	for _, addr := range addresses {
-		protoAddresses = append(protoAddresses, &userpb.Address{Value: addr})
-	}
-	return &userpb.GetUserAddressesResponse{
-		Addresses: protoAddresses,
+	return &userpb.MessageResponse{
+		Message: "Address removed successfully",
 	}, nil
 }
 
-// RemoveUserAddress implements userpb.UserServiceServer.
-func (u *userHandler) RemoveUserAddress(ctx context.Context, req *userpb.RemoveUserAddressRequest) (*userpb.RemoveUserAddressResponse, error) {
+// RemovePhoneNumber implements userpb.UserServiceServer.
+func (u *userHandler) RemovePhoneNumber(ctx context.Context, req *userpb.RemovePhoneNumberRequest) (*userpb.MessageResponse, error) {
 	if req == nil {
 		return nil, errs.ErrInvalidRequest
 	}
 
-	err := u.userUsecase.RemoveUserAddress(ctx, req.GetUserId(), req.GetAddress())
+	err := u.userUsecase.RemovePhoneNumber(ctx, req.UserId)
 	if err != nil {
-		logger.Error("Failed to remove user address", zap.String("user_id", req.GetUserId()), zap.Error(err))
-		return nil, errs.ToGRPCError(err)
+		return nil, err
 	}
-	logger.Info("User address removed successfully", zap.String("user_id", req.GetUserId()))
 
-	return &userpb.RemoveUserAddressResponse{
-		Message: constants.AddressRemoveSuccessMessage,
+	return &userpb.MessageResponse{
+		Message: "Phone number removed successfully",
 	}, nil
 }
 
-// UpdateUser implements userpb.UserServiceServer.
-func (u *userHandler) UpdateUser(ctx context.Context, req *userpb.UpdateUserRequest) (*userpb.UpdateUserResponse, error) {
-	panic("unimplemented")
+// UpdatePhoneNumber implements userpb.UserServiceServer.
+func (u *userHandler) UpdatePhoneNumber(ctx context.Context, req *userpb.UpdatePhoneNumberRequest) (*userpb.MessageResponse, error) {
+	if req == nil {
+		return nil, errs.ErrInvalidRequest
+	}
+
+	err := u.userUsecase.UpdatePhoneNumber(ctx, req.UserId, req.PhoneNumber)
+	if err != nil {
+		return nil, err
+	}
+
+	return &userpb.MessageResponse{
+		Message: "Phone number updated successfully",
+	}, nil
 }
 
-func NewGrpcUserHandler(s *grpc.Server, usecase domain.UserUsecase) {
+func NewGrpcUserHandler(s *grpc.Server, usecase domain.UserUseCase) {
 	handler := &userHandler{userUsecase: usecase}
 	userpb.RegisterUserServiceServer(s, handler)
 }

@@ -4,11 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strings"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/tamirat-dejene/ha-soranu/services/auth-service/internal/domain"
-	internalutil "github.com/tamirat-dejene/ha-soranu/services/auth-service/internal/util"
+	errs "github.com/tamirat-dejene/ha-soranu/services/auth-service/internal/domain/err"
 	postgres "github.com/tamirat-dejene/ha-soranu/shared/db/pg"
 )
 
@@ -16,255 +15,293 @@ type userRepository struct {
 	db postgres.PostgresClient
 }
 
-// CreateUser implements domain.UserRepository.
-func (u *userRepository) CreateUser(ctx context.Context, req domain.CreateUserRequest) (string, error) {
-	// Start transaction
-	tx, err := u.db.BeginTx(ctx)
+// GetUserPasswordHashByEmail implements domain.UserRepository.
+func (u *userRepository) GetUserPasswordHashByEmail(ctx context.Context, email string) (string, error) {
+	query := `
+		SELECT password
+		FROM users
+		WHERE email = $1
+	`
+
+	var passwordHash string
+	err := u.db.QueryRow(ctx, query, email).Scan(&passwordHash)
 	if err != nil {
-		return "", fmt.Errorf("failed to start transaction: %w", err)
+		if errors.Is(err, pgx.ErrNoRows) {
+			return "", nil
+		}
+		return "", errs.OptimizedDbError(err)
 	}
 
+	return passwordHash, nil
+}
+
+// AddAddress implements domain.UserRepository.
+func (u *userRepository) AddAddress(ctx context.Context, userID string, address domain.Address) (domain.Address, error) {
+
+	query := `
+		INSERT INTO addresses (
+			user_id, street, city, state, postal_code, country, latitude, longitude
+		)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+		RETURNING address_id, street, city, state, postal_code, country, latitude, longitude, created_at
+	`
+
+	var created domain.Address
+	err := u.db.QueryRow(ctx, query,
+		userID,
+		address.Street,
+		address.City,
+		address.State,
+		address.PostalCode,
+		address.Country,
+		address.Latitude,
+		address.Longitude,
+	).Scan(
+		&created.AddressID,
+		&created.Street,
+		&created.City,
+		&created.State,
+		&created.PostalCode,
+		&created.Country,
+		&created.Latitude,
+		&created.Longitude,
+		&created.CreatedAt,
+	)
+
+	if err != nil {
+		return domain.Address{}, errs.OptimizedDbError(err)
+	}
+
+	return created, nil
+}
+
+// AddPhoneNumber implements domain.UserRepository.
+func (u *userRepository) AddPhoneNumber(ctx context.Context, userID string, phone string) error {
+	query := `
+		UPDATE users
+		SET phone_number = $1
+		WHERE user_id = $2
+	`
+
+	rows_affected, err := u.db.Exec(ctx, query, phone, userID)
+	if err != nil {
+		return errs.OptimizedDbError(err)
+	}
+
+	if rows_affected == 0 {
+		return errors.New("user not found")
+	}
+
+	return nil
+}
+
+// CreateUser implements domain.UserRepository.
+func (u *userRepository) CreateUser(ctx context.Context, user *domain.UserRegister) (*domain.User, error) {
+	tx, err := u.db.BeginTx(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to begin transaction: %w", err)
+	}
+
+	// Signal for successful execution
 	success := false
+
 	defer func() {
 		if p := recover(); p != nil {
 			tx.Rollback(ctx)
 			panic(p)
-		} else if success {
-			if commitErr := tx.Commit(ctx); commitErr != nil {
-				// If commit fails, we can't do much but log it or return error if possible.
-				// However, since we are in a defer, returning named return param error is tricky without naming them.
-				// For now, if commit fails, the caller receives the ID but data might not be there?
-				// Actually, better to just log or ignore since signature doesn't support easy error update here
-				// without named Returns. But defer executes after return.
-				// Let's rely on success being true only if we reached end.
-				// But we should try to propagate commit error if we can.
-				// Let's keep it simple: if success is true, we commit.
-				err = fmt.Errorf("failed to commit transaction: %w", commitErr)
-			}
-		} else {
+		} else if !success {
 			tx.Rollback(ctx)
+		} else {
+			tx.Commit(ctx)
 		}
 	}()
 
-	// Check if user already exists
-	req.Email = strings.ToLower(req.Email)
-	existingRow := tx.QueryRow(ctx, "SELECT id FROM users WHERE email=$1", req.Email)
-	var existingID string
-	err = existingRow.Scan(&existingID)
-
-	if err == nil {
-		// User exists
-		return "", fmt.Errorf("user with email %s already exists", req.Email)
-	} else if err.Error() != "no rows in result set" {
-		// Some other error
-		return "", fmt.Errorf("failed to check existing user: %w", err)
-	}
-
-	// Insert new user
 	query := `
-		INSERT INTO users (email, username, password)
-		VALUES ($1, $2, $3)
-		RETURNING id
+		INSERT INTO users (email, username, phone_number, password)
+		VALUES ($1, $2, $3, $4)
+		RETURNING user_id, email, username, phone_number
 	`
-	hp, _ := internalutil.HashPassword(req.Password)
-	row := tx.QueryRow(ctx, query, req.Email, req.Username, hp)
-	var id int
-	if err := row.Scan(&id); err != nil {
-		return "", fmt.Errorf("failed to create user: %w", err)
+
+	var createdUser domain.User
+	err = tx.QueryRow(ctx, query,
+		user.Email,
+		user.Username,
+		user.PhoneNumber,
+		user.Password,
+	).Scan(
+		&createdUser.UserID,
+		&createdUser.Email,
+		&createdUser.Username,
+		&createdUser.PhoneNumber,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to insert user: %w", errs.OptimizedDbError(err))
 	}
 
-	// Insert addresses if provided
-	for _, addr := range req.Addressess {
-		addrQuery := `INSERT INTO user_addresses (user_id, address) VALUES ($1, $2)`
-		if _, err := tx.Exec(ctx, addrQuery, id, addr); err != nil {
-			return "", fmt.Errorf("failed to insert address: %w", err)
-		}
-	}
+	createdUser.Addresses = []domain.Address{}
 
 	success = true
-	return fmt.Sprintf("%d", id), nil
+	return &createdUser, nil
 }
 
-// GetHashedPassword implements domain.UserRepository.
-func (u *userRepository) GetHashedPassword(ctx context.Context, email string) (string, error) {
-	row := u.db.QueryRow(ctx, "SELECT password FROM users WHERE email=$1", email)
-	var hashedPassword string
-	if err := row.Scan(&hashedPassword); err != nil {
-		if strings.Contains(err.Error(), "no rows") {
-			return "", fmt.Errorf("user not found with email %s", email)
-		}
-		return "", fmt.Errorf("failed to get hashed password: %w", err)
-	}
-	return hashedPassword, nil
-}
+func (u *userRepository) GetAddresses(ctx context.Context, userID string) ([]domain.Address, error) {
+	query := `
+		SELECT address_id, street, city, state, postal_code, country, latitude, longitude, created_at
+		FROM addresses
+		WHERE user_id = $1
+	`
 
-// FindByEmail implements domain.UserRepository.
-func (u *userRepository) FindByEmail(ctx context.Context, email string) (domain.User, error) {
-	email = strings.ToLower(email)
-	query := "SELECT id, email, username FROM users WHERE email=$1"
-	row := u.db.QueryRow(ctx, query, email)
-
-	var user domain.User
-	err := row.Scan(&user.ID, &user.Email, &user.Username)
+	rows, err := u.db.Query(ctx, query, userID)
 	if err != nil {
-		if err == pgx.ErrNoRows {
-			return domain.User{}, fmt.Errorf("user not found with email %s", email)
-		}
-		return domain.User{}, fmt.Errorf("failed to find user by email: %w", err)
-	}
-
-	// Address
-	rows, err := u.db.Query(ctx, "SELECT address FROM user_addresses WHERE user_id=$1", user.ID)
-	if err != nil {
-		return domain.User{}, fmt.Errorf("failed to query addresses: %w", err)
+		return nil, errs.OptimizedDbError(err)
 	}
 	defer rows.Close()
 
+	var addresses []domain.Address
+
 	for rows.Next() {
-		var addr string
-		if err := rows.Scan(&addr); err != nil {
-			return domain.User{}, fmt.Errorf("failed to scan address: %w", err)
-		}
-		user.Addressess = append(user.Addressess, addr)
-	}
-
-	if err := rows.Err(); err != nil {
-		return domain.User{}, fmt.Errorf("error iterating addresses: %w", err)
-	}
-
-	return user, nil
-}
-
-// AddAddress implements domain.UserRepository.
-func (u *userRepository) AddAddress(ctx context.Context, id string, address string) error {
-	query := `INSERT INTO user_addresses (user_id, address) VALUES ($1, $2)`
-	affrow, err := u.db.Exec(ctx, query, id, address)
-	if err != nil {
-		return fmt.Errorf("failed to add address: %w", err)
-	}
-	if affrow == 0 {
-		return fmt.Errorf("unable to add address for user %s", id)
-	}
-	return nil
-}
-
-// Delete implements domain.UserRepository.
-func (u *userRepository) Delete(ctx context.Context, id string) error {
-	tx, err := u.db.BeginTx(ctx)
-	if err != nil {
-		return fmt.Errorf("failed to start transaction: %w", err)
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			tx.Rollback(ctx)
-			panic(r)
-		}
+		var a domain.Address
+		err := rows.Scan(
+			&a.AddressID,
+			&a.Street,
+			&a.City,
+			&a.State,
+			&a.PostalCode,
+			&a.Country,
+			&a.Latitude,
+			&a.Longitude,
+			&a.CreatedAt,
+		)
 		if err != nil {
-			tx.Rollback(ctx)
-		} else {
-			commitErr := tx.Commit(ctx)
-			if commitErr != nil {
-				err = fmt.Errorf("failed to commit transaction: %w", commitErr)
-			}
+			return nil, errs.OptimizedDbError(err)
 		}
-	}()
 
-	// 1. Delete addresses
-	addrQuery := `DELETE FROM user_addresses WHERE user_id=$1`
-	if _, err = tx.Exec(ctx, addrQuery, id); err != nil {
-		return fmt.Errorf("failed to delete addresses for user %s: %w", id, err)
-	}
-
-	// 2. Delete user
-	userQuery := `DELETE FROM users WHERE id=$1`
-	affrow, err := tx.Exec(ctx, userQuery, id)
-	if err != nil {
-		return fmt.Errorf("failed to delete user %s: %w", id, err)
-	}
-
-	rowsAffected := affrow
-	if rowsAffected == 0 {
-		err = errors.New("user not found")
-		return err // Will trigger rollback
-	}
-
-	return nil
-}
-
-// FindByID implements domain.UserRepository.
-func (u *userRepository) FindByID(ctx context.Context, id string) (domain.User, error) {
-	query := "SELECT id, email, username FROM users WHERE id=$1"
-	row := u.db.QueryRow(ctx, query, id)
-
-	var user domain.User
-	err := row.Scan(&user.ID, &user.Email, &user.Username)
-	if err != nil {
-		if err.Error() == "no rows in result set" {
-			return domain.User{}, fmt.Errorf("user not found with ID %s", id)
-		}
-		return domain.User{}, fmt.Errorf("failed to find user by ID: %w", err)
-	}
-
-	return user, nil
-}
-
-// GetAddresses implements domain.UserRepository.
-func (u *userRepository) GetAddresses(ctx context.Context, id string) ([]string, error) {
-	query := "SELECT address FROM user_addresses WHERE user_id=$1"
-	rows, err := u.db.Query(ctx, query, id)
-	if err != nil {
-		return nil, fmt.Errorf("failed to query addresses for user %s: %w", id, err)
-	}
-	defer rows.Close()
-
-	var addresses []string
-	for rows.Next() {
-		var address string
-		if err := rows.Scan(&address); err != nil {
-			return nil, fmt.Errorf("failed to scan address: %w", err)
-		}
-		addresses = append(addresses, address)
-	}
-
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("error during row iteration: %w", err)
+		addresses = append(addresses, a)
 	}
 
 	return addresses, nil
 }
 
-// RemoveAddress implements domain.UserRepository.
-func (u *userRepository) RemoveAddress(ctx context.Context, id string, address string) error {
-	query := `DELETE FROM user_addresses WHERE user_id=$1 AND address=$2`
-	rows_affected, err := u.db.Exec(ctx, query, id, address)
+// GetUserByEmail implements domain.UserRepository.
+func (u *userRepository) GetUserByEmail(ctx context.Context, email string) (*domain.User, error) {
+	query := `
+		SELECT user_id, email, username, phone_number, created_at
+		FROM users
+		WHERE email = $1
+	`
+
+	var user domain.User
+	err := u.db.QueryRow(ctx, query, email).Scan(
+		&user.UserID,
+		&user.Email,
+		&user.Username,
+		&user.PhoneNumber,
+		&user.CreatedAt,
+	)
 	if err != nil {
-		return fmt.Errorf("failed to remove address '%s' for user %s: %w", address, id, err)
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, errs.OptimizedDbError(err)
+	}
+
+	addresses, err := u.GetAddresses(ctx, user.UserID)
+	if err != nil {
+		return nil, err
+	}
+	user.Addresses = addresses
+
+	return &user, nil
+}
+
+// GetUserByID implements domain.UserRepository.
+func (u *userRepository) GetUserByID(ctx context.Context, userID string) (*domain.User, error) {
+	query := `
+		SELECT user_id, email, username, phone_number, created_at
+		FROM users
+		WHERE user_id = $1
+	`
+
+	var user domain.User
+	err := u.db.QueryRow(ctx, query, userID).Scan(
+		&user.UserID,
+		&user.Email,
+		&user.Username,
+		&user.PhoneNumber,
+		&user.CreatedAt,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, errs.OptimizedDbError(err)
+	}
+
+	addresses, err := u.GetAddresses(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	user.Addresses = addresses
+
+	return &user, nil
+}
+
+// RemoveAddress implements domain.UserRepository.
+func (u *userRepository) RemoveAddress(ctx context.Context, userID string, addressID string) error {
+	query := `
+		DELETE FROM addresses
+		WHERE address_id = $1 AND user_id = $2
+	`
+
+	rows_affected, err := u.db.Exec(ctx, query, addressID, userID)
+	if err != nil {
+		return errs.OptimizedDbError(err)
 	}
 
 	if rows_affected == 0 {
-		return fmt.Errorf("address '%s' not found for user %s", address, id)
+		return errors.New("address not found")
 	}
 
 	return nil
 }
 
-// Update implements domain.UserRepository.
-func (u *userRepository) Update(ctx context.Context, user domain.User) (domain.User, error) {
+// RemovePhoneNumber implements domain.UserRepository.
+func (u *userRepository) RemovePhoneNumber(ctx context.Context, userID string) error {
 	query := `
 		UPDATE users
-		SET email=$1, username=$2
-		WHERE id=$3
+		SET phone_number = NULL
+		WHERE user_id = $1
 	`
-	rows_affected, err := u.db.Exec(ctx, query, user.Email, user.Username, user.ID)
+
+	rows_affected, err := u.db.Exec(ctx, query, userID)
 	if err != nil {
-		return domain.User{}, fmt.Errorf("failed to update user %s: %w", user.ID, err)
+		return errs.OptimizedDbError(err)
 	}
 
 	if rows_affected == 0 {
-		return domain.User{}, fmt.Errorf("user not found with ID %s", user.ID)
+		return errors.New("user not found")
 	}
 
-	return u.FindByEmail(ctx, user.Email)
+	return nil
+}
+
+// UpdatePhoneNumber implements domain.UserRepository.
+func (u *userRepository) UpdatePhoneNumber(ctx context.Context, userID string, phone string) error {
+	query := `
+		UPDATE users
+		SET phone_number = $1
+		WHERE user_id = $2
+	`
+	rows_affected, err := u.db.Exec(ctx, query, phone, userID)
+	if err != nil {
+		return errs.OptimizedDbError(err)
+	}
+
+	if rows_affected == 0 {
+		return errors.New("user not found")
+	}
+
+	return nil
 }
 
 // NewUserRepository creates a new instance of UserRepository

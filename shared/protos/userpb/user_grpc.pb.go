@@ -32,14 +32,24 @@ const (
 // UserServiceClient is the client API for UserService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+//
+// UserService defines the user-related RPC methods.
 type UserServiceClient interface {
+	// Retrieves user information by user ID.
 	GetUser(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*GetUserResponse, error)
+	// Manages user's phone number.
 	GetPhoneNumber(ctx context.Context, in *GetPhoneNumberRequest, opts ...grpc.CallOption) (*GetPhoneNumberResponse, error)
+	// Adds, updates, or removes user's phone number.
 	AddPhoneNumber(ctx context.Context, in *AddPhoneNumberRequest, opts ...grpc.CallOption) (*MessageResponse, error)
+	// Updates user's phone number.
 	UpdatePhoneNumber(ctx context.Context, in *UpdatePhoneNumberRequest, opts ...grpc.CallOption) (*MessageResponse, error)
+	// Removes user's phone number.
 	RemovePhoneNumber(ctx context.Context, in *RemovePhoneNumberRequest, opts ...grpc.CallOption) (*MessageResponse, error)
+	// Manages user's addresses.
 	GetAddresses(ctx context.Context, in *GetAddressesRequest, opts ...grpc.CallOption) (*GetAddressesResponse, error)
+	// Adds a new address for the user.
 	AddAddress(ctx context.Context, in *AddAddressRequest, opts ...grpc.CallOption) (*AddAddressResponse, error)
+	// Removes an address from the user.
 	RemoveAddress(ctx context.Context, in *RemoveAddressRequest, opts ...grpc.CallOption) (*MessageResponse, error)
 }
 
@@ -134,14 +144,24 @@ func (c *userServiceClient) RemoveAddress(ctx context.Context, in *RemoveAddress
 // UserServiceServer is the server API for UserService service.
 // All implementations must embed UnimplementedUserServiceServer
 // for forward compatibility.
+//
+// UserService defines the user-related RPC methods.
 type UserServiceServer interface {
+	// Retrieves user information by user ID.
 	GetUser(context.Context, *GetUserRequest) (*GetUserResponse, error)
+	// Manages user's phone number.
 	GetPhoneNumber(context.Context, *GetPhoneNumberRequest) (*GetPhoneNumberResponse, error)
+	// Adds, updates, or removes user's phone number.
 	AddPhoneNumber(context.Context, *AddPhoneNumberRequest) (*MessageResponse, error)
+	// Updates user's phone number.
 	UpdatePhoneNumber(context.Context, *UpdatePhoneNumberRequest) (*MessageResponse, error)
+	// Removes user's phone number.
 	RemovePhoneNumber(context.Context, *RemovePhoneNumberRequest) (*MessageResponse, error)
+	// Manages user's addresses.
 	GetAddresses(context.Context, *GetAddressesRequest) (*GetAddressesResponse, error)
+	// Adds a new address for the user.
 	AddAddress(context.Context, *AddAddressRequest) (*AddAddressResponse, error)
+	// Removes an address from the user.
 	RemoveAddress(context.Context, *RemoveAddressRequest) (*MessageResponse, error)
 	mustEmbedUnimplementedUserServiceServer()
 }

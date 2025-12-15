@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -10,25 +11,18 @@ import (
 	"golang.org/x/text/language"
 )
 
+// Directory structure aligned with services/auth-service
 var structure = []string{
-	"cmd/http",
-	"cmd/grpc",
-	"db/migrations",
+	"cmd",
 	"docs",
-	"proto",
-
-	"internal/api/http",
-	"internal/api/grpc/pb",
-	"internal/config",
+	"internal/api/grpc/dto",
+	"internal/api/grpc/handler",
+	"internal/api/grpc/interceptor",
 	"internal/domain",
-	"internal/infra/db",
-	"internal/infra/redis",
-	"internal/server",
+	"internal/repository",
 	"internal/usecase",
 	"internal/util",
-
-	"shared/pkg/logger",
-	"shared/pkg/errors",
+	"migrations",
 	"test",
 }
 
@@ -64,10 +58,12 @@ func main() {
 		fmt.Printf("Created: %s\n", path)
 	}
 
-	// Create boilerplate entrypoints
-	createFile(filepath.Join(root, "cmd", "http", "main.go"), httpMainTemplate(service))
-	createFile(filepath.Join(root, "cmd", "grpc", "main.go"), grpcMainTemplate(service))
-	createFile(filepath.Join(root, "Makefile"), makefileTemplate())
+	// Create boilerplate files similar to auth-service
+	modPath := modulePath()
+	createFile(filepath.Join(root, "cmd", "main.go"), mainTemplate(service))
+	createFile(filepath.Join(root, "env.go"), envTemplate(service))
+	createFile(filepath.Join(root, "migrations", "migrate.go"), migrateTemplate(service, modPath))
+	createFile(filepath.Join(root, "internal", "api", "grpc", "interceptor", "logging_interceptor.go"), interceptorTemplate())
 	createFile(filepath.Join(root, "README.md"), readmeTemplate(service))
 
 	fmt.Println("\nDone! Service skeleton created.")
@@ -87,85 +83,198 @@ func createFile(path, content string) {
 	fmt.Printf("Created file: %s\n", path)
 }
 
-func httpMainTemplate(service string) string {
+func mainTemplate(service string) string {
+	// derive env prefix from service (first token before '-')
+	parts := strings.Split(service, "-")
+	prefix := strings.ToUpper(parts[0])
 	return fmt.Sprintf(`package main
 
 import (
 	"fmt"
-	"log"
-	"net/http"
-)
-
-func main() {
-	fmt.Println("Starting %s HTTP service on :8080...")
-
-	// TODO: Load config, setup logger, DI, routes
-	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
-		_, _ = w.Write([]byte("OK"))
-	})
-
-	if err := http.ListenAndServe(":8080", nil); err != nil {
-		log.Fatalf("HTTP server failed: %%v", err)
-	}
-}
-`, service)
-}
-
-func grpcMainTemplate(service string) string {
-	return fmt.Sprintf(`package main
-
-import (
-	"fmt"
-	"log"
 	"net"
 
+	"%s/shared/pkg/logger"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
+
+	svc "%s/services/%s"
 )
 
 func main() {
-	fmt.Println("Starting %s gRPC service on :9090...")
-
-	lis, err := net.Listen("tcp", ":9090")
+	// 1. Load Configuration
+	env, err := svc.GetEnv()
 	if err != nil {
-		log.Fatalf("failed to listen: %%v", err)
+		panic(err)
+	}
+
+	// 2. Initialize Logger
+	logger.InitLogger(env.SRV_ENV)
+	defer logger.Log.Sync()
+	logger.Info("%s service is starting...", zap.String("env", env.SRV_ENV))
+
+	// 3. Start gRPC Server
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%%s", env.%s_SRV_PORT))
+	if err != nil {
+		logger.Fatal("failed to listen", zap.Error(err))
 	}
 
 	s := grpc.NewServer()
-
 	// TODO: Register protobuf services
-	// pb.RegisterYourServiceServer(s, &handler.YourService{})
 
+	logger.Info("Service listening", zap.String("port", env.%s_SRV_PORT))
 	if err := s.Serve(lis); err != nil {
-		log.Fatalf("gRPC server failed: %%v", err)
+		logger.Fatal("failed to serve", zap.Error(err))
 	}
 }
-`, service)
+`, modulePath(), modulePath(), service, service, serviceEnvPrefix(prefix), serviceEnvPrefix(prefix))
 }
 
-func makefileTemplate() string {
-	return `run-http:
-	go run ./cmd/http
+func envTemplate(service string) string {
+	pkg := strings.ReplaceAll(service, "-", "")
+	parts := strings.Split(service, "-")
+	prefix := strings.ToUpper(parts[0])
+	return fmt.Sprintf(`package %s
 
-run-grpc:
-	go run ./cmd/grpc
+import (
+	"log"
+	"os"
+	"strconv"
+)
 
-proto-gen:
-	protoc -I proto \
-		--go_out=paths=source_relative:./internal/api/grpc/pb \
-		--go-grpc_out=paths=source_relative:./internal/api/grpc/pb \
-		proto/*.proto
+type Env struct {
+	// Service settings
+	SRV_ENV       string `+"`mapstructure:\"SRV_ENV\"`"+`
+	%s_SRV_NAME string `+"`mapstructure:\"%s_SRV_NAME\"`"+`
+	%s_SRV_PORT string `+"`mapstructure:\"%s_SRV_PORT\"`"+`
 
-test:
-	go test ./... -v
+	// Database settings
+	DBHost     string `+"`mapstructure:\"POSTGRES_HOST\"`"+`
+	DBPort     string `+"`mapstructure:\"POSTGRES_PORT\"`"+`
+	DBUser     string `+"`mapstructure:\"POSTGRES_USER\"`"+`
+	DBPassword string `+"`mapstructure:\"POSTGRES_PASSWORD\"`"+`
+	DBName     string `+"`mapstructure:\"POSTGRES_DB\"`"+`
 
-lint:
-	golangci-lint run
+	// Redis settings
+	RedisHOST     string `+"`mapstructure:\"REDIS_HOST\"`"+`
+	RedisPort     int    `+"`mapstructure:\"REDIS_PORT\"`"+`
+	RedisPassword string `+"`mapstructure:\"REDIS_PASSWORD\"`"+`
+	RedisDB       int    `+"`mapstructure:\"REDIS_DB\"`"+`
+}
 
-migrate-up:
-	go run ./cmd/migrate_cmd.go up
+func getString(key string, defaultValue string) string {
+	value := os.Getenv(key)
+	if value == "" {
+		return defaultValue
+	}
+	return value
+}
 
-migrate-down:
-	go run ./cmd/migrate_cmd.go down
+func getInt(key string, defaultValue int) int {
+	valueStr := os.Getenv(key)
+	if valueStr == "" {
+		return defaultValue
+	}
+	value, err := strconv.Atoi(valueStr)
+	if err != nil {
+		log.Printf("Invalid integer for %%s: %%s, using default %%d", key, valueStr, defaultValue)
+		return defaultValue
+	}
+	return value
+}
+
+func GetEnv() (*Env, error) {
+	env := Env{
+		SRV_ENV:       getString("SRV_ENV", "development"),
+		%s_SRV_NAME: getString("%s_SRV_NAME", "%s"),
+		%s_SRV_PORT: getString("%s_SRV_PORT", "9090"),
+		DBHost:        getString("POSTGRES_HOST", "postgres-db"),
+		DBPort:        getString("POSTGRES_PORT", "5432"),
+		DBUser:        getString("POSTGRES_USER", "postgres"),
+		DBPassword:    getString("POSTGRES_PASSWORD", "password"),
+		DBName:        getString("POSTGRES_DB", "%sdb"),
+		RedisHOST:     getString("REDIS_HOST", "localhost"),
+		RedisPort:     getInt("REDIS_PORT", 6379),
+		RedisPassword: getString("REDIS_PASSWORD", ""),
+		RedisDB:       getInt("REDIS_DB", 0),
+	}
+	return &env, nil
+}
+`, pkg, prefix, prefix, prefix, prefix, prefix, prefix, service, prefix, prefix, service)
+}
+
+func migrateTemplate(service, modPath string) string {
+	return fmt.Sprintf(`package migrations
+
+import (
+	"context"
+	"database/sql"
+	"fmt"
+	"strings"
+
+	_ "github.com/jackc/pgx/v5/stdlib"
+	_ "github.com/lib/pq"
+	goose "github.com/pressly/goose/v3"
+	svc "%s/services/%s"
+)
+
+type migrator struct {
+	env svc.Env
+}
+
+func NewMigrator(env svc.Env) *migrator {
+	return &migrator{env: env}
+}
+
+func (f *migrator) Migrate(ctx context.Context, dir string) error {
+	dsn := fmt.Sprintf("postgres://%%s:%%s@%%s:%%s/postgres?sslmode=disable",
+		f.env.DBUser, f.env.DBPassword, f.env.DBHost, f.env.DBPort)
+	db, err := sql.Open("postgres", dsn)
+	if err != nil {
+		return fmt.Errorf("failed to connect to Postgres: %%w", err)
+	}
+	defer db.Close()
+	_, err = db.Exec(fmt.Sprintf("CREATE DATABASE %%s", f.env.DBName))
+	if err != nil {
+		if !strings.Contains(err.Error(), "already exists") {
+			return fmt.Errorf("failed to create database: %%w", err)
+		}
+	}
+	db.Close()
+
+	dsn = fmt.Sprintf("postgres://%%s:%%s@%%s:%%s/%%s?sslmode=disable",
+		f.env.DBUser, f.env.DBPassword, f.env.DBHost, f.env.DBPort, f.env.DBName)
+	db, err = sql.Open("postgres", dsn)
+	if err != nil {
+		return fmt.Errorf("failed to connect to DB: %%w", err)
+	}
+	defer db.Close()
+
+	if err := goose.Up(db, dir); err != nil {
+		return err
+	}
+	return nil
+}
+`, modPath, service)
+}
+
+func interceptorTemplate() string {
+	return `package interceptor
+
+import (
+	"context"
+	"google.golang.org/grpc"
+)
+
+// LoggingInterceptor is a placeholder unary interceptor.
+func LoggingInterceptor(
+	ctx context.Context,
+	req interface{},
+	info *grpc.UnaryServerInfo,
+	handler grpc.UnaryHandler,
+) (interface{}, error) {
+	// TODO: add request logging here
+	return handler(ctx, req)
+}
 `
 }
 
@@ -176,20 +285,35 @@ func readmeTemplate(service string) string {
 		"# %s Service\n\n"+
 			"This is the **%s microservice**, generated using a Clean Architecture skeleton.\n\n"+
 			"## Structure\n\n"+
-			"- `cmd/` – entrypoints (HTTP/gRPC)\n"+
-			"- `internal/` – core business logic\n"+
-			"- `proto/` – protobuf definitions\n"+
-			"- `db/migrations/` – SQL migrations\n"+
+			"- `cmd/` – service entrypoint (gRPC)\n"+
+			"- `internal/` – API handlers, usecases, repositories\n"+
+			"- `migrations/` – SQL migrations + runner\n"+
 			"- `docs/` – documentation\n"+
-			"- `shared/` – reusable packages\n\n"+
+			"- `test/` – tests\n\n"+
 			"## Commands\n\n"+
 			"```bash\n"+
-			"make proto-gen\n"+
-			"make run-http\n"+
-			"make run-grpc\n"+
+			"# Customize run/build targets for your service\n"+
 			"make test\n"+
-			"make migrate-up\n"+
 			"```\n",
 		title, service,
 	)
 }
+
+// modulePath reads the go.mod in repo root to get the module path.
+func modulePath() string {
+	data, err := ioutil.ReadFile("go.mod")
+	if err != nil {
+		return "github.com/your/module"
+	}
+	lines := strings.Split(string(data), "\n")
+	for _, l := range lines {
+		l = strings.TrimSpace(l)
+		if strings.HasPrefix(l, "module ") {
+			return strings.TrimSpace(strings.TrimPrefix(l, "module "))
+		}
+	}
+	return "github.com/your/module"
+}
+
+// serviceEnvPrefix returns sanitized prefix for env variable fields.
+func serviceEnvPrefix(prefix string) string { return prefix }

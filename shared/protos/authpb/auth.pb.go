@@ -22,6 +22,7 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// AuthTokens holds the access and refresh tokens.
 type AuthTokens struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	AccessToken   string                 `protobuf:"bytes,1,opt,name=access_token,json=accessToken,proto3" json:"access_token,omitempty"`
@@ -74,6 +75,7 @@ func (x *AuthTokens) GetRefreshToken() string {
 	return ""
 }
 
+// UserRegisterRequest contains the information needed to register a new user.
 type UserRegisterRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Email         string                 `protobuf:"bytes,2,opt,name=email,proto3" json:"email,omitempty"`
@@ -142,6 +144,7 @@ func (x *UserRegisterRequest) GetPhoneNumber() string {
 	return ""
 }
 
+// UserRegisterResponse contains the registered user and authentication tokens.
 type UserRegisterResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	User          *userpb.User           `protobuf:"bytes,1,opt,name=user,proto3" json:"user,omitempty"`
@@ -194,6 +197,7 @@ func (x *UserRegisterResponse) GetTokens() *AuthTokens {
 	return nil
 }
 
+// EPLoginRequest contains the email and password for login.
 type EPLoginRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Email         string                 `protobuf:"bytes,1,opt,name=email,proto3" json:"email,omitempty"`
@@ -246,6 +250,7 @@ func (x *EPLoginRequest) GetPassword() string {
 	return ""
 }
 
+// GLoginRequest contains the Google ID token for login.
 type GLoginRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	IdToken       string                 `protobuf:"bytes,1,opt,name=id_token,json=idToken,proto3" json:"id_token,omitempty"`
@@ -290,6 +295,7 @@ func (x *GLoginRequest) GetIdToken() string {
 	return ""
 }
 
+// LoginResponse contains the logged-in user and authentication tokens.
 type LoginResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	User          *userpb.User           `protobuf:"bytes,1,opt,name=user,proto3" json:"user,omitempty"`
@@ -342,6 +348,7 @@ func (x *LoginResponse) GetTokens() *AuthTokens {
 	return nil
 }
 
+// LogoutRequest contains the refresh token to be invalidated.
 type LogoutRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	RefreshToken  string                 `protobuf:"bytes,1,opt,name=refresh_token,json=refreshToken,proto3" json:"refresh_token,omitempty"`
@@ -386,6 +393,7 @@ func (x *LogoutRequest) GetRefreshToken() string {
 	return ""
 }
 
+// RefreshRequest contains the refresh token for obtaining new auth tokens.
 type RefreshRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	RefreshToken  string                 `protobuf:"bytes,1,opt,name=refresh_token,json=refreshToken,proto3" json:"refresh_token,omitempty"`
@@ -430,6 +438,7 @@ func (x *RefreshRequest) GetRefreshToken() string {
 	return ""
 }
 
+// RefreshResponse contains the new authentication tokens.
 type RefreshResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Tokens        *AuthTokens            `protobuf:"bytes,1,opt,name=tokens,proto3" json:"tokens,omitempty"`

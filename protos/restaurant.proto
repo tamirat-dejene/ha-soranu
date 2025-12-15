@@ -1,0 +1,63 @@
+syntax = "proto3";
+
+package restaurant;
+
+option go_package = "github.com/tamirat-dejene/ha-soranu/shared/protos/restaurantpb;restaurantpb";
+
+
+message Restaurant {
+    string restaurant_id = 1;
+    string email = 2;
+    string name = 3;
+    float latitude = 4;
+    float longitude = 5;
+    repeated MenuItem menus = 6;
+}
+
+message MenuItem {
+    string item_id = 1;
+    string name = 2;
+    string description = 3;
+    float price = 4;
+}
+service RestaurantService {
+    rpc RegisterRestaurant(RegisterRestaurantRequest) returns (RegisterRestaurantResponse);
+    rpc GetRestaurant(GetRestaurantRequest) returns (GetRestaurantResponse);
+    rpc ListRestaurants(ListRestaurantsRequest) returns (ListRestaurantsResponse);
+}
+
+message RegisterRestaurantRequest {
+    string email = 1;
+    string name = 2;
+    float latitude = 3;
+    float longitude = 4;
+    repeated RegisterMenuItem menus = 5;
+}
+
+message RegisterMenuItem {
+    string name = 1;
+    string description = 2;
+    float price = 3;
+}
+
+message RegisterRestaurantResponse {
+    Restaurant restaurant = 1;
+}
+
+message GetRestaurantRequest {
+    string restaurant_id = 1;
+}
+
+message GetRestaurantResponse {
+    Restaurant restaurant = 1;
+}
+
+message ListRestaurantsRequest {
+    float latitude = 1;
+    float longitude = 2;
+    float radius_km = 3;
+}
+
+message ListRestaurantsResponse {
+    repeated Restaurant restaurants = 1;
+}

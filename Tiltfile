@@ -23,6 +23,14 @@ local_resource(
     labels="BUILD_ONLY",
 )
 
+local_resource(
+    'build-restaurant-service',
+    cmd='CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o bin/restaurant-service ./services/restaurant-service/cmd',
+    deps=['services/restaurant-service', 'shared', 'go.mod', 'go.sum'],
+    ignore=['**/tmp', '**/.git'],
+    labels="BUILD_ONLY",
+)
+
 # --- Docker Builds with Live Update ---
 docker_build_with_restart(
     'ha-soranu/auth-service',
@@ -48,10 +56,23 @@ docker_build_with_restart(
     ],
 )
 
+docker_build_with_restart(
+    'ha-soranu/restaurant-service',
+    context='.',
+    dockerfile='./infra/dev/docker/restaurant-service.Dockerfile',
+    entrypoint=['./bin/restaurant-service'],
+    only=["./bin/restaurant-service", "./shared/", "./services/restaurant-service/migrations/"],
+    live_update=[
+        sync("./bin/restaurant-service", "/app/bin/restaurant-service"),
+        sync("./shared", "/app/shared"),
+    ],
+)
+
 # --- Kubernetes Resources ---
 k8s_yaml([
     'infra/dev/k8s/api-gateway-deployment.yaml',
     'infra/dev/k8s/auth-service-deployment.yaml',
+    'infra/dev/k8s/restaurant-service-deployment.yaml',
     'infra/dev/k8s/postgres-deployment.yaml',
     'infra/dev/k8s/redis-deployment.yaml',
     'infra/dev/k8s/config-map.yaml',
@@ -62,6 +83,7 @@ k8s_yaml([
 # Expose services to localhost
 k8s_resource('api-gateway', port_forwards=['8080:8080'])
 k8s_resource('auth-service', port_forwards=['9090:9090'])
+k8s_resource('restaurant-service', port_forwards=['9091:9091'])
 k8s_resource('postgres', port_forwards=['5432:5432'])
 k8s_resource('redis', port_forwards=['6379:6379'])
 

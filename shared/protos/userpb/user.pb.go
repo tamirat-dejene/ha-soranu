@@ -22,6 +22,7 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// Address represents a user's address details.
 type Address struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	AddressId     string                 `protobuf:"bytes,1,opt,name=address_id,json=addressId,proto3" json:"address_id,omitempty"`
@@ -130,6 +131,7 @@ func (x *Address) GetCreatedAt() *timestamppb.Timestamp {
 	return nil
 }
 
+// User represents a user in the system.
 type User struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
@@ -214,6 +216,7 @@ func (x *User) GetCreatedAt() *timestamppb.Timestamp {
 	return nil
 }
 
+// MessageResponse is a generic response message.
 type MessageResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Message       string                 `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
@@ -258,6 +261,7 @@ func (x *MessageResponse) GetMessage() string {
 	return ""
 }
 
+// Requests and Responses for UserService RPC methods.
 type GetUserRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
@@ -302,6 +306,7 @@ func (x *GetUserRequest) GetUserId() string {
 	return ""
 }
 
+// GetUserResponse contains the user information.
 type GetUserResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	User          *User                  `protobuf:"bytes,1,opt,name=user,proto3" json:"user,omitempty"`
@@ -346,6 +351,7 @@ func (x *GetUserResponse) GetUser() *User {
 	return nil
 }
 
+// GetPhoneNumberRequest contains the user ID to retrieve the phone number.
 type GetPhoneNumberRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
@@ -390,6 +396,7 @@ func (x *GetPhoneNumberRequest) GetUserId() string {
 	return ""
 }
 
+// GetPhoneNumberResponse contains the user's phone number.
 type GetPhoneNumberResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
@@ -442,6 +449,7 @@ func (x *GetPhoneNumberResponse) GetPhoneNumber() string {
 	return ""
 }
 
+// Requests for managing user's phone number.
 type AddPhoneNumberRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
@@ -494,6 +502,7 @@ func (x *AddPhoneNumberRequest) GetPhoneNumber() string {
 	return ""
 }
 
+// UpdatePhoneNumberRequest contains the user ID and new phone number.
 type UpdatePhoneNumberRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
@@ -546,6 +555,7 @@ func (x *UpdatePhoneNumberRequest) GetPhoneNumber() string {
 	return ""
 }
 
+// RemovePhoneNumberRequest contains the user ID to remove the phone number.
 type RemovePhoneNumberRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
@@ -590,6 +600,7 @@ func (x *RemovePhoneNumberRequest) GetUserId() string {
 	return ""
 }
 
+// Requests and Responses for managing user's addresses.
 type GetAddressesRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
@@ -634,6 +645,7 @@ func (x *GetAddressesRequest) GetUserId() string {
 	return ""
 }
 
+// GetAddressesResponse contains the list of user's addresses.
 type GetAddressesResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Addresses     []*Address             `protobuf:"bytes,1,rep,name=addresses,proto3" json:"addresses,omitempty"`
@@ -678,6 +690,7 @@ func (x *GetAddressesResponse) GetAddresses() []*Address {
 	return nil
 }
 
+// AddAddressRequest contains the details for adding a new address.
 type AddAddressRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
@@ -778,6 +791,7 @@ func (x *AddAddressRequest) GetLongitude() float32 {
 	return 0
 }
 
+// AddAddressResponse contains the newly added address.
 type AddAddressResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Address       *Address               `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
@@ -822,6 +836,7 @@ func (x *AddAddressResponse) GetAddress() *Address {
 	return nil
 }
 
+// RemoveAddressRequest contains the user ID and address ID to be removed.
 type RemoveAddressRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`

@@ -30,11 +30,18 @@ const (
 // AuthServiceClient is the client API for AuthService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+//
+// AuthService defines the authentication-related RPC methods.
 type AuthServiceClient interface {
+	// Registers a new user and returns the created user along with auth tokens.
 	Register(ctx context.Context, in *UserRegisterRequest, opts ...grpc.CallOption) (*UserRegisterResponse, error)
+	// Logs in a user using email and password, returning user info and auth tokens.
 	LoginWithEmailAndPassword(ctx context.Context, in *EPLoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
+	// Logs in a user using Google OAuth token, returning user info and auth tokens.
 	LoginWithGoogle(ctx context.Context, in *GLoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
+	// Logs out a user by invalidating the provided refresh token.
 	Logout(ctx context.Context, in *LogoutRequest, opts ...grpc.CallOption) (*userpb.MessageResponse, error)
+	// Refreshes authentication tokens using a valid refresh token.
 	Refresh(ctx context.Context, in *RefreshRequest, opts ...grpc.CallOption) (*RefreshResponse, error)
 }
 
@@ -99,11 +106,18 @@ func (c *authServiceClient) Refresh(ctx context.Context, in *RefreshRequest, opt
 // AuthServiceServer is the server API for AuthService service.
 // All implementations must embed UnimplementedAuthServiceServer
 // for forward compatibility.
+//
+// AuthService defines the authentication-related RPC methods.
 type AuthServiceServer interface {
+	// Registers a new user and returns the created user along with auth tokens.
 	Register(context.Context, *UserRegisterRequest) (*UserRegisterResponse, error)
+	// Logs in a user using email and password, returning user info and auth tokens.
 	LoginWithEmailAndPassword(context.Context, *EPLoginRequest) (*LoginResponse, error)
+	// Logs in a user using Google OAuth token, returning user info and auth tokens.
 	LoginWithGoogle(context.Context, *GLoginRequest) (*LoginResponse, error)
+	// Logs out a user by invalidating the provided refresh token.
 	Logout(context.Context, *LogoutRequest) (*userpb.MessageResponse, error)
+	// Refreshes authentication tokens using a valid refresh token.
 	Refresh(context.Context, *RefreshRequest) (*RefreshResponse, error)
 	mustEmbedUnimplementedAuthServiceServer()
 }

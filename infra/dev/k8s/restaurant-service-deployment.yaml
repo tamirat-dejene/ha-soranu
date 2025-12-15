@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: restaurant-service
+spec:
+  selector:
+    matchLabels:
+      app: restaurant-service
+  template:
+    metadata:
+      labels:
+        app: restaurant-service
+    spec:
+      containers:
+        - name: restaurant-service
+          image: ha-soranu/restaurant-service
+          imagePullPolicy: IfNotPresent
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+            requests:
+              memory: "64Mi"
+              cpu: "250m"
+          ports:
+            - containerPort: 9090
+
+          # Load all env variables from K8s
+          envFrom:
+            - configMapRef:
+                name: restaurant-service-config
+            - secretRef:
+                name: restaurant-service-secrets
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: restaurant-service
+spec:
+  type: ClusterIP
+  selector:
+    app: restaurant-service
+  ports:
+    - name: grpc
+      port: 9091
+      targetPort: 9091

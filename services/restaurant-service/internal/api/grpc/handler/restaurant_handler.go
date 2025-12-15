@@ -14,8 +14,59 @@ type restaurantHandler struct {
 	restaurantUsecase domain.RestaurantUseCase
 }
 
+// ListRestaurants implements restaurantpb.RestaurantServiceServer.
+func (r *restaurantHandler) ListRestaurants(
+	req *restaurantpb.ListRestaurantsRequest,
+	stream restaurantpb.RestaurantService_ListRestaurantsServer,
+) error {
+
+	if req == nil {
+		return domain.ErrInvalidSearchData
+	}
+
+	ctx := stream.Context()
+
+	restaurants, err := r.restaurantUsecase.GetRestaurants(ctx, domain.Area{
+		LatitudeMin: req.Latitude,
+		LatitudeMax: req.Longitude,
+		RadiusInKm:  req.RadiusKm,
+	})
+	
+	if err != nil {
+		return err
+	}
+
+	for _, res := range restaurants {
+
+		var menuItems []*restaurantpb.MenuItem
+		for _, item := range res.MenuItems {
+			menuItems = append(menuItems, &restaurantpb.MenuItem{
+				ItemId:      item.ItemID,
+				Name:        item.Name,
+				Description: item.Description,
+				Price:       item.Price,
+			})
+		}
+
+		protoRestaurant := &restaurantpb.Restaurant{
+			RestaurantId: res.ID,
+			Email:        res.Email,
+			Name:         res.Name,
+			Latitude:     res.Latitude,
+			Longitude:    res.Longitude,
+			Menus:        menuItems,
+		}
+
+		if err := stream.Send(protoRestaurant); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 // Login implements restaurantpb.RestaurantServiceServer.
-func (r *restaurantHandler) Login(ctx context.Context, req *restaurantpb.RestaurantLoginRequest) (*restaurantpb.RestaurantLoginResponse, error) {
+func (r *restaurantHandler) Login(ctx context.Context, req *restaurantpb.RestaurantLoginRequest) (*restaurantpb.Restaurant, error) {
 	if req == nil {
 		return nil, domain.ErrInvalidRestaurantData
 	}
@@ -25,9 +76,7 @@ func (r *restaurantHandler) Login(ctx context.Context, req *restaurantpb.Restaur
 		return nil, domain.NewDomainError(domain.InvalidCredentialsMessage)
 	}
 
-	return &restaurantpb.RestaurantLoginResponse{
-		Restaurant: dto.DomainRestaurantToProto(rest),
-	}, nil
+	return dto.DomainRestaurantToProto(rest), nil
 }
 
 // AddMenuItem implements restaurantpb.RestaurantServiceServer.
@@ -56,7 +105,7 @@ func (r *restaurantHandler) AddMenuItem(ctx context.Context, req *restaurantpb.A
 }
 
 // GetRestaurant implements restaurantpb.RestaurantServiceServer.
-func (r *restaurantHandler) GetRestaurant(ctx context.Context, req *restaurantpb.GetRestaurantRequest) (*restaurantpb.GetRestaurantResponse, error) {
+func (r *restaurantHandler) GetRestaurant(ctx context.Context, req *restaurantpb.GetRestaurantRequest) (*restaurantpb.Restaurant, error) {
 	if req == nil {
 		return nil, domain.ErrInvalidRestaurantData
 	}
@@ -76,58 +125,18 @@ func (r *restaurantHandler) GetRestaurant(ctx context.Context, req *restaurantpb
 		})
 	}
 
-	return &restaurantpb.GetRestaurantResponse{
-		Restaurant: &restaurantpb.Restaurant{
-			RestaurantId: restaurant.ID,
-			Email:        restaurant.Email,
-			Name:         restaurant.Name,
-			Latitude:     restaurant.Latitude,
-			Longitude:    restaurant.Longitude,
-			Menus:        menuItems,
-		},
-	}, nil
-}
-
-// ListRestaurants implements restaurantpb.RestaurantServiceServer.
-func (r *restaurantHandler) ListRestaurants(ctx context.Context, req *restaurantpb.ListRestaurantsRequest) (*restaurantpb.ListRestaurantsResponse, error) {
-	if req == nil {
-		return nil, domain.ErrInvalidRestaurantData
-	}
-
-	restaurants, err := r.restaurantUsecase.GetRestaurants(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	var protoRestaurants []*restaurantpb.Restaurant
-	for _, res := range restaurants {
-		var menuItems []*restaurantpb.MenuItem
-		for _, item := range res.MenuItems {
-			menuItems = append(menuItems, &restaurantpb.MenuItem{
-				ItemId:      item.ItemID,
-				Name:        item.Name,
-				Description: item.Description,
-				Price:       item.Price,
-			})
-		}
-
-		protoRestaurants = append(protoRestaurants, &restaurantpb.Restaurant{
-			RestaurantId: res.ID,
-			Email:        res.Email,
-			Name:         res.Name,
-			Latitude:     res.Latitude,
-			Longitude:    res.Longitude,
-			Menus:        menuItems,
-		})
-	}
-
-	return &restaurantpb.ListRestaurantsResponse{
-		Restaurants: protoRestaurants,
+	return &restaurantpb.Restaurant{
+		RestaurantId: restaurant.ID,
+		Email:        restaurant.Email,
+		Name:         restaurant.Name,
+		Latitude:     restaurant.Latitude,
+		Longitude:    restaurant.Longitude,
+		Menus:        menuItems,
 	}, nil
 }
 
 // RegisterRestaurant implements restaurantpb.RestaurantServiceServer.
-func (r *restaurantHandler) RegisterRestaurant(ctx context.Context, req *restaurantpb.RegisterRestaurantRequest) (*restaurantpb.RegisterRestaurantResponse, error) {
+func (r *restaurantHandler) RegisterRestaurant(ctx context.Context, req *restaurantpb.RegisterRestaurantRequest) (*restaurantpb.Restaurant, error) {
 	if req == nil {
 		return nil, domain.ErrInvalidRestaurantData
 	}
@@ -144,14 +153,12 @@ func (r *restaurantHandler) RegisterRestaurant(ctx context.Context, req *restaur
 		return nil, err
 	}
 
-	return &restaurantpb.RegisterRestaurantResponse{
-		Restaurant: &restaurantpb.Restaurant{
-			RestaurantId: restaurant.ID,
-			Email:        restaurant.Email,
-			Name:         restaurant.Name,
-			Latitude:     restaurant.Latitude,
-			Longitude:    restaurant.Longitude,
-		},
+	return &restaurantpb.Restaurant{
+		RestaurantId: restaurant.ID,
+		Email:        restaurant.Email,
+		Name:         restaurant.Name,
+		Latitude:     restaurant.Latitude,
+		Longitude:    restaurant.Longitude,
 	}, nil
 }
 

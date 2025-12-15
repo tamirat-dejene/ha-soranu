@@ -128,7 +128,7 @@ func (r *restaurantRepository) GetRestaurantByID(
 
 // GetRestaurants implements domain.RestaurantRepository.
 func (r *restaurantRepository) GetRestaurants(
-	ctx context.Context,
+	ctx context.Context, area domain.Area,
 ) ([]domain.Restaurant, error) {
 
 	query := `

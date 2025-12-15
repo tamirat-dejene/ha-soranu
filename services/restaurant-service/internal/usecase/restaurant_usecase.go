@@ -37,11 +37,11 @@ func (r *restaurantUseCase) GetRestaurantByID(ctx context.Context, restaurantID 
 }
 
 // GetRestaurants implements domain.RestaurantUseCase.
-func (r *restaurantUseCase) GetRestaurants(ctx context.Context) ([]domain.Restaurant, error) {
+func (r *restaurantUseCase) GetRestaurants(ctx context.Context, area domain.Area) ([]domain.Restaurant, error) {
 	c, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
-	return r.repo.GetRestaurants(c)
+	return r.repo.GetRestaurants(c, area)
 }
 
 // RegisterRestaurant implements domain.RestaurantUseCase.

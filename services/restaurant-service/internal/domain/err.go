@@ -6,6 +6,7 @@ const (
 	RestaurantAlreadyExistsMessage  = "Restaurant already exists"
 	InvalidRestaurantDataMessage   = "Invalid restaurant data provided"
 	RestaurantCreationSuccessMessage = "Restaurant created successfully"
+	InvalidSearchDataMessage       = "Invalid search data provided"
 )
 
 var (
@@ -15,6 +16,7 @@ var (
 	ErrInvalidRestaurantData    = NewDomainError(InvalidRestaurantDataMessage)
 	ErrRestaurantCreationFailed = NewDomainError("Failed to create restaurant")
 	ErrMenuItemNotFound         = NewDomainError("Menu item not found")
+	ErrInvalidSearchData       = NewDomainError(InvalidSearchDataMessage)
 )
 
 type DomainError struct {

@@ -21,10 +21,10 @@ message MenuItem {
     float price = 4;
 }
 service RestaurantService {
-    rpc Login(RestaurantLoginRequest) returns (RestaurantLoginResponse);
-    rpc RegisterRestaurant(RegisterRestaurantRequest) returns (RegisterRestaurantResponse);
-    rpc GetRestaurant(GetRestaurantRequest) returns (GetRestaurantResponse);
-    rpc ListRestaurants(ListRestaurantsRequest) returns (ListRestaurantsResponse);
+    rpc Login(RestaurantLoginRequest) returns (Restaurant);
+    rpc RegisterRestaurant(RegisterRestaurantRequest) returns (Restaurant);
+    rpc GetRestaurant(GetRestaurantRequest) returns (Restaurant);
+    rpc ListRestaurants(ListRestaurantsRequest) returns (stream Restaurant);
 
     rpc AddMenuItem(AddMenuItemRequest) returns (MenuItem);
     rpc RemoveMenuItem(RemoveMenuItemRequest) returns (MenuItem);
@@ -34,10 +34,6 @@ service RestaurantService {
 message RestaurantLoginRequest {
     string email = 1;
     string secret_key = 2;
-}
-
-message RestaurantLoginResponse {
-    Restaurant restaurant = 1;
 }
 
 message RegisterRestaurantRequest {
@@ -55,16 +51,8 @@ message RegisterMenuItem {
     float price = 3;
 }
 
-message RegisterRestaurantResponse {
-    Restaurant restaurant = 1;
-}
-
 message GetRestaurantRequest {
     string restaurant_id = 1;
-}
-
-message GetRestaurantResponse {
-    Restaurant restaurant = 1;
 }
 
 message ListRestaurantsRequest {
@@ -72,11 +60,6 @@ message ListRestaurantsRequest {
     float longitude = 2;
     float radius_km = 3;
 }
-
-message ListRestaurantsResponse {
-    repeated Restaurant restaurants = 1;
-}
-
 message AddMenuItemRequest {
     string restaurant_id = 1;
     string name = 2;

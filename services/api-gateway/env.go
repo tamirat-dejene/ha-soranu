@@ -9,9 +9,15 @@ import (
 type Env struct {
 	// Service settings
 	SRV_ENV          string `mapstructure:"SRV_ENV"`
+	API_GATEWAY_PORT string `mapstructure:"API_GATEWAY_PORT"`
+
+	// Auth Service settings
 	AUTH_SRV_NAME    string `mapstructure:"AUTH_SRV_NAME"`
 	AUTH_SRV_PORT    string `mapstructure:"AUTH_SRV_PORT"`
-	API_GATEWAY_PORT string `mapstructure:"API_GATEWAY_PORT"`
+
+	// Restaurant Service settings
+	RESTAURANT_SRV_NAME string `mapstructure:"RESTAURANT_SRV_NAME"`
+	RESTAURANT_SRV_PORT string `mapstructure:"RESTAURANT_SRV_PORT"`
 }
 
 func getString(key string, defaultValue string) string {

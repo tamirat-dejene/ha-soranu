@@ -225,50 +225,6 @@ func (x *RestaurantLoginRequest) GetSecretKey() string {
 	return ""
 }
 
-type RestaurantLoginResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Restaurant    *Restaurant            `protobuf:"bytes,1,opt,name=restaurant,proto3" json:"restaurant,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *RestaurantLoginResponse) Reset() {
-	*x = RestaurantLoginResponse{}
-	mi := &file_restaurant_proto_msgTypes[3]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *RestaurantLoginResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*RestaurantLoginResponse) ProtoMessage() {}
-
-func (x *RestaurantLoginResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_restaurant_proto_msgTypes[3]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use RestaurantLoginResponse.ProtoReflect.Descriptor instead.
-func (*RestaurantLoginResponse) Descriptor() ([]byte, []int) {
-	return file_restaurant_proto_rawDescGZIP(), []int{3}
-}
-
-func (x *RestaurantLoginResponse) GetRestaurant() *Restaurant {
-	if x != nil {
-		return x.Restaurant
-	}
-	return nil
-}
-
 type RegisterRestaurantRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Email         string                 `protobuf:"bytes,1,opt,name=email,proto3" json:"email,omitempty"`
@@ -283,7 +239,7 @@ type RegisterRestaurantRequest struct {
 
 func (x *RegisterRestaurantRequest) Reset() {
 	*x = RegisterRestaurantRequest{}
-	mi := &file_restaurant_proto_msgTypes[4]
+	mi := &file_restaurant_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -295,7 +251,7 @@ func (x *RegisterRestaurantRequest) String() string {
 func (*RegisterRestaurantRequest) ProtoMessage() {}
 
 func (x *RegisterRestaurantRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_restaurant_proto_msgTypes[4]
+	mi := &file_restaurant_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -308,7 +264,7 @@ func (x *RegisterRestaurantRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RegisterRestaurantRequest.ProtoReflect.Descriptor instead.
 func (*RegisterRestaurantRequest) Descriptor() ([]byte, []int) {
-	return file_restaurant_proto_rawDescGZIP(), []int{4}
+	return file_restaurant_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *RegisterRestaurantRequest) GetEmail() string {
@@ -364,7 +320,7 @@ type RegisterMenuItem struct {
 
 func (x *RegisterMenuItem) Reset() {
 	*x = RegisterMenuItem{}
-	mi := &file_restaurant_proto_msgTypes[5]
+	mi := &file_restaurant_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -376,7 +332,7 @@ func (x *RegisterMenuItem) String() string {
 func (*RegisterMenuItem) ProtoMessage() {}
 
 func (x *RegisterMenuItem) ProtoReflect() protoreflect.Message {
-	mi := &file_restaurant_proto_msgTypes[5]
+	mi := &file_restaurant_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -389,7 +345,7 @@ func (x *RegisterMenuItem) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RegisterMenuItem.ProtoReflect.Descriptor instead.
 func (*RegisterMenuItem) Descriptor() ([]byte, []int) {
-	return file_restaurant_proto_rawDescGZIP(), []int{5}
+	return file_restaurant_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *RegisterMenuItem) GetName() string {
@@ -413,50 +369,6 @@ func (x *RegisterMenuItem) GetPrice() float32 {
 	return 0
 }
 
-type RegisterRestaurantResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Restaurant    *Restaurant            `protobuf:"bytes,1,opt,name=restaurant,proto3" json:"restaurant,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *RegisterRestaurantResponse) Reset() {
-	*x = RegisterRestaurantResponse{}
-	mi := &file_restaurant_proto_msgTypes[6]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *RegisterRestaurantResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*RegisterRestaurantResponse) ProtoMessage() {}
-
-func (x *RegisterRestaurantResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_restaurant_proto_msgTypes[6]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use RegisterRestaurantResponse.ProtoReflect.Descriptor instead.
-func (*RegisterRestaurantResponse) Descriptor() ([]byte, []int) {
-	return file_restaurant_proto_rawDescGZIP(), []int{6}
-}
-
-func (x *RegisterRestaurantResponse) GetRestaurant() *Restaurant {
-	if x != nil {
-		return x.Restaurant
-	}
-	return nil
-}
-
 type GetRestaurantRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	RestaurantId  string                 `protobuf:"bytes,1,opt,name=restaurant_id,json=restaurantId,proto3" json:"restaurant_id,omitempty"`
@@ -466,7 +378,7 @@ type GetRestaurantRequest struct {
 
 func (x *GetRestaurantRequest) Reset() {
 	*x = GetRestaurantRequest{}
-	mi := &file_restaurant_proto_msgTypes[7]
+	mi := &file_restaurant_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -478,7 +390,7 @@ func (x *GetRestaurantRequest) String() string {
 func (*GetRestaurantRequest) ProtoMessage() {}
 
 func (x *GetRestaurantRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_restaurant_proto_msgTypes[7]
+	mi := &file_restaurant_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -491,7 +403,7 @@ func (x *GetRestaurantRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetRestaurantRequest.ProtoReflect.Descriptor instead.
 func (*GetRestaurantRequest) Descriptor() ([]byte, []int) {
-	return file_restaurant_proto_rawDescGZIP(), []int{7}
+	return file_restaurant_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *GetRestaurantRequest) GetRestaurantId() string {
@@ -499,50 +411,6 @@ func (x *GetRestaurantRequest) GetRestaurantId() string {
 		return x.RestaurantId
 	}
 	return ""
-}
-
-type GetRestaurantResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Restaurant    *Restaurant            `protobuf:"bytes,1,opt,name=restaurant,proto3" json:"restaurant,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetRestaurantResponse) Reset() {
-	*x = GetRestaurantResponse{}
-	mi := &file_restaurant_proto_msgTypes[8]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetRestaurantResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetRestaurantResponse) ProtoMessage() {}
-
-func (x *GetRestaurantResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_restaurant_proto_msgTypes[8]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetRestaurantResponse.ProtoReflect.Descriptor instead.
-func (*GetRestaurantResponse) Descriptor() ([]byte, []int) {
-	return file_restaurant_proto_rawDescGZIP(), []int{8}
-}
-
-func (x *GetRestaurantResponse) GetRestaurant() *Restaurant {
-	if x != nil {
-		return x.Restaurant
-	}
-	return nil
 }
 
 type ListRestaurantsRequest struct {
@@ -556,7 +424,7 @@ type ListRestaurantsRequest struct {
 
 func (x *ListRestaurantsRequest) Reset() {
 	*x = ListRestaurantsRequest{}
-	mi := &file_restaurant_proto_msgTypes[9]
+	mi := &file_restaurant_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -568,7 +436,7 @@ func (x *ListRestaurantsRequest) String() string {
 func (*ListRestaurantsRequest) ProtoMessage() {}
 
 func (x *ListRestaurantsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_restaurant_proto_msgTypes[9]
+	mi := &file_restaurant_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -581,7 +449,7 @@ func (x *ListRestaurantsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListRestaurantsRequest.ProtoReflect.Descriptor instead.
 func (*ListRestaurantsRequest) Descriptor() ([]byte, []int) {
-	return file_restaurant_proto_rawDescGZIP(), []int{9}
+	return file_restaurant_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *ListRestaurantsRequest) GetLatitude() float32 {
@@ -605,50 +473,6 @@ func (x *ListRestaurantsRequest) GetRadiusKm() float32 {
 	return 0
 }
 
-type ListRestaurantsResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Restaurants   []*Restaurant          `protobuf:"bytes,1,rep,name=restaurants,proto3" json:"restaurants,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *ListRestaurantsResponse) Reset() {
-	*x = ListRestaurantsResponse{}
-	mi := &file_restaurant_proto_msgTypes[10]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *ListRestaurantsResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ListRestaurantsResponse) ProtoMessage() {}
-
-func (x *ListRestaurantsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_restaurant_proto_msgTypes[10]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ListRestaurantsResponse.ProtoReflect.Descriptor instead.
-func (*ListRestaurantsResponse) Descriptor() ([]byte, []int) {
-	return file_restaurant_proto_rawDescGZIP(), []int{10}
-}
-
-func (x *ListRestaurantsResponse) GetRestaurants() []*Restaurant {
-	if x != nil {
-		return x.Restaurants
-	}
-	return nil
-}
-
 type AddMenuItemRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	RestaurantId  string                 `protobuf:"bytes,1,opt,name=restaurant_id,json=restaurantId,proto3" json:"restaurant_id,omitempty"`
@@ -661,7 +485,7 @@ type AddMenuItemRequest struct {
 
 func (x *AddMenuItemRequest) Reset() {
 	*x = AddMenuItemRequest{}
-	mi := &file_restaurant_proto_msgTypes[11]
+	mi := &file_restaurant_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -673,7 +497,7 @@ func (x *AddMenuItemRequest) String() string {
 func (*AddMenuItemRequest) ProtoMessage() {}
 
 func (x *AddMenuItemRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_restaurant_proto_msgTypes[11]
+	mi := &file_restaurant_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -686,7 +510,7 @@ func (x *AddMenuItemRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddMenuItemRequest.ProtoReflect.Descriptor instead.
 func (*AddMenuItemRequest) Descriptor() ([]byte, []int) {
-	return file_restaurant_proto_rawDescGZIP(), []int{11}
+	return file_restaurant_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *AddMenuItemRequest) GetRestaurantId() string {
@@ -727,7 +551,7 @@ type RemoveMenuItemRequest struct {
 
 func (x *RemoveMenuItemRequest) Reset() {
 	*x = RemoveMenuItemRequest{}
-	mi := &file_restaurant_proto_msgTypes[12]
+	mi := &file_restaurant_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -739,7 +563,7 @@ func (x *RemoveMenuItemRequest) String() string {
 func (*RemoveMenuItemRequest) ProtoMessage() {}
 
 func (x *RemoveMenuItemRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_restaurant_proto_msgTypes[12]
+	mi := &file_restaurant_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -752,7 +576,7 @@ func (x *RemoveMenuItemRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RemoveMenuItemRequest.ProtoReflect.Descriptor instead.
 func (*RemoveMenuItemRequest) Descriptor() ([]byte, []int) {
-	return file_restaurant_proto_rawDescGZIP(), []int{12}
+	return file_restaurant_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *RemoveMenuItemRequest) GetRestaurantId() string {
@@ -782,7 +606,7 @@ type UpdateMenuItemRequest struct {
 
 func (x *UpdateMenuItemRequest) Reset() {
 	*x = UpdateMenuItemRequest{}
-	mi := &file_restaurant_proto_msgTypes[13]
+	mi := &file_restaurant_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -794,7 +618,7 @@ func (x *UpdateMenuItemRequest) String() string {
 func (*UpdateMenuItemRequest) ProtoMessage() {}
 
 func (x *UpdateMenuItemRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_restaurant_proto_msgTypes[13]
+	mi := &file_restaurant_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -807,7 +631,7 @@ func (x *UpdateMenuItemRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateMenuItemRequest.ProtoReflect.Descriptor instead.
 func (*UpdateMenuItemRequest) Descriptor() ([]byte, []int) {
-	return file_restaurant_proto_rawDescGZIP(), []int{13}
+	return file_restaurant_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *UpdateMenuItemRequest) GetRestaurantId() string {
@@ -867,11 +691,7 @@ const file_restaurant_proto_rawDesc = "" +
 	"\x16RestaurantLoginRequest\x12\x14\n" +
 	"\x05email\x18\x01 \x01(\tR\x05email\x12\x1d\n" +
 	"\n" +
-	"secret_key\x18\x02 \x01(\tR\tsecretKey\"Q\n" +
-	"\x17RestaurantLoginResponse\x126\n" +
-	"\n" +
-	"restaurant\x18\x01 \x01(\v2\x16.restaurant.RestaurantR\n" +
-	"restaurant\"\xd2\x01\n" +
+	"secret_key\x18\x02 \x01(\tR\tsecretKey\"\xd2\x01\n" +
 	"\x19RegisterRestaurantRequest\x12\x14\n" +
 	"\x05email\x18\x01 \x01(\tR\x05email\x12\x1d\n" +
 	"\n" +
@@ -883,23 +703,13 @@ const file_restaurant_proto_rawDesc = "" +
 	"\x10RegisterMenuItem\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12 \n" +
 	"\vdescription\x18\x02 \x01(\tR\vdescription\x12\x14\n" +
-	"\x05price\x18\x03 \x01(\x02R\x05price\"T\n" +
-	"\x1aRegisterRestaurantResponse\x126\n" +
-	"\n" +
-	"restaurant\x18\x01 \x01(\v2\x16.restaurant.RestaurantR\n" +
-	"restaurant\";\n" +
+	"\x05price\x18\x03 \x01(\x02R\x05price\";\n" +
 	"\x14GetRestaurantRequest\x12#\n" +
-	"\rrestaurant_id\x18\x01 \x01(\tR\frestaurantId\"O\n" +
-	"\x15GetRestaurantResponse\x126\n" +
-	"\n" +
-	"restaurant\x18\x01 \x01(\v2\x16.restaurant.RestaurantR\n" +
-	"restaurant\"o\n" +
+	"\rrestaurant_id\x18\x01 \x01(\tR\frestaurantId\"o\n" +
 	"\x16ListRestaurantsRequest\x12\x1a\n" +
 	"\blatitude\x18\x01 \x01(\x02R\blatitude\x12\x1c\n" +
 	"\tlongitude\x18\x02 \x01(\x02R\tlongitude\x12\x1b\n" +
-	"\tradius_km\x18\x03 \x01(\x02R\bradiusKm\"S\n" +
-	"\x17ListRestaurantsResponse\x128\n" +
-	"\vrestaurants\x18\x01 \x03(\v2\x16.restaurant.RestaurantR\vrestaurants\"\x85\x01\n" +
+	"\tradius_km\x18\x03 \x01(\x02R\bradiusKm\"\x85\x01\n" +
 	"\x12AddMenuItemRequest\x12#\n" +
 	"\rrestaurant_id\x18\x01 \x01(\tR\frestaurantId\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12 \n" +
@@ -913,12 +723,12 @@ const file_restaurant_proto_rawDesc = "" +
 	"\aitem_id\x18\x02 \x01(\tR\x06itemId\x12\x12\n" +
 	"\x04name\x18\x03 \x01(\tR\x04name\x12 \n" +
 	"\vdescription\x18\x04 \x01(\tR\vdescription\x12\x14\n" +
-	"\x05price\x18\x05 \x01(\x02R\x05price2\xd7\x04\n" +
-	"\x11RestaurantService\x12P\n" +
-	"\x05Login\x12\".restaurant.RestaurantLoginRequest\x1a#.restaurant.RestaurantLoginResponse\x12c\n" +
-	"\x12RegisterRestaurant\x12%.restaurant.RegisterRestaurantRequest\x1a&.restaurant.RegisterRestaurantResponse\x12T\n" +
-	"\rGetRestaurant\x12 .restaurant.GetRestaurantRequest\x1a!.restaurant.GetRestaurantResponse\x12Z\n" +
-	"\x0fListRestaurants\x12\".restaurant.ListRestaurantsRequest\x1a#.restaurant.ListRestaurantsResponse\x12C\n" +
+	"\x05price\x18\x05 \x01(\x02R\x05price2\xa4\x04\n" +
+	"\x11RestaurantService\x12C\n" +
+	"\x05Login\x12\".restaurant.RestaurantLoginRequest\x1a\x16.restaurant.Restaurant\x12S\n" +
+	"\x12RegisterRestaurant\x12%.restaurant.RegisterRestaurantRequest\x1a\x16.restaurant.Restaurant\x12I\n" +
+	"\rGetRestaurant\x12 .restaurant.GetRestaurantRequest\x1a\x16.restaurant.Restaurant\x12O\n" +
+	"\x0fListRestaurants\x12\".restaurant.ListRestaurantsRequest\x1a\x16.restaurant.Restaurant0\x01\x12C\n" +
 	"\vAddMenuItem\x12\x1e.restaurant.AddMenuItemRequest\x1a\x14.restaurant.MenuItem\x12I\n" +
 	"\x0eRemoveMenuItem\x12!.restaurant.RemoveMenuItemRequest\x1a\x14.restaurant.MenuItem\x12I\n" +
 	"\x0eUpdateMenuItem\x12!.restaurant.UpdateMenuItemRequest\x1a\x14.restaurant.MenuItemBMZKgithub.com/tamirat-dejene/ha-soranu/shared/protos/restaurantpb;restaurantpbb\x06proto3"
@@ -935,49 +745,41 @@ func file_restaurant_proto_rawDescGZIP() []byte {
 	return file_restaurant_proto_rawDescData
 }
 
-var file_restaurant_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
+var file_restaurant_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
 var file_restaurant_proto_goTypes = []any{
-	(*Restaurant)(nil),                 // 0: restaurant.Restaurant
-	(*MenuItem)(nil),                   // 1: restaurant.MenuItem
-	(*RestaurantLoginRequest)(nil),     // 2: restaurant.RestaurantLoginRequest
-	(*RestaurantLoginResponse)(nil),    // 3: restaurant.RestaurantLoginResponse
-	(*RegisterRestaurantRequest)(nil),  // 4: restaurant.RegisterRestaurantRequest
-	(*RegisterMenuItem)(nil),           // 5: restaurant.RegisterMenuItem
-	(*RegisterRestaurantResponse)(nil), // 6: restaurant.RegisterRestaurantResponse
-	(*GetRestaurantRequest)(nil),       // 7: restaurant.GetRestaurantRequest
-	(*GetRestaurantResponse)(nil),      // 8: restaurant.GetRestaurantResponse
-	(*ListRestaurantsRequest)(nil),     // 9: restaurant.ListRestaurantsRequest
-	(*ListRestaurantsResponse)(nil),    // 10: restaurant.ListRestaurantsResponse
-	(*AddMenuItemRequest)(nil),         // 11: restaurant.AddMenuItemRequest
-	(*RemoveMenuItemRequest)(nil),      // 12: restaurant.RemoveMenuItemRequest
-	(*UpdateMenuItemRequest)(nil),      // 13: restaurant.UpdateMenuItemRequest
+	(*Restaurant)(nil),                // 0: restaurant.Restaurant
+	(*MenuItem)(nil),                  // 1: restaurant.MenuItem
+	(*RestaurantLoginRequest)(nil),    // 2: restaurant.RestaurantLoginRequest
+	(*RegisterRestaurantRequest)(nil), // 3: restaurant.RegisterRestaurantRequest
+	(*RegisterMenuItem)(nil),          // 4: restaurant.RegisterMenuItem
+	(*GetRestaurantRequest)(nil),      // 5: restaurant.GetRestaurantRequest
+	(*ListRestaurantsRequest)(nil),    // 6: restaurant.ListRestaurantsRequest
+	(*AddMenuItemRequest)(nil),        // 7: restaurant.AddMenuItemRequest
+	(*RemoveMenuItemRequest)(nil),     // 8: restaurant.RemoveMenuItemRequest
+	(*UpdateMenuItemRequest)(nil),     // 9: restaurant.UpdateMenuItemRequest
 }
 var file_restaurant_proto_depIdxs = []int32{
-	1,  // 0: restaurant.Restaurant.menus:type_name -> restaurant.MenuItem
-	0,  // 1: restaurant.RestaurantLoginResponse.restaurant:type_name -> restaurant.Restaurant
-	5,  // 2: restaurant.RegisterRestaurantRequest.menus:type_name -> restaurant.RegisterMenuItem
-	0,  // 3: restaurant.RegisterRestaurantResponse.restaurant:type_name -> restaurant.Restaurant
-	0,  // 4: restaurant.GetRestaurantResponse.restaurant:type_name -> restaurant.Restaurant
-	0,  // 5: restaurant.ListRestaurantsResponse.restaurants:type_name -> restaurant.Restaurant
-	2,  // 6: restaurant.RestaurantService.Login:input_type -> restaurant.RestaurantLoginRequest
-	4,  // 7: restaurant.RestaurantService.RegisterRestaurant:input_type -> restaurant.RegisterRestaurantRequest
-	7,  // 8: restaurant.RestaurantService.GetRestaurant:input_type -> restaurant.GetRestaurantRequest
-	9,  // 9: restaurant.RestaurantService.ListRestaurants:input_type -> restaurant.ListRestaurantsRequest
-	11, // 10: restaurant.RestaurantService.AddMenuItem:input_type -> restaurant.AddMenuItemRequest
-	12, // 11: restaurant.RestaurantService.RemoveMenuItem:input_type -> restaurant.RemoveMenuItemRequest
-	13, // 12: restaurant.RestaurantService.UpdateMenuItem:input_type -> restaurant.UpdateMenuItemRequest
-	3,  // 13: restaurant.RestaurantService.Login:output_type -> restaurant.RestaurantLoginResponse
-	6,  // 14: restaurant.RestaurantService.RegisterRestaurant:output_type -> restaurant.RegisterRestaurantResponse
-	8,  // 15: restaurant.RestaurantService.GetRestaurant:output_type -> restaurant.GetRestaurantResponse
-	10, // 16: restaurant.RestaurantService.ListRestaurants:output_type -> restaurant.ListRestaurantsResponse
-	1,  // 17: restaurant.RestaurantService.AddMenuItem:output_type -> restaurant.MenuItem
-	1,  // 18: restaurant.RestaurantService.RemoveMenuItem:output_type -> restaurant.MenuItem
-	1,  // 19: restaurant.RestaurantService.UpdateMenuItem:output_type -> restaurant.MenuItem
-	13, // [13:20] is the sub-list for method output_type
-	6,  // [6:13] is the sub-list for method input_type
-	6,  // [6:6] is the sub-list for extension type_name
-	6,  // [6:6] is the sub-list for extension extendee
-	0,  // [0:6] is the sub-list for field type_name
+	1, // 0: restaurant.Restaurant.menus:type_name -> restaurant.MenuItem
+	4, // 1: restaurant.RegisterRestaurantRequest.menus:type_name -> restaurant.RegisterMenuItem
+	2, // 2: restaurant.RestaurantService.Login:input_type -> restaurant.RestaurantLoginRequest
+	3, // 3: restaurant.RestaurantService.RegisterRestaurant:input_type -> restaurant.RegisterRestaurantRequest
+	5, // 4: restaurant.RestaurantService.GetRestaurant:input_type -> restaurant.GetRestaurantRequest
+	6, // 5: restaurant.RestaurantService.ListRestaurants:input_type -> restaurant.ListRestaurantsRequest
+	7, // 6: restaurant.RestaurantService.AddMenuItem:input_type -> restaurant.AddMenuItemRequest
+	8, // 7: restaurant.RestaurantService.RemoveMenuItem:input_type -> restaurant.RemoveMenuItemRequest
+	9, // 8: restaurant.RestaurantService.UpdateMenuItem:input_type -> restaurant.UpdateMenuItemRequest
+	0, // 9: restaurant.RestaurantService.Login:output_type -> restaurant.Restaurant
+	0, // 10: restaurant.RestaurantService.RegisterRestaurant:output_type -> restaurant.Restaurant
+	0, // 11: restaurant.RestaurantService.GetRestaurant:output_type -> restaurant.Restaurant
+	0, // 12: restaurant.RestaurantService.ListRestaurants:output_type -> restaurant.Restaurant
+	1, // 13: restaurant.RestaurantService.AddMenuItem:output_type -> restaurant.MenuItem
+	1, // 14: restaurant.RestaurantService.RemoveMenuItem:output_type -> restaurant.MenuItem
+	1, // 15: restaurant.RestaurantService.UpdateMenuItem:output_type -> restaurant.MenuItem
+	9, // [9:16] is the sub-list for method output_type
+	2, // [2:9] is the sub-list for method input_type
+	2, // [2:2] is the sub-list for extension type_name
+	2, // [2:2] is the sub-list for extension extendee
+	0, // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_restaurant_proto_init() }
@@ -991,7 +793,7 @@ func file_restaurant_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_restaurant_proto_rawDesc), len(file_restaurant_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   14,
+			NumMessages:   10,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

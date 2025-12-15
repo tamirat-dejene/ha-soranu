@@ -25,6 +25,9 @@ data:
   AUTH_SRV_NAME: "auth-service"
   AUTH_SRV_PORT: "9090"
   API_GATEWAY_PORT: "8080"
+
+  RESTAURANT_SRV_NAME: "restaurant-service"
+  RESTAURANT_SRV_PORT: "9091"
 ---
 apiVersion: v1
 kind: ConfigMap

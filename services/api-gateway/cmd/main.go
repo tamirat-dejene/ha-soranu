@@ -29,8 +29,16 @@ func main() {
 	logger.Info("Connected to Auth Service", zap.String("addr", cfg.AUTH_SRV_NAME+":"+cfg.AUTH_SRV_PORT))
 	defer uaServiceClient.Close()
 
+	// 4. Initialize Restaurant Service Client
+	restaurantServiceClient, err := client.NewRestaurantServiceClient(cfg.RESTAURANT_SRV_NAME + ":" + cfg.RESTAURANT_SRV_PORT)
+	if err != nil {
+		logger.Fatal("Failed to connect to Restaurant Service", zap.Error(err))
+	}
+	logger.Info("Connected to Restaurant Service", zap.String("addr", cfg.RESTAURANT_SRV_NAME+":"+cfg.RESTAURANT_SRV_PORT))
+	defer restaurantServiceClient.Close()
+
 	// 4. Initialize and Run Server
-	srv := server.NewServer(cfg, uaServiceClient)
+	srv := server.NewServer(cfg, uaServiceClient, restaurantServiceClient)
 	srv.SetupRoutes()
 
 	logger.Info("API Gateway listening", zap.String("port", cfg.API_GATEWAY_PORT))

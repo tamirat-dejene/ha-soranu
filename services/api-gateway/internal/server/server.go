@@ -12,10 +12,11 @@ type Server struct {
 	router      *gin.Engine
 	authHandler *handler.AuthHandler
 	userHandler *handler.UserHandler
+	restaurantHandler *handler.RestaurantHandler
 	config      apigateway.Env
 }
 
-func NewServer(cfg *apigateway.Env, uaClient *client.UAServiceClient) *Server {
+func NewServer(cfg *apigateway.Env, uaClient *client.UAServiceClient, restaurantClient *client.RestaurantServiceClient) *Server {
 	router := gin.New()
 	router.Use(gin.Recovery())
 	router.Use(GinLogger())
@@ -27,10 +28,13 @@ func NewServer(cfg *apigateway.Env, uaClient *client.UAServiceClient) *Server {
 
 	authHandler := handler.NewAuthHandler(uaClient)
 	userHandler := handler.NewUserHandler(uaClient)
+	restaurantHandler := handler.NewRestaurantHandler(restaurantClient)
+	
 	return &Server{
 		router:      router,
 		authHandler: authHandler,
 		userHandler: userHandler,
+		restaurantHandler: restaurantHandler,
 		config:      *cfg,
 	}
 }
@@ -78,6 +82,23 @@ func (s *Server) SetupRoutes() {
 			user.DELETE("/addresses", s.userHandler.RemoveAddress)
 		}
 	}
+
+	// Restaurant routes
+	{
+		restaurant := v1.Group("/restaurants")
+		{
+			restaurant.POST("/login", s.restaurantHandler.Login)
+			restaurant.POST("/register", s.restaurantHandler.RegisterRestaurant)
+
+			restaurant.GET("/", s.restaurantHandler.ListRestaurants)
+			restaurant.GET("/:id", s.restaurantHandler.GetRestaurant)
+
+			restaurant.POST("/:id/menu", s.restaurantHandler.AddMenuItem)
+			restaurant.PUT("/:id/menu/:item_id", s.restaurantHandler.UpdateMenuItem)
+			restaurant.DELETE("/:id/menu/:item_id", s.restaurantHandler.RemoveMenuItem)
+		}
+	}
+
 }
 
 func (s *Server) Run() error {

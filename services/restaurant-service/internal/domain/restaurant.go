@@ -19,11 +19,17 @@ type MenuItem struct {
 	Price       float32
 }
 
+type Area struct {
+	LatitudeMin  float32
+	LatitudeMax  float32
+	RadiusInKm   float32
+}
+
 type RestaurantUseCase interface {
 	LoginRestaurant(ctx context.Context, email, secretKey string) (*Restaurant, error)
 
 	RegisterRestaurant(ctx context.Context, restaurant *Restaurant) (*Restaurant, error)
-	GetRestaurants(ctx context.Context) ([]Restaurant, error)
+	GetRestaurants(ctx context.Context, area Area) ([]Restaurant, error)
 	GetRestaurantByID(ctx context.Context, restaurantID string) (*Restaurant, error)
 
 	AddMenuItem(ctx context.Context, restaurantID string, item MenuItem) (*MenuItem, error)
@@ -35,7 +41,7 @@ type RestaurantRepository interface {
 	LoginRestaurant(ctx context.Context, email, secretKey string) (*Restaurant, error)
 
 	CreateRestaurant(ctx context.Context, restaurant *Restaurant) (*Restaurant, error)
-	GetRestaurants(ctx context.Context) ([]Restaurant, error)
+	GetRestaurants(ctx context.Context, area Area) ([]Restaurant, error)
 	GetRestaurantByID(ctx context.Context, restaurantID string) (*Restaurant, error)
 
 	AddMenuItem(ctx context.Context, restaurantID string, item MenuItem) (*MenuItem, error)

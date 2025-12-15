@@ -3,7 +3,7 @@ FROM alpine:3.23
 WORKDIR /app
 
 COPY shared /app/shared
-COPY services/auth-service/migrations /app/migrations
+COPY services/auth-service/migrations /app/auth-svc-migrations
 COPY bin/auth-service /app/bin/auth-service
 
 EXPOSE 9090

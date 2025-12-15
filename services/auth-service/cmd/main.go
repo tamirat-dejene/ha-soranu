@@ -35,7 +35,7 @@ func main() {
 
 	// 3. Initialize Migrations
 	migrate := migrations.NewMigrator(*env)
-	if err := migrate.Migrate(context.Background(), "/app/migrations"); err != nil {
+	if err := migrate.Migrate(context.Background(), "/app/auth-svc-migrations"); err != nil {
 		logger.Fatal("migrations failed", zap.Error(err))
 	}
 

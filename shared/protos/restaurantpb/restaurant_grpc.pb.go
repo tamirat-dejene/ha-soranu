@@ -19,18 +19,26 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
+	RestaurantService_Login_FullMethodName              = "/restaurant.RestaurantService/Login"
 	RestaurantService_RegisterRestaurant_FullMethodName = "/restaurant.RestaurantService/RegisterRestaurant"
 	RestaurantService_GetRestaurant_FullMethodName      = "/restaurant.RestaurantService/GetRestaurant"
 	RestaurantService_ListRestaurants_FullMethodName    = "/restaurant.RestaurantService/ListRestaurants"
+	RestaurantService_AddMenuItem_FullMethodName        = "/restaurant.RestaurantService/AddMenuItem"
+	RestaurantService_RemoveMenuItem_FullMethodName     = "/restaurant.RestaurantService/RemoveMenuItem"
+	RestaurantService_UpdateMenuItem_FullMethodName     = "/restaurant.RestaurantService/UpdateMenuItem"
 )
 
 // RestaurantServiceClient is the client API for RestaurantService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type RestaurantServiceClient interface {
+	Login(ctx context.Context, in *RestaurantLoginRequest, opts ...grpc.CallOption) (*RestaurantLoginResponse, error)
 	RegisterRestaurant(ctx context.Context, in *RegisterRestaurantRequest, opts ...grpc.CallOption) (*RegisterRestaurantResponse, error)
 	GetRestaurant(ctx context.Context, in *GetRestaurantRequest, opts ...grpc.CallOption) (*GetRestaurantResponse, error)
 	ListRestaurants(ctx context.Context, in *ListRestaurantsRequest, opts ...grpc.CallOption) (*ListRestaurantsResponse, error)
+	AddMenuItem(ctx context.Context, in *AddMenuItemRequest, opts ...grpc.CallOption) (*MenuItem, error)
+	RemoveMenuItem(ctx context.Context, in *RemoveMenuItemRequest, opts ...grpc.CallOption) (*MenuItem, error)
+	UpdateMenuItem(ctx context.Context, in *UpdateMenuItemRequest, opts ...grpc.CallOption) (*MenuItem, error)
 }
 
 type restaurantServiceClient struct {
@@ -39,6 +47,16 @@ type restaurantServiceClient struct {
 
 func NewRestaurantServiceClient(cc grpc.ClientConnInterface) RestaurantServiceClient {
 	return &restaurantServiceClient{cc}
+}
+
+func (c *restaurantServiceClient) Login(ctx context.Context, in *RestaurantLoginRequest, opts ...grpc.CallOption) (*RestaurantLoginResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RestaurantLoginResponse)
+	err := c.cc.Invoke(ctx, RestaurantService_Login_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *restaurantServiceClient) RegisterRestaurant(ctx context.Context, in *RegisterRestaurantRequest, opts ...grpc.CallOption) (*RegisterRestaurantResponse, error) {
@@ -71,13 +89,47 @@ func (c *restaurantServiceClient) ListRestaurants(ctx context.Context, in *ListR
 	return out, nil
 }
 
+func (c *restaurantServiceClient) AddMenuItem(ctx context.Context, in *AddMenuItemRequest, opts ...grpc.CallOption) (*MenuItem, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(MenuItem)
+	err := c.cc.Invoke(ctx, RestaurantService_AddMenuItem_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *restaurantServiceClient) RemoveMenuItem(ctx context.Context, in *RemoveMenuItemRequest, opts ...grpc.CallOption) (*MenuItem, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(MenuItem)
+	err := c.cc.Invoke(ctx, RestaurantService_RemoveMenuItem_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *restaurantServiceClient) UpdateMenuItem(ctx context.Context, in *UpdateMenuItemRequest, opts ...grpc.CallOption) (*MenuItem, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(MenuItem)
+	err := c.cc.Invoke(ctx, RestaurantService_UpdateMenuItem_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // RestaurantServiceServer is the server API for RestaurantService service.
 // All implementations must embed UnimplementedRestaurantServiceServer
 // for forward compatibility.
 type RestaurantServiceServer interface {
+	Login(context.Context, *RestaurantLoginRequest) (*RestaurantLoginResponse, error)
 	RegisterRestaurant(context.Context, *RegisterRestaurantRequest) (*RegisterRestaurantResponse, error)
 	GetRestaurant(context.Context, *GetRestaurantRequest) (*GetRestaurantResponse, error)
 	ListRestaurants(context.Context, *ListRestaurantsRequest) (*ListRestaurantsResponse, error)
+	AddMenuItem(context.Context, *AddMenuItemRequest) (*MenuItem, error)
+	RemoveMenuItem(context.Context, *RemoveMenuItemRequest) (*MenuItem, error)
+	UpdateMenuItem(context.Context, *UpdateMenuItemRequest) (*MenuItem, error)
 	mustEmbedUnimplementedRestaurantServiceServer()
 }
 
@@ -88,6 +140,9 @@ type RestaurantServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedRestaurantServiceServer struct{}
 
+func (UnimplementedRestaurantServiceServer) Login(context.Context, *RestaurantLoginRequest) (*RestaurantLoginResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method Login not implemented")
+}
 func (UnimplementedRestaurantServiceServer) RegisterRestaurant(context.Context, *RegisterRestaurantRequest) (*RegisterRestaurantResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method RegisterRestaurant not implemented")
 }
@@ -96,6 +151,15 @@ func (UnimplementedRestaurantServiceServer) GetRestaurant(context.Context, *GetR
 }
 func (UnimplementedRestaurantServiceServer) ListRestaurants(context.Context, *ListRestaurantsRequest) (*ListRestaurantsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListRestaurants not implemented")
+}
+func (UnimplementedRestaurantServiceServer) AddMenuItem(context.Context, *AddMenuItemRequest) (*MenuItem, error) {
+	return nil, status.Error(codes.Unimplemented, "method AddMenuItem not implemented")
+}
+func (UnimplementedRestaurantServiceServer) RemoveMenuItem(context.Context, *RemoveMenuItemRequest) (*MenuItem, error) {
+	return nil, status.Error(codes.Unimplemented, "method RemoveMenuItem not implemented")
+}
+func (UnimplementedRestaurantServiceServer) UpdateMenuItem(context.Context, *UpdateMenuItemRequest) (*MenuItem, error) {
+	return nil, status.Error(codes.Unimplemented, "method UpdateMenuItem not implemented")
 }
 func (UnimplementedRestaurantServiceServer) mustEmbedUnimplementedRestaurantServiceServer() {}
 func (UnimplementedRestaurantServiceServer) testEmbeddedByValue()                           {}
@@ -116,6 +180,24 @@ func RegisterRestaurantServiceServer(s grpc.ServiceRegistrar, srv RestaurantServ
 		t.testEmbeddedByValue()
 	}
 	s.RegisterService(&RestaurantService_ServiceDesc, srv)
+}
+
+func _RestaurantService_Login_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RestaurantLoginRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RestaurantServiceServer).Login(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RestaurantService_Login_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RestaurantServiceServer).Login(ctx, req.(*RestaurantLoginRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _RestaurantService_RegisterRestaurant_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -172,6 +254,60 @@ func _RestaurantService_ListRestaurants_Handler(srv interface{}, ctx context.Con
 	return interceptor(ctx, in, info, handler)
 }
 
+func _RestaurantService_AddMenuItem_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddMenuItemRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RestaurantServiceServer).AddMenuItem(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RestaurantService_AddMenuItem_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RestaurantServiceServer).AddMenuItem(ctx, req.(*AddMenuItemRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RestaurantService_RemoveMenuItem_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RemoveMenuItemRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RestaurantServiceServer).RemoveMenuItem(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RestaurantService_RemoveMenuItem_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RestaurantServiceServer).RemoveMenuItem(ctx, req.(*RemoveMenuItemRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RestaurantService_UpdateMenuItem_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateMenuItemRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RestaurantServiceServer).UpdateMenuItem(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RestaurantService_UpdateMenuItem_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RestaurantServiceServer).UpdateMenuItem(ctx, req.(*UpdateMenuItemRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // RestaurantService_ServiceDesc is the grpc.ServiceDesc for RestaurantService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -179,6 +315,10 @@ var RestaurantService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "restaurant.RestaurantService",
 	HandlerType: (*RestaurantServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "Login",
+			Handler:    _RestaurantService_Login_Handler,
+		},
 		{
 			MethodName: "RegisterRestaurant",
 			Handler:    _RestaurantService_RegisterRestaurant_Handler,
@@ -190,6 +330,18 @@ var RestaurantService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListRestaurants",
 			Handler:    _RestaurantService_ListRestaurants_Handler,
+		},
+		{
+			MethodName: "AddMenuItem",
+			Handler:    _RestaurantService_AddMenuItem_Handler,
+		},
+		{
+			MethodName: "RemoveMenuItem",
+			Handler:    _RestaurantService_RemoveMenuItem_Handler,
+		},
+		{
+			MethodName: "UpdateMenuItem",
+			Handler:    _RestaurantService_UpdateMenuItem_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

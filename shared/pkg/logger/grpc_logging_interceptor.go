@@ -1,10 +1,9 @@
-package interceptor
+package logger
 
 import (
 	"context"
 	"time"
 
-	"github.com/tamirat-dejene/ha-soranu/shared/pkg/logger"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/status"
@@ -27,9 +26,9 @@ func LoggingInterceptor(ctx context.Context, req any, info *grpc.UnaryServerInfo
 
 	if err != nil {
 		fields = append(fields, zap.Error(err))
-		logger.Error("gRPC Request Failed", fields...)
+		Error("gRPC Request Failed", fields...)
 	} else {
-		logger.Info("gRPC Request Success", fields...)
+		Info("gRPC Request Success", fields...)
 	}
 
 	return resp, err

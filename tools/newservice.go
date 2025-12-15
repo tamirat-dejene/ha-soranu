@@ -17,7 +17,6 @@ var structure = []string{
 	"docs",
 	"internal/api/grpc/dto",
 	"internal/api/grpc/handler",
-	"internal/api/grpc/interceptor",
 	"internal/domain",
 	"internal/repository",
 	"internal/usecase",

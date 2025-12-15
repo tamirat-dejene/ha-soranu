@@ -6,7 +6,6 @@ import (
 	"net"
 	"time"
 
-	"github.com/tamirat-dejene/ha-soranu/services/auth-service/internal/api/grpc/interceptor"
 	"github.com/tamirat-dejene/ha-soranu/services/auth-service/migrations"
 	"github.com/tamirat-dejene/ha-soranu/shared/pkg/logger"
 	"go.uber.org/zap"
@@ -70,7 +69,7 @@ func main() {
 	}
 
 	s := grpc.NewServer(
-		grpc.UnaryInterceptor(interceptor.LoggingInterceptor),
+		grpc.UnaryInterceptor(logger.LoggingInterceptor),
 	)
 
 	// 9. Register Handlers

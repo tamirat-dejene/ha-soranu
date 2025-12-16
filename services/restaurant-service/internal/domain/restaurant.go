@@ -29,7 +29,7 @@ type RestaurantUseCase interface {
 	LoginRestaurant(ctx context.Context, email, secretKey string) (*Restaurant, error)
 
 	RegisterRestaurant(ctx context.Context, restaurant *Restaurant) (*Restaurant, error)
-	GetRestaurants(ctx context.Context, area Area) ([]Restaurant, error)
+	StreamRestaurants(ctx context.Context, area Area, onResult func(Restaurant) error) error
 	GetRestaurantByID(ctx context.Context, restaurantID string) (*Restaurant, error)
 
 	AddMenuItem(ctx context.Context, restaurantID string, item MenuItem) (*MenuItem, error)
@@ -41,7 +41,7 @@ type RestaurantRepository interface {
 	LoginRestaurant(ctx context.Context, email, secretKey string) (*Restaurant, error)
 
 	CreateRestaurant(ctx context.Context, restaurant *Restaurant) (*Restaurant, error)
-	GetRestaurants(ctx context.Context, area Area) ([]Restaurant, error)
+	StreamRestaurants(ctx context.Context, area Area, onRow func(Restaurant) error) error
 	GetRestaurantByID(ctx context.Context, restaurantID string) (*Restaurant, error)
 
 	AddMenuItem(ctx context.Context, restaurantID string, item MenuItem) (*MenuItem, error)

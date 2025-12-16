@@ -28,7 +28,7 @@ func getString(key string, defaultValue string) string {
 	return value
 }
 
-func getInt(key string, defaultValue int) int {
+func _(key string, defaultValue int) int {
 	valueStr := os.Getenv(key)
 	if valueStr == "" {
 		return defaultValue
@@ -47,6 +47,9 @@ func GetEnv() (*Env, error) {
 		AUTH_SRV_NAME:    getString("AUTH_SRV_NAME", "auth-service"),
 		AUTH_SRV_PORT:    getString("AUTH_SRV_PORT", "9090"),
 		API_GATEWAY_PORT: getString("API_GATEWAY_PORT", "8080"),
+
+		RESTAURANT_SRV_NAME: getString("RESTAURANT_SRV_NAME", "restaurant-service"),
+		RESTAURANT_SRV_PORT: getString("RESTAURANT_SRV_PORT", "9091"),
 	}
 
 	return &env, nil

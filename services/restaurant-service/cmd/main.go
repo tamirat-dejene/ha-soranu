@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"time"
 
 	postgres "github.com/tamirat-dejene/ha-soranu/shared/db/pg"
 	"github.com/tamirat-dejene/ha-soranu/shared/pkg/logger"
@@ -56,7 +57,7 @@ func main() {
 	
 	// 6. Initialize Repository, Usecase, and register Handler
 	restaurant_repo := repository.NewRestaurantRepository(pgClient)
-	restaurant_usecase := usecase.NewRestaurantUseCase(restaurant_repo, 5)
+	restaurant_usecase := usecase.NewRestaurantUseCase(restaurant_repo, 10 * time.Second)
 	handler.NewRestaurantHandler(s, restaurant_usecase)
 
 	logger.Info("Service listening", zap.String("port", env.RESTAURANT_SRV_PORT))

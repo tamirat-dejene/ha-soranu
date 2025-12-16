@@ -27,7 +27,6 @@ func NewRestaurantServiceClient(addr string) (*RestaurantServiceClient, error) {
 	}, nil
 }
 
-
 func (c *RestaurantServiceClient) Close() {
 	if c.conn != nil {
 		if err := c.conn.Close(); err != nil {

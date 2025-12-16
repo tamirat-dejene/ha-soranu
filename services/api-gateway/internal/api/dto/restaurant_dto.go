@@ -67,9 +67,9 @@ func (dto *RegisterRestaurantDTO) ToProto() *restaurantpb.RegisterRestaurantRequ
 }
 
 type ListRestaurantsDTO struct {
-	Latitude  *float32 `form:"latitude" binding:"required"`
-	Longitude *float32 `form:"longitude" binding:"required"`
-	RadiusKm  *float32 `form:"radius_km" binding:"required"`
+	Latitude  *float32 `json:"latitude" binding:"required"`
+	Longitude *float32 `json:"longitude" binding:"required"`
+	RadiusKm  *float32 `json:"radius_km" binding:"required"`
 }
 
 func (d *ListRestaurantsDTO) ToProto() *restaurantpb.ListRestaurantsRequest {

@@ -27,3 +27,15 @@ func toProtoMenuItems(items []domain.MenuItem) []*restaurantpb.MenuItem {
 	}
 	return protoItems
 }
+
+func ProtoRegisterMenuItemsToDomain(items []*restaurantpb.RegisterMenuItem) []domain.MenuItem {
+	var domainItems []domain.MenuItem
+	for _, item := range items {
+		domainItems = append(domainItems, domain.MenuItem{
+			Name:        item.Name,
+			Description: item.Description,
+			Price:       item.Price,
+		})
+	}
+	return domainItems
+}

@@ -1,15 +1,19 @@
 package handler
 
 import (
+	"context"
 	"io"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/tamirat-dejene/ha-soranu/services/api-gateway/internal/api/dto"
 	"github.com/tamirat-dejene/ha-soranu/services/api-gateway/internal/client"
 	"github.com/tamirat-dejene/ha-soranu/services/api-gateway/internal/domain"
 	"github.com/tamirat-dejene/ha-soranu/services/api-gateway/internal/errs"
+	"github.com/tamirat-dejene/ha-soranu/shared/pkg/logger"
 	"github.com/tamirat-dejene/ha-soranu/shared/protos/restaurantpb"
+	"go.uber.org/zap"
 )
 
 type RestaurantHandler struct {
@@ -37,7 +41,7 @@ type RestaurantServiceClient interface {
 func (h *RestaurantHandler) Login(c *gin.Context) {
 	var req dto.RestaurantLoginDTO
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, errs.MsgInvalidRequest)
+		c.JSON(http.StatusBadRequest, errs.NewErrorResponse(errs.MsgInvalidRequest))
 		return
 	}
 
@@ -53,7 +57,7 @@ func (h *RestaurantHandler) Login(c *gin.Context) {
 func (h *RestaurantHandler) RegisterRestaurant(c *gin.Context) {
 	var req dto.RegisterRestaurantDTO
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, errs.MsgInvalidRequest)
+		c.JSON(http.StatusBadRequest, errs.NewErrorResponse(errs.MsgInvalidRequest))
 		return
 	}
 
@@ -67,7 +71,8 @@ func (h *RestaurantHandler) RegisterRestaurant(c *gin.Context) {
 }
 
 func (h *RestaurantHandler) GetRestaurant(c *gin.Context) {
-	restaurantID := c.Query("restaurant_id")
+	logger.Info("GetRestaurant Request Received!")
+	restaurantID := c.Query("id")
 	if restaurantID == "" {
 		c.JSON(http.StatusBadRequest, errs.NewErrorResponse("restaurant id is required"))
 		return
@@ -88,7 +93,7 @@ func (h *RestaurantHandler) ListRestaurants(c *gin.Context) {
 	var req dto.ListRestaurantsDTO
 
 	if err := c.ShouldBindQuery(&req); err != nil {
-		c.JSON(http.StatusBadRequest, errs.MsgInvalidRequest)
+		c.JSON(http.StatusBadRequest, errs.NewErrorResponse(errs.MsgInvalidRequest))
 		return
 	}
 
@@ -112,10 +117,14 @@ func (h *RestaurantHandler) ListRestaurants(c *gin.Context) {
 		return
 	}
 
-	ctx := c.Request.Context()
+	ctx, cancel := context.WithTimeout(
+		c.Request.Context(),
+		10*time.Second,
+	)
+	defer cancel()
 
-	stream, err := h.client.RestaurantClient.
-		ListRestaurants(ctx, req.ToProto())
+	stream, err := h.client.RestaurantClient.ListRestaurants(ctx, req.ToProto())
+
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, dto.ErrorResponseFromGRPCError(err))
 		return
@@ -129,9 +138,15 @@ func (h *RestaurantHandler) ListRestaurants(c *gin.Context) {
 			break
 		}
 		if err != nil {
+			logger.Error(
+				"gRPC stream receive failed",
+				zap.Error(err),
+			)
+
 			c.JSON(http.StatusInternalServerError, dto.ErrorResponseFromGRPCError(err))
 			return
 		}
+		logger.Info("Info", zap.Any("res", res))
 
 		restaurants = append(
 			restaurants,
@@ -139,16 +154,19 @@ func (h *RestaurantHandler) ListRestaurants(c *gin.Context) {
 		)
 	}
 
+	if restaurants == nil {
+		restaurants = []*domain.Restaurant{}
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"restaurants": restaurants,
 	})
 }
 
-
 func (h *RestaurantHandler) AddMenuItem(c *gin.Context) {
 	var menuItem dto.AddMenuItemDTO
 	if err := c.ShouldBindJSON(&menuItem); err != nil {
-		c.JSON(http.StatusBadRequest, errs.MsgInvalidRequest)
+		c.JSON(http.StatusBadRequest, errs.NewErrorResponse(errs.MsgInvalidRequest))
 		return
 	}
 
@@ -195,13 +213,13 @@ func (h *RestaurantHandler) UpdateMenuItem(c *gin.Context) {
 
 	var updateItem dto.UpdateMenuItemDTO
 	if err := c.ShouldBindJSON(&updateItem); err != nil {
-		c.JSON(http.StatusBadRequest, errs.MsgInvalidRequest)
+		c.JSON(http.StatusBadRequest, errs.NewErrorResponse(errs.MsgInvalidRequest))
 		return
 	}
 
 	updateProto := &restaurantpb.UpdateMenuItemRequest{
 		RestaurantId: restaurantID,
-		ItemId: 	itemID,
+		ItemId:       itemID,
 		Name:         updateItem.Name,
 		Description:  updateItem.Description,
 		Price:        updateItem.Price,

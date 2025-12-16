@@ -19,50 +19,26 @@ func (r *restaurantHandler) ListRestaurants(
 	req *restaurantpb.ListRestaurantsRequest,
 	stream restaurantpb.RestaurantService_ListRestaurantsServer,
 ) error {
-
 	if req == nil {
 		return domain.ErrInvalidSearchData
 	}
 
 	ctx := stream.Context()
 
-	restaurants, err := r.restaurantUsecase.GetRestaurants(ctx, domain.Area{
+	return r.restaurantUsecase.StreamRestaurants(ctx, domain.Area{
 		LatitudeMin: req.Latitude,
 		LatitudeMax: req.Longitude,
 		RadiusInKm:  req.RadiusKm,
-	})
-	
-	if err != nil {
-		return err
-	}
-
-	for _, res := range restaurants {
-
-		var menuItems []*restaurantpb.MenuItem
-		for _, item := range res.MenuItems {
-			menuItems = append(menuItems, &restaurantpb.MenuItem{
-				ItemId:      item.ItemID,
-				Name:        item.Name,
-				Description: item.Description,
-				Price:       item.Price,
-			})
-		}
-
-		protoRestaurant := &restaurantpb.Restaurant{
+	}, func(res domain.Restaurant) error {
+		protoRes := &restaurantpb.Restaurant{
 			RestaurantId: res.ID,
 			Email:        res.Email,
 			Name:         res.Name,
 			Latitude:     res.Latitude,
 			Longitude:    res.Longitude,
-			Menus:        menuItems,
 		}
-
-		if err := stream.Send(protoRestaurant); err != nil {
-			return err
-		}
-	}
-
-	return nil
+		return stream.Send(protoRes)
+	})
 }
 
 // Login implements restaurantpb.RestaurantServiceServer.
@@ -141,6 +117,7 @@ func (r *restaurantHandler) RegisterRestaurant(ctx context.Context, req *restaur
 		return nil, domain.ErrInvalidRestaurantData
 	}
 
+
 	restaurant, err := r.restaurantUsecase.RegisterRestaurant(ctx, &domain.Restaurant{
 		ID:        "",
 		Email:     req.Email,
@@ -148,6 +125,7 @@ func (r *restaurantHandler) RegisterRestaurant(ctx context.Context, req *restaur
 		SecretKey: req.SecretKey,
 		Latitude:  req.Latitude,
 		Longitude: req.Longitude,
+		MenuItems: dto.ProtoRegisterMenuItemsToDomain(req.Menus),
 	})
 	if err != nil {
 		return nil, err
@@ -159,6 +137,7 @@ func (r *restaurantHandler) RegisterRestaurant(ctx context.Context, req *restaur
 		Name:         restaurant.Name,
 		Latitude:     restaurant.Latitude,
 		Longitude:    restaurant.Longitude,
+		Menus:        dto.DomainRestaurantToProto(restaurant).Menus,
 	}, nil
 }
 

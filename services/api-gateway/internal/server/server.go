@@ -90,12 +90,12 @@ func (s *Server) SetupRoutes() {
 			restaurant.POST("/login", s.restaurantHandler.Login)
 			restaurant.POST("/register", s.restaurantHandler.RegisterRestaurant)
 
-			restaurant.GET("/", s.restaurantHandler.ListRestaurants)
-			restaurant.GET("/:id", s.restaurantHandler.GetRestaurant)
+			restaurant.GET("/", s.restaurantHandler.GetRestaurant)
+			restaurant.POST("/", s.restaurantHandler.ListRestaurants)
 
-			restaurant.POST("/:id/menu", s.restaurantHandler.AddMenuItem)
-			restaurant.PUT("/:id/menu/:item_id", s.restaurantHandler.UpdateMenuItem)
-			restaurant.DELETE("/:id/menu/:item_id", s.restaurantHandler.RemoveMenuItem)
+			restaurant.POST("/menu", s.restaurantHandler.AddMenuItem)
+			restaurant.PUT("/menu", s.restaurantHandler.UpdateMenuItem)
+			restaurant.DELETE("/menu", s.restaurantHandler.RemoveMenuItem)
 		}
 	}
 

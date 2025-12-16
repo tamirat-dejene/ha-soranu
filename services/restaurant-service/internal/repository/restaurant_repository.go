@@ -127,39 +127,42 @@ func (r *restaurantRepository) GetRestaurantByID(
 }
 
 // GetRestaurants implements domain.RestaurantRepository.
-func (r *restaurantRepository) GetRestaurants(
-	ctx context.Context, area domain.Area,
-) ([]domain.Restaurant, error) {
-
+func (r *restaurantRepository) StreamRestaurants(
+	ctx context.Context,
+	area domain.Area,
+	onRow func(domain.Restaurant) error,
+) error {
 	query := `
 		SELECT restaurant_id, email, name, latitude, longitude
 		FROM restaurants
 	`
-
 	rows, err := r.db.Query(ctx, query)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	defer rows.Close()
 
-	var restaurants []domain.Restaurant
-
 	for rows.Next() {
-		var res domain.Restaurant
-		if err := rows.Scan(
-			&res.ID,
-			&res.Email,
-			&res.Name,
-			&res.Latitude,
-			&res.Longitude,
-		); err != nil {
-			return nil, err
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		default:
 		}
-		restaurants = append(restaurants, res)
+
+		var res domain.Restaurant
+		if err := rows.Scan(&res.ID, &res.Email, &res.Name, &res.Latitude, &res.Longitude); err != nil {
+			return err
+		}
+
+		if err := onRow(res); err != nil {
+			return err
+		}
 	}
 
-	return restaurants, nil
+	return rows.Err()
 }
+
+
 
 // AddMenuItem implements domain.RestaurantRepository.
 func (r *restaurantRepository) AddMenuItem(

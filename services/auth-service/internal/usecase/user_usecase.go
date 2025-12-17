@@ -12,11 +12,35 @@ type userUsecase struct {
 	ctxTimeout     time.Duration
 }
 
+// GetDrivers implements [domain.UserUseCase].
+func (u *userUsecase) GetDrivers(ctx context.Context, latitude float32, longitude float32, radius float32) ([]domain.Driver, error) {
+	c, cancel := context.WithTimeout(ctx, u.ctxTimeout)
+	defer cancel()
+
+	return u.userRepository.GetDrivers(c, latitude, longitude, radius)
+}
+
+// RemoveDriver implements [domain.UserUseCase].
+func (u *userUsecase) RemoveDriver(ctx context.Context, driverID string) error {
+	c, cancel := context.WithTimeout(ctx, u.ctxTimeout)
+	defer cancel()
+
+	return u.userRepository.RemoveDriver(c, driverID)
+}
+
+// BeDriver implements [domain.UserUseCase].
+func (u *userUsecase) BeDriver(ctx context.Context, userID string) (string, error) {
+	c, cancel := context.WithTimeout(ctx, u.ctxTimeout)
+	defer cancel()
+
+	return u.userRepository.BeDriver(c, userID)
+}
+
 // AddAddress implements domain.UserUseCase.
 func (u *userUsecase) AddAddress(ctx context.Context, userID string, address domain.Address) (*domain.Address, error) {
 	c, cancel := context.WithTimeout(ctx, u.ctxTimeout)
 	defer cancel()
-	
+
 	addr, err := u.userRepository.AddAddress(c, userID, address)
 	if err != nil {
 		return nil, err

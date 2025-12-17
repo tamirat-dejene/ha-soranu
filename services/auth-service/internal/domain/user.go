@@ -36,8 +36,17 @@ type UserUseCase interface {
     GetAddresses(ctx context.Context, userID string) ([]Address, error)
     AddAddress(ctx context.Context, userID string, address Address) (*Address, error)
     RemoveAddress(ctx context.Context, userID, addressID string) error
+
+    // Driver
+    BeDriver(ctx context.Context, userID string) (string, error)
+    GetDrivers(ctx context.Context, latitude, longitude, radius float32) ([]Driver, error)
+    RemoveDriver(ctx context.Context, driverID string) error
 }
 
+type Driver struct {
+    DriverID string
+    User  User
+}
 type UserRepository interface {
     CreateUser(ctx context.Context, user *UserRegister) (*User, error)
     GetUserByID(ctx context.Context, userID string) (*User, error)
@@ -51,4 +60,9 @@ type UserRepository interface {
     GetAddresses(ctx context.Context, userID string) ([]Address, error)
     AddAddress(ctx context.Context, userID string, address Address) (Address, error)
     RemoveAddress(ctx context.Context, userID, addressID string) error
+
+    // Driver
+    BeDriver(ctx context.Context, userID string) (string, error)
+    GetDrivers(ctx context.Context, latitude, longitude, radius float32) ([]Driver, error)
+    RemoveDriver(ctx context.Context, driverID string) error
 }

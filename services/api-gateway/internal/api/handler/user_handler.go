@@ -19,17 +19,59 @@ func NewUserHandler(client *client.UAServiceClient) *UserHandler {
 	return &UserHandler{client: client}
 }
 
-/**
-	GetUser(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*GetUserResponse, error)
-    GetPhoneNumber(ctx context.Context, in *GetPhoneNumberRequest, opts ...grpc.CallOption) (*GetPhoneNumberResponse, error)
-    AddPhoneNumber(ctx context.Context, in *AddPhoneNumberRequest, opts ...grpc.CallOption) (*MessageResponse, error)
-    UpdatePhoneNumber(ctx context.Context, in *UpdatePhoneNumberRequest, opts ...grpc.CallOption) (*MessageResponse, error)
-    RemovePhoneNumber(ctx context.Context, in *RemovePhoneNumberRequest, opts ...grpc.CallOption) (*MessageResponse, error)
-    GetAddresses(ctx context.Context, in *GetAddressesRequest, opts ...grpc.CallOption) (*GetAddressesResponse, error)
-    AddAddress(ctx context.Context, in *AddAddressRequest, opts ...grpc.CallOption) (*AddAddressResponse, error)
-    RemoveAddress(ctx context.Context, in *RemoveAddressRequest, opts ...grpc.CallOption) (*MessageResponse, error)
-*/
+func (h *UserHandler) RemoveDriver(c *gin.Context) {
+	var req dto.RemoveDriverRequestDTO
 
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, errs.NewErrorResponse(errs.MsgInvalidRequest))
+		return
+	}
+
+	resp, err := h.client.UserClient.RemoveDriver(c.Request.Context(), req.ToProto())
+	if err != nil {
+		logger.Error("RemoveDriver failed", zap.String("driver_id", req.DriverId), zap.Error(err))
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponseFromGRPCError(err))
+		return
+	}
+
+	c.JSON(200, gin.H{"message": resp.Message})
+}
+
+func (h *UserHandler) GetDrivers(c *gin.Context) {
+	var req dto.GetDriversRequestDTO
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, errs.NewErrorResponse(errs.MsgInvalidRequest))
+		return
+	}
+
+	resp, err := h.client.UserClient.GetDrivers(c.Request.Context(), req.ToProto())
+	if err != nil {
+		logger.Error("GetDrivers failed", zap.Error(err))
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponseFromGRPCError(err))
+		return
+	}
+
+	c.JSON(200, dto.GetDriversResponseFromProto(resp))
+}
+
+func (h *UserHandler) BeDriver(c *gin.Context) {
+	var req dto.BeDriverRequestDTO
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, errs.NewErrorResponse(errs.MsgInvalidRequest))
+		return
+	}
+
+	resp, err := h.client.UserClient.BeDriver(c.Request.Context(), req.ToProto())
+	if err != nil {
+		logger.Error("BeDriver failed", zap.String("user_id", req.UserId), zap.Error(err))
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponseFromGRPCError(err))
+		return
+	}
+
+	c.JSON(200, dto.BeDriverResponseFromProto(resp))
+}
 
 func (h *UserHandler) GetUser(c *gin.Context) {
 	userId := c.Query("user_id")

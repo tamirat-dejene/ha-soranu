@@ -80,6 +80,10 @@ func (s *Server) SetupRoutes() {
 			user.GET("/addresses", s.userHandler.GetAddresses)
 			user.POST("/addresses", s.userHandler.AddAddress)
 			user.DELETE("/addresses", s.userHandler.RemoveAddress)
+
+			user.POST("/be-driver", s.userHandler.BeDriver)
+			user.GET("/drivers", s.userHandler.GetDrivers)
+			user.DELETE("/driver", s.userHandler.RemoveDriver)
 		}
 	}
 

@@ -6,13 +6,43 @@ import (
 	"github.com/tamirat-dejene/ha-soranu/services/auth-service/internal/api/grpc/dto"
 	"github.com/tamirat-dejene/ha-soranu/services/auth-service/internal/domain"
 	errs "github.com/tamirat-dejene/ha-soranu/services/auth-service/internal/domain/err"
+	"github.com/tamirat-dejene/ha-soranu/shared/pkg/logger"
 	"github.com/tamirat-dejene/ha-soranu/shared/protos/userpb"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 )
 
 type userHandler struct {
 	userpb.UnimplementedUserServiceServer
 	userUsecase domain.UserUseCase
+}
+
+// GetDrivers implements [userpb.UserServiceServer].
+func (u *userHandler) GetDrivers(context.Context, *userpb.GetDriversRequest) (*userpb.DriverResponse, error) {
+	panic("unimplemented")
+}
+
+// RemoveDriver implements [userpb.UserServiceServer].
+func (u *userHandler) RemoveDriver(context.Context, *userpb.RemoveDriverRequest) (*userpb.MessageResponse, error) {
+	panic("unimplemented")
+}
+
+// BeDriver implements [userpb.UserServiceServer].
+func (u *userHandler) BeDriver(ctx context.Context, req *userpb.BeDriverRequest) (*userpb.BeDriverResponse, error) {
+	if req == nil {
+		return nil, errs.ErrInvalidRequest
+	}
+
+	driverID, err := u.userUsecase.BeDriver(ctx, req.UserId)
+	if err != nil {
+		return nil, err
+	}
+
+	logger.Info("user became a driver", zap.String("user_id", req.UserId), zap.String("driver_id", driverID))
+
+	return &userpb.BeDriverResponse{
+		DriverId: driverID,
+	}, nil
 }
 
 // AddAddress implements userpb.UserServiceServer.
@@ -28,7 +58,7 @@ func (u *userHandler) AddAddress(ctx context.Context, req *userpb.AddAddressRequ
 
 	return &userpb.AddAddressResponse{
 		Address: dto.ToProtoAddress(*address),
-	}, nil	
+	}, nil
 
 }
 

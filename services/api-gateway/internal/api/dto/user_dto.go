@@ -39,11 +39,11 @@ func toDomainAddresses(protoAddresses []*userpb.Address) []domain.Address {
 func GetUserResponseFromProto(protoRes *userpb.GetUserResponse) *GetUserResponseDTO {
 	return &GetUserResponseDTO{
 		User: domain.User{
-			ID:      protoRes.User.UserId,
+			ID:          protoRes.User.UserId,
 			Email:       protoRes.User.Email,
 			Username:    protoRes.User.Username,
 			PhoneNumber: protoRes.User.PhoneNumber,
-			Password:   "********",
+			Password:    "********",
 			Addresses:   toDomainAddresses(protoRes.User.Addresses),
 			CreatedAt:   protoRes.User.CreatedAt.AsTime(),
 		},
@@ -180,4 +180,77 @@ func (rar *RemoveAddressRequestDTO) ToProto() *userpb.RemoveAddressRequest {
 
 func AddAddressResponseFromProto(protoRes *userpb.AddAddressResponse) domain.Address {
 	return toDomainAddress(protoRes.GetAddress())
+}
+
+type BeDriverRequestDTO struct {
+	UserId string `json:"user_id" binding:"required"`
+}
+
+func (bdr *BeDriverRequestDTO) ToProto() *userpb.BeDriverRequest {
+	return &userpb.BeDriverRequest{
+		UserId: bdr.UserId,
+	}
+}
+
+type BeDriverResponseDTO struct {
+	DriverId string `json:"driver_id"`
+}
+
+func BeDriverResponseFromProto(protoRes *userpb.BeDriverResponse) *BeDriverResponseDTO {
+	return &BeDriverResponseDTO{
+		DriverId: protoRes.GetDriverId(),
+	}
+}
+
+type RemoveDriverRequestDTO struct {
+	DriverId string `json:"driver_id" binding:"required"`
+}
+
+func RemoveDriverRequestFromDTO(driverId string) *userpb.RemoveDriverRequest {
+	return &userpb.RemoveDriverRequest{
+		DriverId: driverId,
+	}
+}
+
+func (rdr *RemoveDriverRequestDTO) ToProto() *userpb.RemoveDriverRequest {
+	return &userpb.RemoveDriverRequest{
+		DriverId: rdr.DriverId,
+	}
+}
+
+type GetDriversRequestDTO struct {
+	Latitude  float32 `json:"latitude" binding:"required"`
+	Longitude float32 `json:"longitude" binding:"required"`
+	RadiusKm  float32 `json:"radius_km" binding:"required"`
+}
+
+func (gdr *GetDriversRequestDTO) ToProto() *userpb.GetDriversRequest {
+	return &userpb.GetDriversRequest{
+		Latitude:  gdr.Latitude,
+		Longitude: gdr.Longitude,
+		RadiusKm:  gdr.RadiusKm,
+	}
+}
+
+type GetDriversResponseDTO struct {
+	DriverId string        `json:"driver_id"`
+	Users    []domain.User `json:"users"`
+}
+
+func GetDriversResponseFromProto(protoRes *userpb.DriverResponse) *GetDriversResponseDTO {
+	domainUsers := make([]domain.User, len(protoRes.GetDrivers()))
+	for i, pu := range protoRes.GetDrivers() {
+		domainUsers[i] = domain.User{
+			ID:          pu.UserId,
+			Email:       pu.Email,
+			Username:    pu.Username,
+			PhoneNumber: pu.PhoneNumber,
+			Password:    "********",
+			CreatedAt:   pu.CreatedAt.AsTime(),
+		}
+	}
+	return &GetDriversResponseDTO{
+		DriverId: protoRes.GetDriverId(),
+		Users: domainUsers,
+	}
 }

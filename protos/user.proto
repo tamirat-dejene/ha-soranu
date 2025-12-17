@@ -52,6 +52,13 @@ service UserService {
   rpc AddAddress(AddAddressRequest) returns (AddAddressResponse);
   // Removes an address from the user.
   rpc RemoveAddress(RemoveAddressRequest) returns (MessageResponse);
+
+  // Makes a user a driver.
+  rpc BeDriver(BeDriverRequest) returns (BeDriverResponse);
+  // Retrieves drivers within a certain radius.
+  rpc GetDrivers(GetDriversRequest) returns (DriverResponse);
+  // Removes a driver by driver ID.
+  rpc RemoveDriver(RemoveDriverRequest) returns (MessageResponse);
 }
 
 // Requests and Responses for UserService RPC methods.
@@ -123,4 +130,27 @@ message AddAddressResponse {
 message RemoveAddressRequest {
   string user_id = 1;
   string address_id = 2;
+}
+
+message BeDriverRequest {
+  string user_id = 1;
+}
+
+message BeDriverResponse {
+  string driver_id = 1;
+}
+
+message DriverResponse {
+  string driver_id = 1;
+  repeated User drivers = 2;
+}
+
+message GetDriversRequest {
+  float latitude = 1;
+  float longitude = 2;
+  float radius_km = 3;
+}
+
+message RemoveDriverRequest {
+  string driver_id = 1;
 }

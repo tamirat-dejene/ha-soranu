@@ -27,6 +27,9 @@ const (
 	UserService_GetAddresses_FullMethodName      = "/user.UserService/GetAddresses"
 	UserService_AddAddress_FullMethodName        = "/user.UserService/AddAddress"
 	UserService_RemoveAddress_FullMethodName     = "/user.UserService/RemoveAddress"
+	UserService_BeDriver_FullMethodName          = "/user.UserService/BeDriver"
+	UserService_GetDrivers_FullMethodName        = "/user.UserService/GetDrivers"
+	UserService_RemoveDriver_FullMethodName      = "/user.UserService/RemoveDriver"
 )
 
 // UserServiceClient is the client API for UserService service.
@@ -51,6 +54,12 @@ type UserServiceClient interface {
 	AddAddress(ctx context.Context, in *AddAddressRequest, opts ...grpc.CallOption) (*AddAddressResponse, error)
 	// Removes an address from the user.
 	RemoveAddress(ctx context.Context, in *RemoveAddressRequest, opts ...grpc.CallOption) (*MessageResponse, error)
+	// Makes a user a driver.
+	BeDriver(ctx context.Context, in *BeDriverRequest, opts ...grpc.CallOption) (*BeDriverResponse, error)
+	// Retrieves drivers within a certain radius.
+	GetDrivers(ctx context.Context, in *GetDriversRequest, opts ...grpc.CallOption) (*DriverResponse, error)
+	// Removes a driver by driver ID.
+	RemoveDriver(ctx context.Context, in *RemoveDriverRequest, opts ...grpc.CallOption) (*MessageResponse, error)
 }
 
 type userServiceClient struct {
@@ -141,6 +150,36 @@ func (c *userServiceClient) RemoveAddress(ctx context.Context, in *RemoveAddress
 	return out, nil
 }
 
+func (c *userServiceClient) BeDriver(ctx context.Context, in *BeDriverRequest, opts ...grpc.CallOption) (*BeDriverResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(BeDriverResponse)
+	err := c.cc.Invoke(ctx, UserService_BeDriver_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) GetDrivers(ctx context.Context, in *GetDriversRequest, opts ...grpc.CallOption) (*DriverResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DriverResponse)
+	err := c.cc.Invoke(ctx, UserService_GetDrivers_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) RemoveDriver(ctx context.Context, in *RemoveDriverRequest, opts ...grpc.CallOption) (*MessageResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(MessageResponse)
+	err := c.cc.Invoke(ctx, UserService_RemoveDriver_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UserServiceServer is the server API for UserService service.
 // All implementations must embed UnimplementedUserServiceServer
 // for forward compatibility.
@@ -163,6 +202,12 @@ type UserServiceServer interface {
 	AddAddress(context.Context, *AddAddressRequest) (*AddAddressResponse, error)
 	// Removes an address from the user.
 	RemoveAddress(context.Context, *RemoveAddressRequest) (*MessageResponse, error)
+	// Makes a user a driver.
+	BeDriver(context.Context, *BeDriverRequest) (*BeDriverResponse, error)
+	// Retrieves drivers within a certain radius.
+	GetDrivers(context.Context, *GetDriversRequest) (*DriverResponse, error)
+	// Removes a driver by driver ID.
+	RemoveDriver(context.Context, *RemoveDriverRequest) (*MessageResponse, error)
 	mustEmbedUnimplementedUserServiceServer()
 }
 
@@ -196,6 +241,15 @@ func (UnimplementedUserServiceServer) AddAddress(context.Context, *AddAddressReq
 }
 func (UnimplementedUserServiceServer) RemoveAddress(context.Context, *RemoveAddressRequest) (*MessageResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method RemoveAddress not implemented")
+}
+func (UnimplementedUserServiceServer) BeDriver(context.Context, *BeDriverRequest) (*BeDriverResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method BeDriver not implemented")
+}
+func (UnimplementedUserServiceServer) GetDrivers(context.Context, *GetDriversRequest) (*DriverResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetDrivers not implemented")
+}
+func (UnimplementedUserServiceServer) RemoveDriver(context.Context, *RemoveDriverRequest) (*MessageResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method RemoveDriver not implemented")
 }
 func (UnimplementedUserServiceServer) mustEmbedUnimplementedUserServiceServer() {}
 func (UnimplementedUserServiceServer) testEmbeddedByValue()                     {}
@@ -362,6 +416,60 @@ func _UserService_RemoveAddress_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UserService_BeDriver_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(BeDriverRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).BeDriver(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_BeDriver_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).BeDriver(ctx, req.(*BeDriverRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_GetDrivers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetDriversRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).GetDrivers(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_GetDrivers_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).GetDrivers(ctx, req.(*GetDriversRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_RemoveDriver_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RemoveDriverRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).RemoveDriver(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_RemoveDriver_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).RemoveDriver(ctx, req.(*RemoveDriverRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // UserService_ServiceDesc is the grpc.ServiceDesc for UserService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -400,6 +508,18 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RemoveAddress",
 			Handler:    _UserService_RemoveAddress_Handler,
+		},
+		{
+			MethodName: "BeDriver",
+			Handler:    _UserService_BeDriver_Handler,
+		},
+		{
+			MethodName: "GetDrivers",
+			Handler:    _UserService_GetDrivers_Handler,
+		},
+		{
+			MethodName: "RemoveDriver",
+			Handler:    _UserService_RemoveDriver_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

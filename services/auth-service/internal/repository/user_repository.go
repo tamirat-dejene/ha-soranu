@@ -9,10 +9,87 @@ import (
 	"github.com/tamirat-dejene/ha-soranu/services/auth-service/internal/domain"
 	errs "github.com/tamirat-dejene/ha-soranu/services/auth-service/internal/domain/err"
 	postgres "github.com/tamirat-dejene/ha-soranu/shared/db/pg"
+	"github.com/tamirat-dejene/ha-soranu/shared/pkg/logger"
+	"go.uber.org/zap"
 )
 
 type userRepository struct {
 	db postgres.PostgresClient
+}
+
+// GetDrivers implements [domain.UserRepository].
+func (u *userRepository) GetDrivers(ctx context.Context, latitude float32, longitude float32, radius float32) ([]domain.Driver, error) {
+	query := `
+		SELECT d.driver_id, u.user_id, u.email, u.username, u.phone_number, u.created_at
+		FROM drivers d
+		JOIN users u ON d.user_id = u.user_id
+	`
+
+	rows, err := u.db.Query(ctx, query, latitude, longitude, radius)
+	if err != nil {
+		return nil, errs.OptimizedDbError(err)
+	}
+	defer rows.Close()
+
+	var drivers []domain.Driver
+
+	for rows.Next() {
+		var d domain.Driver
+		var u domain.User
+		err := rows.Scan(
+			&d.DriverID,
+			&u.UserID,
+			&u.Email,
+			&u.Username,
+			&u.PhoneNumber,
+			&u.CreatedAt,
+		)
+		if err != nil {
+			return nil, errs.OptimizedDbError(err)
+		}
+
+		d.User = u
+		drivers = append(drivers, d)
+	}
+
+	return drivers, nil
+}
+
+// RemoveDriver implements [domain.UserRepository].
+func (u *userRepository) RemoveDriver(ctx context.Context, driverID string) error {
+	query := `
+		DELETE FROM drivers
+		WHERE driver_id = $1
+	`
+
+	rows_affected, err := u.db.Exec(ctx, query, driverID)
+	if err != nil {
+		return errs.OptimizedDbError(err)
+	}
+
+	if rows_affected == 0 {
+		return errors.New("driver not found")
+	}
+
+	return nil
+}
+
+// BeDriver implements [domain.UserRepository].
+func (u *userRepository) BeDriver(ctx context.Context, userID string) (string, error) {
+	query := `
+		INSERT INTO drivers (user_id)
+		VALUES ($1)
+		RETURNING driver_id
+	`
+	var id string
+
+	err := u.db.QueryRow(ctx, query, userID).Scan(&id)
+	if err != nil {
+		logger.Error("failed to make user a driver", zap.String("user_id", userID), zap.Error(err))
+		return "", errs.OptimizedDbError(err)
+	}
+
+	return id, nil
 }
 
 // GetUserPasswordHashByEmail implements domain.UserRepository.

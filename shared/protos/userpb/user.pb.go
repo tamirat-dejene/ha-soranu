@@ -889,6 +889,250 @@ func (x *RemoveAddressRequest) GetAddressId() string {
 	return ""
 }
 
+type BeDriverRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *BeDriverRequest) Reset() {
+	*x = BeDriverRequest{}
+	mi := &file_user_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BeDriverRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BeDriverRequest) ProtoMessage() {}
+
+func (x *BeDriverRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_user_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BeDriverRequest.ProtoReflect.Descriptor instead.
+func (*BeDriverRequest) Descriptor() ([]byte, []int) {
+	return file_user_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *BeDriverRequest) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+type BeDriverResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	DriverId      string                 `protobuf:"bytes,1,opt,name=driver_id,json=driverId,proto3" json:"driver_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *BeDriverResponse) Reset() {
+	*x = BeDriverResponse{}
+	mi := &file_user_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BeDriverResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BeDriverResponse) ProtoMessage() {}
+
+func (x *BeDriverResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_user_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BeDriverResponse.ProtoReflect.Descriptor instead.
+func (*BeDriverResponse) Descriptor() ([]byte, []int) {
+	return file_user_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *BeDriverResponse) GetDriverId() string {
+	if x != nil {
+		return x.DriverId
+	}
+	return ""
+}
+
+type DriverResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	DriverId      string                 `protobuf:"bytes,1,opt,name=driver_id,json=driverId,proto3" json:"driver_id,omitempty"`
+	Drivers       []*User                `protobuf:"bytes,2,rep,name=drivers,proto3" json:"drivers,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DriverResponse) Reset() {
+	*x = DriverResponse{}
+	mi := &file_user_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DriverResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DriverResponse) ProtoMessage() {}
+
+func (x *DriverResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_user_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DriverResponse.ProtoReflect.Descriptor instead.
+func (*DriverResponse) Descriptor() ([]byte, []int) {
+	return file_user_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *DriverResponse) GetDriverId() string {
+	if x != nil {
+		return x.DriverId
+	}
+	return ""
+}
+
+func (x *DriverResponse) GetDrivers() []*User {
+	if x != nil {
+		return x.Drivers
+	}
+	return nil
+}
+
+type GetDriversRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Latitude      float32                `protobuf:"fixed32,1,opt,name=latitude,proto3" json:"latitude,omitempty"`
+	Longitude     float32                `protobuf:"fixed32,2,opt,name=longitude,proto3" json:"longitude,omitempty"`
+	RadiusKm      float32                `protobuf:"fixed32,3,opt,name=radius_km,json=radiusKm,proto3" json:"radius_km,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetDriversRequest) Reset() {
+	*x = GetDriversRequest{}
+	mi := &file_user_proto_msgTypes[18]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetDriversRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetDriversRequest) ProtoMessage() {}
+
+func (x *GetDriversRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_user_proto_msgTypes[18]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetDriversRequest.ProtoReflect.Descriptor instead.
+func (*GetDriversRequest) Descriptor() ([]byte, []int) {
+	return file_user_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *GetDriversRequest) GetLatitude() float32 {
+	if x != nil {
+		return x.Latitude
+	}
+	return 0
+}
+
+func (x *GetDriversRequest) GetLongitude() float32 {
+	if x != nil {
+		return x.Longitude
+	}
+	return 0
+}
+
+func (x *GetDriversRequest) GetRadiusKm() float32 {
+	if x != nil {
+		return x.RadiusKm
+	}
+	return 0
+}
+
+type RemoveDriverRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	DriverId      string                 `protobuf:"bytes,1,opt,name=driver_id,json=driverId,proto3" json:"driver_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RemoveDriverRequest) Reset() {
+	*x = RemoveDriverRequest{}
+	mi := &file_user_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RemoveDriverRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RemoveDriverRequest) ProtoMessage() {}
+
+func (x *RemoveDriverRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_user_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RemoveDriverRequest.ProtoReflect.Descriptor instead.
+func (*RemoveDriverRequest) Descriptor() ([]byte, []int) {
+	return file_user_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *RemoveDriverRequest) GetDriverId() string {
+	if x != nil {
+		return x.DriverId
+	}
+	return ""
+}
+
 var File_user_proto protoreflect.FileDescriptor
 
 const file_user_proto_rawDesc = "" +
@@ -955,7 +1199,21 @@ const file_user_proto_rawDesc = "" +
 	"\x14RemoveAddressRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x1d\n" +
 	"\n" +
-	"address_id\x18\x02 \x01(\tR\taddressId2\xbc\x04\n" +
+	"address_id\x18\x02 \x01(\tR\taddressId\"*\n" +
+	"\x0fBeDriverRequest\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\"/\n" +
+	"\x10BeDriverResponse\x12\x1b\n" +
+	"\tdriver_id\x18\x01 \x01(\tR\bdriverId\"S\n" +
+	"\x0eDriverResponse\x12\x1b\n" +
+	"\tdriver_id\x18\x01 \x01(\tR\bdriverId\x12$\n" +
+	"\adrivers\x18\x02 \x03(\v2\n" +
+	".user.UserR\adrivers\"j\n" +
+	"\x11GetDriversRequest\x12\x1a\n" +
+	"\blatitude\x18\x01 \x01(\x02R\blatitude\x12\x1c\n" +
+	"\tlongitude\x18\x02 \x01(\x02R\tlongitude\x12\x1b\n" +
+	"\tradius_km\x18\x03 \x01(\x02R\bradiusKm\"2\n" +
+	"\x13RemoveDriverRequest\x12\x1b\n" +
+	"\tdriver_id\x18\x01 \x01(\tR\bdriverId2\xf6\x05\n" +
 	"\vUserService\x126\n" +
 	"\aGetUser\x12\x14.user.GetUserRequest\x1a\x15.user.GetUserResponse\x12K\n" +
 	"\x0eGetPhoneNumber\x12\x1b.user.GetPhoneNumberRequest\x1a\x1c.user.GetPhoneNumberResponse\x12D\n" +
@@ -965,7 +1223,11 @@ const file_user_proto_rawDesc = "" +
 	"\fGetAddresses\x12\x19.user.GetAddressesRequest\x1a\x1a.user.GetAddressesResponse\x12?\n" +
 	"\n" +
 	"AddAddress\x12\x17.user.AddAddressRequest\x1a\x18.user.AddAddressResponse\x12B\n" +
-	"\rRemoveAddress\x12\x1a.user.RemoveAddressRequest\x1a\x15.user.MessageResponseBAZ?github.com/tamirat-dejene/ha-soranu/shared/protos/userpb;userpbb\x06proto3"
+	"\rRemoveAddress\x12\x1a.user.RemoveAddressRequest\x1a\x15.user.MessageResponse\x129\n" +
+	"\bBeDriver\x12\x15.user.BeDriverRequest\x1a\x16.user.BeDriverResponse\x12;\n" +
+	"\n" +
+	"GetDrivers\x12\x17.user.GetDriversRequest\x1a\x14.user.DriverResponse\x12@\n" +
+	"\fRemoveDriver\x12\x19.user.RemoveDriverRequest\x1a\x15.user.MessageResponseBAZ?github.com/tamirat-dejene/ha-soranu/shared/protos/userpb;userpbb\x06proto3"
 
 var (
 	file_user_proto_rawDescOnce sync.Once
@@ -979,7 +1241,7 @@ func file_user_proto_rawDescGZIP() []byte {
 	return file_user_proto_rawDescData
 }
 
-var file_user_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
+var file_user_proto_msgTypes = make([]protoimpl.MessageInfo, 20)
 var file_user_proto_goTypes = []any{
 	(*Address)(nil),                  // 0: user.Address
 	(*User)(nil),                     // 1: user.User
@@ -996,36 +1258,48 @@ var file_user_proto_goTypes = []any{
 	(*AddAddressRequest)(nil),        // 12: user.AddAddressRequest
 	(*AddAddressResponse)(nil),       // 13: user.AddAddressResponse
 	(*RemoveAddressRequest)(nil),     // 14: user.RemoveAddressRequest
-	(*timestamppb.Timestamp)(nil),    // 15: google.protobuf.Timestamp
+	(*BeDriverRequest)(nil),          // 15: user.BeDriverRequest
+	(*BeDriverResponse)(nil),         // 16: user.BeDriverResponse
+	(*DriverResponse)(nil),           // 17: user.DriverResponse
+	(*GetDriversRequest)(nil),        // 18: user.GetDriversRequest
+	(*RemoveDriverRequest)(nil),      // 19: user.RemoveDriverRequest
+	(*timestamppb.Timestamp)(nil),    // 20: google.protobuf.Timestamp
 }
 var file_user_proto_depIdxs = []int32{
-	15, // 0: user.Address.created_at:type_name -> google.protobuf.Timestamp
+	20, // 0: user.Address.created_at:type_name -> google.protobuf.Timestamp
 	0,  // 1: user.User.addresses:type_name -> user.Address
-	15, // 2: user.User.created_at:type_name -> google.protobuf.Timestamp
+	20, // 2: user.User.created_at:type_name -> google.protobuf.Timestamp
 	1,  // 3: user.GetUserResponse.user:type_name -> user.User
 	0,  // 4: user.GetAddressesResponse.addresses:type_name -> user.Address
 	0,  // 5: user.AddAddressResponse.address:type_name -> user.Address
-	3,  // 6: user.UserService.GetUser:input_type -> user.GetUserRequest
-	5,  // 7: user.UserService.GetPhoneNumber:input_type -> user.GetPhoneNumberRequest
-	7,  // 8: user.UserService.AddPhoneNumber:input_type -> user.AddPhoneNumberRequest
-	8,  // 9: user.UserService.UpdatePhoneNumber:input_type -> user.UpdatePhoneNumberRequest
-	9,  // 10: user.UserService.RemovePhoneNumber:input_type -> user.RemovePhoneNumberRequest
-	10, // 11: user.UserService.GetAddresses:input_type -> user.GetAddressesRequest
-	12, // 12: user.UserService.AddAddress:input_type -> user.AddAddressRequest
-	14, // 13: user.UserService.RemoveAddress:input_type -> user.RemoveAddressRequest
-	4,  // 14: user.UserService.GetUser:output_type -> user.GetUserResponse
-	6,  // 15: user.UserService.GetPhoneNumber:output_type -> user.GetPhoneNumberResponse
-	2,  // 16: user.UserService.AddPhoneNumber:output_type -> user.MessageResponse
-	2,  // 17: user.UserService.UpdatePhoneNumber:output_type -> user.MessageResponse
-	2,  // 18: user.UserService.RemovePhoneNumber:output_type -> user.MessageResponse
-	11, // 19: user.UserService.GetAddresses:output_type -> user.GetAddressesResponse
-	13, // 20: user.UserService.AddAddress:output_type -> user.AddAddressResponse
-	2,  // 21: user.UserService.RemoveAddress:output_type -> user.MessageResponse
-	14, // [14:22] is the sub-list for method output_type
-	6,  // [6:14] is the sub-list for method input_type
-	6,  // [6:6] is the sub-list for extension type_name
-	6,  // [6:6] is the sub-list for extension extendee
-	0,  // [0:6] is the sub-list for field type_name
+	1,  // 6: user.DriverResponse.drivers:type_name -> user.User
+	3,  // 7: user.UserService.GetUser:input_type -> user.GetUserRequest
+	5,  // 8: user.UserService.GetPhoneNumber:input_type -> user.GetPhoneNumberRequest
+	7,  // 9: user.UserService.AddPhoneNumber:input_type -> user.AddPhoneNumberRequest
+	8,  // 10: user.UserService.UpdatePhoneNumber:input_type -> user.UpdatePhoneNumberRequest
+	9,  // 11: user.UserService.RemovePhoneNumber:input_type -> user.RemovePhoneNumberRequest
+	10, // 12: user.UserService.GetAddresses:input_type -> user.GetAddressesRequest
+	12, // 13: user.UserService.AddAddress:input_type -> user.AddAddressRequest
+	14, // 14: user.UserService.RemoveAddress:input_type -> user.RemoveAddressRequest
+	15, // 15: user.UserService.BeDriver:input_type -> user.BeDriverRequest
+	18, // 16: user.UserService.GetDrivers:input_type -> user.GetDriversRequest
+	19, // 17: user.UserService.RemoveDriver:input_type -> user.RemoveDriverRequest
+	4,  // 18: user.UserService.GetUser:output_type -> user.GetUserResponse
+	6,  // 19: user.UserService.GetPhoneNumber:output_type -> user.GetPhoneNumberResponse
+	2,  // 20: user.UserService.AddPhoneNumber:output_type -> user.MessageResponse
+	2,  // 21: user.UserService.UpdatePhoneNumber:output_type -> user.MessageResponse
+	2,  // 22: user.UserService.RemovePhoneNumber:output_type -> user.MessageResponse
+	11, // 23: user.UserService.GetAddresses:output_type -> user.GetAddressesResponse
+	13, // 24: user.UserService.AddAddress:output_type -> user.AddAddressResponse
+	2,  // 25: user.UserService.RemoveAddress:output_type -> user.MessageResponse
+	16, // 26: user.UserService.BeDriver:output_type -> user.BeDriverResponse
+	17, // 27: user.UserService.GetDrivers:output_type -> user.DriverResponse
+	2,  // 28: user.UserService.RemoveDriver:output_type -> user.MessageResponse
+	18, // [18:29] is the sub-list for method output_type
+	7,  // [7:18] is the sub-list for method input_type
+	7,  // [7:7] is the sub-list for extension type_name
+	7,  // [7:7] is the sub-list for extension extendee
+	0,  // [0:7] is the sub-list for field type_name
 }
 
 func init() { file_user_proto_init() }
@@ -1039,7 +1313,7 @@ func file_user_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_user_proto_rawDesc), len(file_user_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   15,
+			NumMessages:   20,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

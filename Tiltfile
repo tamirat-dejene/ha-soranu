@@ -74,18 +74,20 @@ k8s_yaml([
     'infra/dev/k8s/auth-service-deployment.yaml',
     'infra/dev/k8s/restaurant-service-deployment.yaml',
     'infra/dev/k8s/postgres-deployment.yaml',
+    'infra/dev/k8s/kafka-deployment.yaml',
     'infra/dev/k8s/redis-deployment.yaml',
     'infra/dev/k8s/config-map.yaml',
     'infra/dev/k8s/secrets.yaml',
 ])
-
+ 
 # --- Port Forwards ---
 # Expose services to localhost
-k8s_resource('api-gateway', port_forwards=['8080:8080'])
-k8s_resource('auth-service', port_forwards=['9090:9090'])
-k8s_resource('restaurant-service', port_forwards=['9091:9091'])
-k8s_resource('postgres', port_forwards=['5432:5432'])
-k8s_resource('redis', port_forwards=['6379:6379'])
+k8s_resource('api-gateway', port_forwards=['8080:8080'], labels="MONITORED")
+k8s_resource('auth-service', port_forwards=['9090:9090'], labels="MONITORED")
+k8s_resource('restaurant-service', port_forwards=['9091:9091'] , labels="MONITORED")
+k8s_resource('postgres', port_forwards=['5432:5432'], resource_deps=[], labels="DATABASE")
+k8s_resource('redis', port_forwards=['6379:6379'], labels="DATABASE")
+k8s_resource('kafka', port_forwards=['9092:9092'], resource_deps=[], labels="DATABASE")
 
 # --- End of File ---
 print("Tiltfile loaded successfully — monitoring api-gateway, and auth-service.")

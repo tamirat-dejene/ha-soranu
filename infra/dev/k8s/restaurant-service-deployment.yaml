@@ -23,7 +23,7 @@ spec:
               memory: "64Mi"
               cpu: "250m"
           ports:
-            - containerPort: 9090
+            - containerPort: 9091
 
           # Load all env variables from K8s
           envFrom:

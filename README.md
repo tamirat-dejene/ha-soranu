@@ -2,25 +2,13 @@
 
 **Ha-Soranu** is a scalable, microservices-based online food delivery platform built with Go. It enables users to browse restaurants, view menus, and place orders through a modern, distributed architecture.
 
-## 🏗️ Architecture
+## Architecture
 
 The system follows a microservices architecture using **gRPC** for inter-service communication and an **API Gateway** to expose RESTful endpoints to clients.
 
-```mermaid
-graph TD
-    Client[Web/Mobile Client] -->|REST / HTTP| Gateway[API Gateway]
-    
-    subgraph "Microservices Cluster"
-        Gateway -->|gRPC| Auth[Auth Service]
-        Gateway -->|gRPC| Restaurant[Restaurant Service]
-        
-        Auth -->|Read/Write| AuthDB[(Postgres: Auth)]
-        Auth -->|Cache| Redis[(Redis)]
-        
-        Restaurant -->|Read/Write| RestDB[(Postgres: Restaurant)]
-        Restaurant -->|Publish| Kafka{Apache Kafka}
-    end
-```
+![Ha-Soranu architecture diagram](./docs/hasoranu.png)
+
+*Figure: High-level architecture — API Gateway, Auth & Restaurant services, Postgres, Redis, Kafka.*
 
 ### Core Services
 
@@ -30,9 +18,7 @@ graph TD
 | **[auth-service](./services/auth-service)** | gRPC | Manages user identity, authentication (JWT, OAuth), and profiles. |
 | **[restaurant-service](./services/restaurant-service)** | gRPC | Manages restaurant profiles, menus, and order processing. Publishes order events to Kafka. |
 
----
-
-## 🚀 Tech Stack
+## Tech Stack
 
 - **Language**: Go (Golang)
 - **Communication**: gRPC (Inter-service), REST (Client-facing)
@@ -47,9 +33,7 @@ graph TD
   - [Tilt](https://tilt.dev) (Local Development Environment)
 - **Tooling**: Make, Goose (Migrations)
 
----
-
-## 🛠️ Getting Started
+## Getting Started
 
 The easiest way to run the entire platform locally is using **Tilt**.
 
@@ -78,9 +62,7 @@ The easiest way to run the entire platform locally is using **Tilt**.
    - **API Gateway**: `http://localhost:8080`
    - **Tilt UI**: `http://localhost:10350` (to monitor logs and status)
 
----
-
-## 📁 Project Structure
+## Project Structure
 
 ```bash
 ha-soranu/
@@ -97,9 +79,8 @@ ha-soranu/
 └── go.mod                  # Go module definition (Workspace mode)
 ```
 
----
 
-## 🧩 Key Features
+## Key Features
 
 - **Authentication System**:
   - Secure Email/Password login.
@@ -116,9 +97,7 @@ ha-soranu/
   - Real-time order updates.
   - **Event-Driven**: Asynchronous order processing using Kafka.
 
----
-
-## 🔧 Development
+## Development
 
 ### Working with Protos
 
@@ -137,19 +116,3 @@ Each service manages its own database schema using **Goose**.
 cd services/auth-service
 goose -dir migrations postgres "user=postgres dbname=authdb sslmode=disable" create add_new_table sql
 ```
-
----
-
-## 🤝 Contributing
-
-1. Fork the repository.
-2. Create a feature branch (`git checkout -b feature/amazing-feature`).
-3. Commit your changes.
-4. Push to the branch.
-5. Open a Pull Request.
-
----
-
-## 📜 License
-
-This project is licensed under the MIT License.

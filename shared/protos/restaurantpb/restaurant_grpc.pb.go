@@ -27,6 +27,8 @@ const (
 	RestaurantService_RemoveMenuItem_FullMethodName     = "/restaurant.RestaurantService/RemoveMenuItem"
 	RestaurantService_UpdateMenuItem_FullMethodName     = "/restaurant.RestaurantService/UpdateMenuItem"
 	RestaurantService_PlaceOrder_FullMethodName         = "/restaurant.RestaurantService/PlaceOrder"
+	RestaurantService_GetOrders_FullMethodName          = "/restaurant.RestaurantService/GetOrders"
+	RestaurantService_UpdateOrderStatus_FullMethodName  = "/restaurant.RestaurantService/UpdateOrderStatus"
 )
 
 // RestaurantServiceClient is the client API for RestaurantService service.
@@ -41,6 +43,8 @@ type RestaurantServiceClient interface {
 	RemoveMenuItem(ctx context.Context, in *RemoveMenuItemRequest, opts ...grpc.CallOption) (*MenuItem, error)
 	UpdateMenuItem(ctx context.Context, in *UpdateMenuItemRequest, opts ...grpc.CallOption) (*MenuItem, error)
 	PlaceOrder(ctx context.Context, in *PlaceOrderRequest, opts ...grpc.CallOption) (*PlaceOrderResponse, error)
+	GetOrders(ctx context.Context, in *GetOrdersRequest, opts ...grpc.CallOption) (*GetOrdersResponse, error)
+	UpdateOrderStatus(ctx context.Context, in *UpdateOrderStatusRequest, opts ...grpc.CallOption) (*Order, error)
 }
 
 type restaurantServiceClient struct {
@@ -140,6 +144,26 @@ func (c *restaurantServiceClient) PlaceOrder(ctx context.Context, in *PlaceOrder
 	return out, nil
 }
 
+func (c *restaurantServiceClient) GetOrders(ctx context.Context, in *GetOrdersRequest, opts ...grpc.CallOption) (*GetOrdersResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetOrdersResponse)
+	err := c.cc.Invoke(ctx, RestaurantService_GetOrders_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *restaurantServiceClient) UpdateOrderStatus(ctx context.Context, in *UpdateOrderStatusRequest, opts ...grpc.CallOption) (*Order, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Order)
+	err := c.cc.Invoke(ctx, RestaurantService_UpdateOrderStatus_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // RestaurantServiceServer is the server API for RestaurantService service.
 // All implementations must embed UnimplementedRestaurantServiceServer
 // for forward compatibility.
@@ -152,6 +176,8 @@ type RestaurantServiceServer interface {
 	RemoveMenuItem(context.Context, *RemoveMenuItemRequest) (*MenuItem, error)
 	UpdateMenuItem(context.Context, *UpdateMenuItemRequest) (*MenuItem, error)
 	PlaceOrder(context.Context, *PlaceOrderRequest) (*PlaceOrderResponse, error)
+	GetOrders(context.Context, *GetOrdersRequest) (*GetOrdersResponse, error)
+	UpdateOrderStatus(context.Context, *UpdateOrderStatusRequest) (*Order, error)
 	mustEmbedUnimplementedRestaurantServiceServer()
 }
 
@@ -185,6 +211,12 @@ func (UnimplementedRestaurantServiceServer) UpdateMenuItem(context.Context, *Upd
 }
 func (UnimplementedRestaurantServiceServer) PlaceOrder(context.Context, *PlaceOrderRequest) (*PlaceOrderResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method PlaceOrder not implemented")
+}
+func (UnimplementedRestaurantServiceServer) GetOrders(context.Context, *GetOrdersRequest) (*GetOrdersResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetOrders not implemented")
+}
+func (UnimplementedRestaurantServiceServer) UpdateOrderStatus(context.Context, *UpdateOrderStatusRequest) (*Order, error) {
+	return nil, status.Error(codes.Unimplemented, "method UpdateOrderStatus not implemented")
 }
 func (UnimplementedRestaurantServiceServer) mustEmbedUnimplementedRestaurantServiceServer() {}
 func (UnimplementedRestaurantServiceServer) testEmbeddedByValue()                           {}
@@ -344,6 +376,42 @@ func _RestaurantService_PlaceOrder_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
+func _RestaurantService_GetOrders_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetOrdersRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RestaurantServiceServer).GetOrders(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RestaurantService_GetOrders_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RestaurantServiceServer).GetOrders(ctx, req.(*GetOrdersRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RestaurantService_UpdateOrderStatus_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateOrderStatusRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RestaurantServiceServer).UpdateOrderStatus(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RestaurantService_UpdateOrderStatus_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RestaurantServiceServer).UpdateOrderStatus(ctx, req.(*UpdateOrderStatusRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // RestaurantService_ServiceDesc is the grpc.ServiceDesc for RestaurantService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -378,6 +446,14 @@ var RestaurantService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "PlaceOrder",
 			Handler:    _RestaurantService_PlaceOrder_Handler,
+		},
+		{
+			MethodName: "GetOrders",
+			Handler:    _RestaurantService_GetOrders_Handler,
+		},
+		{
+			MethodName: "UpdateOrderStatus",
+			Handler:    _RestaurantService_UpdateOrderStatus_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

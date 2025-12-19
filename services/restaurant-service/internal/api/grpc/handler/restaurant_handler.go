@@ -5,13 +5,43 @@ import (
 
 	"github.com/tamirat-dejene/ha-soranu/services/restaurant-service/internal/api/grpc/dto"
 	"github.com/tamirat-dejene/ha-soranu/services/restaurant-service/internal/domain"
+	"github.com/tamirat-dejene/ha-soranu/shared/pkg/logger"
 	"github.com/tamirat-dejene/ha-soranu/shared/protos/restaurantpb"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 )
 
 type restaurantHandler struct {
 	restaurantpb.UnimplementedRestaurantServiceServer
 	restaurantUsecase domain.RestaurantUseCase
+}
+
+// GetOrders implements [restaurantpb.RestaurantServiceServer].
+func (r *restaurantHandler) GetOrders(ctx context.Context, req *restaurantpb.GetOrdersRequest) (*restaurantpb.GetOrdersResponse, error) {
+	if req == nil {
+		return nil, domain.ErrInvalidRestaurantData
+	}
+
+	orders, err := r.restaurantUsecase.GetOrders(ctx, req.RestaurantId)
+	if err != nil {
+		return nil, err
+	}
+
+	logger.Info("fetched orders", zap.Int("count", len(orders)))
+
+	var orderProtos []*restaurantpb.Order
+	for _, order := range orders {
+		orderProtos = append(orderProtos, dto.DomainOrderToProto(order))
+	}
+
+	return &restaurantpb.GetOrdersResponse{
+		Orders: orderProtos,
+	}, nil
+}
+
+// UpdateOrderStatus implements [restaurantpb.RestaurantServiceServer].
+func (r *restaurantHandler) UpdateOrderStatus(context.Context, *restaurantpb.UpdateOrderStatusRequest) (*restaurantpb.Order, error) {
+	panic("unimplemented")
 }
 
 // PlaceOrder implements restaurantpb.RestaurantServiceServer.
@@ -23,7 +53,7 @@ func (r *restaurantHandler) PlaceOrder(ctx context.Context, req *restaurantpb.Pl
 	var orderItems []domain.OrderItem
 	for _, item := range req.Items {
 		orderItems = append(orderItems, domain.OrderItem{
-			ItemID:   item.ItemId,
+			ItemId:   item.ItemId,
 			Quantity: item.Quantity,
 		})
 	}
@@ -38,7 +68,7 @@ func (r *restaurantHandler) PlaceOrder(ctx context.Context, req *restaurantpb.Pl
 	}
 
 	return &restaurantpb.PlaceOrderResponse{
-		OrderId: order.OrderID,
+		OrderId: order.OrderId,
 		Status:  order.Status,
 	}, nil
 }

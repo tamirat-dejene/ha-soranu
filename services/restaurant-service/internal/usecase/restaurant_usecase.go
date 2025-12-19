@@ -1,7 +1,6 @@
 package usecase
 
 import (
-	"bytes"
 	"context"
 	"time"
 
@@ -22,25 +21,29 @@ type restaurantUseCase struct {
 	timeout  time.Duration
 }
 
+// GetOrders implements [domain.RestaurantUseCase].
+func (r *restaurantUseCase) GetOrders(ctx context.Context, restaurantID string) ([]domain.Order, error) {
+	c, cancel := context.WithTimeout(ctx, r.timeout)
+	defer cancel()
+
+	return r.repo.GetOrders(c, restaurantID)
+}
+
 // PlaceOrder implements [domain.RestaurantUseCase].
 func (r *restaurantUseCase) PlaceOrder(ctx context.Context, order *domain.PlaceOrder) (*domain.Order, error) {
 	c, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
-	orderId := bytes.Buffer{}
-	orderId.WriteString(order.CustomerID)
-	orderId.WriteString("-")
-	orderId.WriteString(order.RestaurantID)
-	orderId.WriteString("-")
-	orderId.WriteString(time.Now().Format("20060102150405"))
-
-	// Make order processing logic here: verify items, calculate total, etc.
-	// If we save order to DB, we can get the order ID from there.
+	ord, err := r.repo.PlaceOrder(c, order)
+	if err != nil {
+		return nil, err
+	}
 
 	// Create domain event
 	create_event := orderpb.OrderCreated{
-		OrderId:       orderId.String(),
+		OrderId:       ord.OrderId,
 		CustomerId:    order.CustomerID,
+		TotalAmount:   ord.TotalAmount,
 		CreatedAtUnix: time.Now().Unix(),
 	}
 
@@ -66,7 +69,7 @@ func (r *restaurantUseCase) PlaceOrder(ctx context.Context, order *domain.PlaceO
 
 	err = r.producer.Publish(c, &kafka.Message{
 		Topic: events.OrderPlacedEvent,
-		Key:   orderId.Bytes(),
+		Key:   []byte(ord.OrderId),
 		Value: envelopeBytes,
 		Headers: map[string][]byte{
 			"event_type":   []byte(events.OrderPlacedEvent),
@@ -80,10 +83,7 @@ func (r *restaurantUseCase) PlaceOrder(ctx context.Context, order *domain.PlaceO
 		return nil, err
 	}
 
-	return &domain.Order{
-		OrderID: orderId.String(),
-		Status:  domain.ORDER_STATUS_PENDING,
-	}, nil
+	return ord, nil
 }
 
 // LoginRestaurant implements domain.RestaurantUseCase.

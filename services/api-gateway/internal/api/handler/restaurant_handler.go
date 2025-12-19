@@ -38,6 +38,58 @@ type RestaurantServiceClient interface {
 }
 */
 
+func (h *RestaurantHandler) GetOrders(c *gin.Context) {
+	restaurantID := c.Query("restaurant_id")
+	if restaurantID == "" {
+		c.JSON(http.StatusBadRequest, errs.NewErrorResponse("restaurant_id is required"))
+		return
+	}
+
+	req := &restaurantpb.GetOrdersRequest{RestaurantId: restaurantID}
+
+	resp, err := h.client.RestaurantClient.GetOrders(c.Request.Context(), req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponseFromGRPCError(err))
+		return
+	}
+
+	var orders []*domain.Order
+	for _, orderProto := range resp.Orders {
+		orders = append(orders, dto.OrderResponseFromProto(orderProto))
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"orders": orders,
+	})
+}
+
+// func (h *RestaurantHandler) UpdateOrderStatus(c *gin.Context) {
+// 	orderID := c.Param("order_id")
+// 	if orderID == "" {
+// 		c.JSON(http.StatusBadRequest, errs.NewErrorResponse("order_id is required"))
+// 		return
+// 	}
+
+// 	var req dto.UpdateOrderStatusDTO
+// 	if err := c.ShouldBindJSON(&req); err != nil {
+// 		c.JSON(http.StatusBadRequest, errs.NewErrorResponse(errs.MsgInvalidRequest))
+// 		return
+// 	}
+
+// 	updateProto := &restaurantpb.UpdateOrderStatusRequest{
+// 		OrderId: orderID,
+// 		Status:  req.Status,
+// 	}
+
+// 	resp, err := h.client.RestaurantClient.UpdateOrderStatus(c.Request.Context(), updateProto)
+// 	if err != nil {
+// 		c.JSON(http.StatusInternalServerError, dto.ErrorResponseFromGRPCError(err))
+// 		return
+// 	}
+
+// 	c.JSON(http.StatusOK, dto.OrderResponseFromProto(resp))
+// }
+
 func (h *RestaurantHandler) PlaceOrder(c *gin.Context) {
 	var req dto.PlaceOrderDTO
 	if err := c.ShouldBindJSON(&req); err != nil {

@@ -13,6 +13,178 @@ type restaurantRepository struct {
 	db postgres.PostgresClient
 }
 
+// GetOrders implements [domain.RestaurantRepository].
+func (r *restaurantRepository) GetOrders(
+	ctx context.Context,
+	restaurantID string,
+) ([]domain.Order, error) {
+
+	// 1. Load orders
+	query := `
+		SELECT order_id, customer_id, total_price, status
+		FROM orders
+		WHERE restaurant_id = $1
+		ORDER BY order_id
+	`
+
+	rows, err := r.db.Query(ctx, query, restaurantID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	orders := make([]domain.Order, 0)
+
+	for rows.Next() {
+		var ord domain.Order
+
+		err := rows.Scan(
+			&ord.OrderId,
+			&ord.CustomerID,
+			&ord.TotalAmount,
+			&ord.Status,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		ord.RestaurantID = restaurantID
+
+		// 2. Load order items for this order
+		itemsQuery := `
+			SELECT item_id, quantity
+			FROM order_items
+			WHERE order_id = $1
+		`
+
+		itemRows, err := r.db.Query(ctx, itemsQuery, ord.OrderId)
+		if err != nil {
+			return nil, err
+		}
+
+		items := make([]domain.OrderItem, 0)
+
+		for itemRows.Next() {
+			var item domain.OrderItem
+			if err := itemRows.Scan(&item.ItemId, &item.Quantity); err != nil {
+				itemRows.Close()
+				return nil, err
+			}
+			items = append(items, item)
+		}
+		itemRows.Close()
+
+		ord.Items = items
+		orders = append(orders, ord)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return orders, nil
+}
+
+func calculateTotalPrice(ctx context.Context, tx postgres.Tx, restaurantID string, items []domain.OrderItem) (float64, error) {
+	var total float64
+
+	for _, it := range items {
+		var price float64
+		query := `
+			SELECT price
+			FROM menu_items
+			WHERE item_id = $1 AND restaurant_id = $2
+		`
+
+		err := tx.QueryRow(ctx, query, it.ItemId, restaurantID).Scan(&price)
+		if err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				return 0, errors.New("menu item not found or does not belong to restaurant")
+			}
+			return 0, err
+		}
+
+		total += price * float64(it.Quantity)
+	}
+
+	return total, nil
+}
+
+// PlaceOrder implements [domain.RestaurantRepository].
+func (r *restaurantRepository) PlaceOrder(ctx context.Context, order *domain.PlaceOrder) (*domain.Order, error) {
+	tx, err := r.db.BeginTx(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	defer func() {
+		if err != nil {
+			_ = tx.Rollback(ctx)
+		}
+	}()
+
+	// 1. Calculate total price
+	totalPrice, err := calculateTotalPrice(
+		ctx,
+		tx,
+		order.RestaurantID,
+		order.Items,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	// 2. Create order
+	var orderID string
+	createOrderQuery := `
+		INSERT INTO orders (customer_id, restaurant_id, total_price)
+		VALUES ($1, $2, $3)
+		RETURNING order_id
+	`
+
+	err = tx.QueryRow(
+		ctx,
+		createOrderQuery,
+		order.CustomerID,
+		order.RestaurantID,
+		totalPrice,
+	).Scan(&orderID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	// 3. Insert order items
+	insertItemQuery := `
+		INSERT INTO order_items (order_id, item_id, quantity)
+		VALUES ($1, $2, $3)
+	`
+
+	for _, it := range order.Items {
+		_, err = tx.Exec(
+			ctx,
+			insertItemQuery,
+			orderID,
+			it.ItemId,
+			it.Quantity,
+		)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	// 4. Commit transaction
+	if err = tx.Commit(ctx); err != nil {
+		return nil, err
+	}
+
+	return &domain.Order{
+		OrderId:     orderID,
+		TotalAmount: totalPrice,
+		Status:      "PENDING",
+	}, nil
+}
+
 // LoginRestaurant implements domain.RestaurantRepository.
 func (r *restaurantRepository) LoginRestaurant(
 	ctx context.Context,
@@ -161,8 +333,6 @@ func (r *restaurantRepository) StreamRestaurants(
 
 	return rows.Err()
 }
-
-
 
 // AddMenuItem implements domain.RestaurantRepository.
 func (r *restaurantRepository) AddMenuItem(

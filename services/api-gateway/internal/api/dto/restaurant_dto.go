@@ -111,7 +111,6 @@ type UpdateMenuItemDTO struct {
 	Price       float32 `json:"price" binding:"required"`
 }
 
-
 type PlaceOrderDTO struct {
 	CustomerID   string             `json:"customer_id" binding:"required"`
 	RestaurantID string             `json:"restaurant_id" binding:"required"`
@@ -134,13 +133,33 @@ func (dto *PlaceOrderDTO) ToProto() *restaurantpb.PlaceOrderRequest {
 }
 
 type PlaceOrderResponseDTO struct {
-	OrderID string `json:"order_id"`
-	Status  string `json:"status"`
+	OrderID     string  `json:"order_id"`
+	TotalAmount float64 `json:"total_amount"`
+	Status      string  `json:"status"`
 }
 
 func PlaceOrderResponseFromProto(resp *restaurantpb.PlaceOrderResponse) *PlaceOrderResponseDTO {
 	return &PlaceOrderResponseDTO{
-		OrderID: resp.OrderId,
-		Status:  resp.Status,
+		OrderID:     resp.OrderId,
+		TotalAmount: resp.TotalAmount,
+		Status:      resp.Status,
 	}
-}	
+}
+
+func OrderResponseFromProto(order *restaurantpb.Order) *domain.Order {
+	orderItems := make([]domain.OrderItem, 0, len(order.Items))
+	for _, item := range order.Items {
+		orderItems = append(orderItems, domain.OrderItem{
+			ItemId:   item.ItemId,
+			Quantity: item.Quantity,
+		})
+	}
+	return &domain.Order{
+		OrderId:      order.OrderId,
+		CustomerID:   order.CustomerId,
+		RestaurantID: order.RestaurantId,
+		Items:        orderItems,
+		TotalAmount:  order.TotalAmount,
+		Status:       order.Status.String(),
+	}
+}

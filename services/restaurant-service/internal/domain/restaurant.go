@@ -20,26 +20,31 @@ type MenuItem struct {
 }
 
 type Area struct {
-	LatitudeMin  float32
-	LatitudeMax  float32
-	RadiusInKm   float32
+	LatitudeMin float32
+	LatitudeMax float32
+	RadiusInKm  float32
 }
 
-type  PlaceOrder struct {
+type PlaceOrder struct {
 	CustomerID   string
 	RestaurantID string
 	Items        []OrderItem
 }
 
-type OrderItem struct {
-	ItemID      string
-	Quantity   int32
+type Order struct {
+	OrderId      string
+	CustomerID   string
+	RestaurantID string
+	Items        []OrderItem
+	TotalAmount  float64
+	Status       string
 }
 
-type Order struct {
-	OrderID      string
-	Status 	 string
+type OrderItem struct {
+	ItemId   string
+	Quantity int32
 }
+
 
 type RestaurantUseCase interface {
 	LoginRestaurant(ctx context.Context, email, secretKey string) (*Restaurant, error)
@@ -53,6 +58,7 @@ type RestaurantUseCase interface {
 	UpdateMenuItem(ctx context.Context, restaurantID string, item MenuItem) (*MenuItem, error)
 
 	PlaceOrder(ctx context.Context, order *PlaceOrder) (*Order, error)
+	GetOrders(ctx context.Context, restaurantID string) ([]Order, error)
 }
 
 type RestaurantRepository interface {
@@ -65,4 +71,7 @@ type RestaurantRepository interface {
 	AddMenuItem(ctx context.Context, restaurantID string, item MenuItem) (*MenuItem, error)
 	RemoveMenuItem(ctx context.Context, restaurantID, itemID string) error
 	UpdateMenuItem(ctx context.Context, restaurantID string, item MenuItem) (*MenuItem, error)
+
+	PlaceOrder(ctx context.Context, order *PlaceOrder) (*Order, error)
+	GetOrders(ctx context.Context, restaurantID string) ([]Order, error)
 }

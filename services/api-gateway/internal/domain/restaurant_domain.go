@@ -16,6 +16,15 @@ type Restaurant struct {
 	Menus        []MenuItem `json:"menus"`
 }
 
+type Order struct {
+	OrderId      string      `json:"order_id"`
+	CustomerID   string      `json:"customer_id"`
+	RestaurantID string      `json:"restaurant_id"`
+	Items        []OrderItem `json:"items"`
+	TotalAmount  float64     `json:"total_amount"`
+	Status       string      `json:"status"`
+}
+
 type OrderItem struct {
 	ItemId   string `json:"item_id"`
 	Quantity int32  `json:"quantity"`

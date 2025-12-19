@@ -100,6 +100,9 @@ func (s *Server) SetupRoutes() {
 			restaurant.POST("/menu", s.restaurantHandler.AddMenuItem)
 			restaurant.PUT("/menu", s.restaurantHandler.UpdateMenuItem)
 			restaurant.DELETE("/menu", s.restaurantHandler.RemoveMenuItem)
+
+			restaurant.GET("/orders", s.restaurantHandler.GetOrders)
+			// restaurant.PUT("/orders/:order_id/status", s.restaurantHandler.UpdateOrderStatus)
 		}
 	}
 

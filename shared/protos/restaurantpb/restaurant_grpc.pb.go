@@ -26,6 +26,7 @@ const (
 	RestaurantService_AddMenuItem_FullMethodName        = "/restaurant.RestaurantService/AddMenuItem"
 	RestaurantService_RemoveMenuItem_FullMethodName     = "/restaurant.RestaurantService/RemoveMenuItem"
 	RestaurantService_UpdateMenuItem_FullMethodName     = "/restaurant.RestaurantService/UpdateMenuItem"
+	RestaurantService_PlaceOrder_FullMethodName         = "/restaurant.RestaurantService/PlaceOrder"
 )
 
 // RestaurantServiceClient is the client API for RestaurantService service.
@@ -39,6 +40,7 @@ type RestaurantServiceClient interface {
 	AddMenuItem(ctx context.Context, in *AddMenuItemRequest, opts ...grpc.CallOption) (*MenuItem, error)
 	RemoveMenuItem(ctx context.Context, in *RemoveMenuItemRequest, opts ...grpc.CallOption) (*MenuItem, error)
 	UpdateMenuItem(ctx context.Context, in *UpdateMenuItemRequest, opts ...grpc.CallOption) (*MenuItem, error)
+	PlaceOrder(ctx context.Context, in *PlaceOrderRequest, opts ...grpc.CallOption) (*PlaceOrderResponse, error)
 }
 
 type restaurantServiceClient struct {
@@ -128,6 +130,16 @@ func (c *restaurantServiceClient) UpdateMenuItem(ctx context.Context, in *Update
 	return out, nil
 }
 
+func (c *restaurantServiceClient) PlaceOrder(ctx context.Context, in *PlaceOrderRequest, opts ...grpc.CallOption) (*PlaceOrderResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PlaceOrderResponse)
+	err := c.cc.Invoke(ctx, RestaurantService_PlaceOrder_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // RestaurantServiceServer is the server API for RestaurantService service.
 // All implementations must embed UnimplementedRestaurantServiceServer
 // for forward compatibility.
@@ -139,6 +151,7 @@ type RestaurantServiceServer interface {
 	AddMenuItem(context.Context, *AddMenuItemRequest) (*MenuItem, error)
 	RemoveMenuItem(context.Context, *RemoveMenuItemRequest) (*MenuItem, error)
 	UpdateMenuItem(context.Context, *UpdateMenuItemRequest) (*MenuItem, error)
+	PlaceOrder(context.Context, *PlaceOrderRequest) (*PlaceOrderResponse, error)
 	mustEmbedUnimplementedRestaurantServiceServer()
 }
 
@@ -169,6 +182,9 @@ func (UnimplementedRestaurantServiceServer) RemoveMenuItem(context.Context, *Rem
 }
 func (UnimplementedRestaurantServiceServer) UpdateMenuItem(context.Context, *UpdateMenuItemRequest) (*MenuItem, error) {
 	return nil, status.Error(codes.Unimplemented, "method UpdateMenuItem not implemented")
+}
+func (UnimplementedRestaurantServiceServer) PlaceOrder(context.Context, *PlaceOrderRequest) (*PlaceOrderResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method PlaceOrder not implemented")
 }
 func (UnimplementedRestaurantServiceServer) mustEmbedUnimplementedRestaurantServiceServer() {}
 func (UnimplementedRestaurantServiceServer) testEmbeddedByValue()                           {}
@@ -310,6 +326,24 @@ func _RestaurantService_UpdateMenuItem_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
+func _RestaurantService_PlaceOrder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PlaceOrderRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RestaurantServiceServer).PlaceOrder(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RestaurantService_PlaceOrder_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RestaurantServiceServer).PlaceOrder(ctx, req.(*PlaceOrderRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // RestaurantService_ServiceDesc is the grpc.ServiceDesc for RestaurantService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -340,6 +374,10 @@ var RestaurantService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateMenuItem",
 			Handler:    _RestaurantService_UpdateMenuItem_Handler,
+		},
+		{
+			MethodName: "PlaceOrder",
+			Handler:    _RestaurantService_PlaceOrder_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

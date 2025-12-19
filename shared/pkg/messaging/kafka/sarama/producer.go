@@ -20,7 +20,7 @@ func NewProducer(brokers []string) (*Producer, error) {
 	return &Producer{producer: p}, nil
 }
 
-func (p *Producer) Publish(ctx context.Context, msg kafka.Message) error {
+func (p *Producer) Publish(ctx context.Context, msg *kafka.Message) error {
 	_, _, err := p.producer.SendMessage(&sarama.ProducerMessage{
 		Topic: msg.Topic,
 		Key:   sarama.ByteEncoder(msg.Key),

@@ -8,6 +8,7 @@ import (
 
 	postgres "github.com/tamirat-dejene/ha-soranu/shared/db/pg"
 	"github.com/tamirat-dejene/ha-soranu/shared/pkg/logger"
+	"github.com/tamirat-dejene/ha-soranu/shared/pkg/messaging/kafka/sarama"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 
@@ -52,12 +53,18 @@ func main() {
 	if err != nil {
 		logger.Fatal("failed to listen", zap.Error(err))
 	}
-
 	s := grpc.NewServer()
+
+	// 6. Initialize sarama producer
+	producer, err := sarama.NewProducer([]string{env.KafkaBroker})
+	if err != nil {
+		logger.Fatal("failed to create kafka producer", zap.Error(err))
+	}
+	defer producer.Close()
 	
 	// 6. Initialize Repository, Usecase, and register Handler
 	restaurant_repo := repository.NewRestaurantRepository(pgClient)
-	restaurant_usecase := usecase.NewRestaurantUseCase(restaurant_repo, 10 * time.Second)
+	restaurant_usecase := usecase.NewRestaurantUseCase(restaurant_repo, producer, 10 * time.Second)
 	handler.NewRestaurantHandler(s, restaurant_usecase)
 
 	logger.Info("Service listening", zap.String("port", env.RESTAURANT_SRV_PORT))

@@ -38,6 +38,22 @@ type RestaurantServiceClient interface {
 }
 */
 
+func (h *RestaurantHandler) PlaceOrder(c *gin.Context) {
+	var req dto.PlaceOrderDTO
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, errs.NewErrorResponse(errs.MsgInvalidRequest))
+		return
+	}
+
+	resp, err := h.client.RestaurantClient.PlaceOrder(c.Request.Context(), req.ToProto())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponseFromGRPCError(err))
+		return
+	}
+
+	c.JSON(http.StatusOK, dto.PlaceOrderResponseFromProto(resp))
+}
+
 func (h *RestaurantHandler) Login(c *gin.Context) {
 	var req dto.RestaurantLoginDTO
 	if err := c.ShouldBindJSON(&req); err != nil {

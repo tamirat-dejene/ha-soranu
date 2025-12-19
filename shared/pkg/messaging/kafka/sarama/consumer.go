@@ -15,6 +15,11 @@ type consumerHandler struct {
 	handler kafka.Handler
 }
 
+// Setup implements [sarama.ConsumerGroupHandler].
+func (c *consumerHandler) Setup(sarama.ConsumerGroupSession) error {
+	return nil
+}
+
 // Cleanup implements [sarama.ConsumerGroupHandler].
 func (c *consumerHandler) Cleanup(sarama.ConsumerGroupSession) error {
 	return nil
@@ -34,12 +39,6 @@ func (c *consumerHandler) ConsumeClaim(session sarama.ConsumerGroupSession, clai
 
 	return nil
 }
-
-// Setup implements [sarama.ConsumerGroupHandler].
-func (c *consumerHandler) Setup(sarama.ConsumerGroupSession) error {
-	return nil
-}
-
 func NewConsumer(brokers []string, groupID string) (*Consumer, error) {
 	g, err := sarama.NewConsumerGroup(brokers, groupID, NewConfig())
 	if err != nil {

@@ -15,3 +15,8 @@ type Restaurant struct {
 	Longitude    float32    `json:"longitude"`
 	Menus        []MenuItem `json:"menus"`
 }
+
+type OrderItem struct {
+	ItemId   string `json:"item_id"`
+	Quantity int32  `json:"quantity"`
+}

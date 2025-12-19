@@ -14,6 +14,35 @@ type restaurantHandler struct {
 	restaurantUsecase domain.RestaurantUseCase
 }
 
+// PlaceOrder implements restaurantpb.RestaurantServiceServer.
+func (r *restaurantHandler) PlaceOrder(ctx context.Context, req *restaurantpb.PlaceOrderRequest) (*restaurantpb.PlaceOrderResponse, error) {
+	if req == nil {
+		return nil, domain.ErrInvalidOrderData
+	}
+
+	var orderItems []domain.OrderItem
+	for _, item := range req.Items {
+		orderItems = append(orderItems, domain.OrderItem{
+			ItemID:   item.ItemId,
+			Quantity: item.Quantity,
+		})
+	}
+
+	order, err := r.restaurantUsecase.PlaceOrder(ctx, &domain.PlaceOrder{
+		CustomerID:   req.CustomerId,
+		RestaurantID: req.RestaurantId,
+		Items:        orderItems,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &restaurantpb.PlaceOrderResponse{
+		OrderId: order.OrderID,
+		Status:  order.Status,
+	}, nil
+}
+
 // ListRestaurants implements restaurantpb.RestaurantServiceServer.
 func (r *restaurantHandler) ListRestaurants(
 	req *restaurantpb.ListRestaurantsRequest,
@@ -116,7 +145,6 @@ func (r *restaurantHandler) RegisterRestaurant(ctx context.Context, req *restaur
 	if req == nil {
 		return nil, domain.ErrInvalidRestaurantData
 	}
-
 
 	restaurant, err := r.restaurantUsecase.RegisterRestaurant(ctx, &domain.Restaurant{
 		ID:        "",

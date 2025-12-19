@@ -103,6 +103,63 @@ func (s *Server) SetupRoutes() {
 		}
 	}
 
+	// Order routes
+	{
+		order := v1.Group("/orders")
+		{
+			order.POST("/", s.restaurantHandler.PlaceOrder)
+			order.GET("/:order_id", func(c *gin.Context) {
+				c.JSON(200, gin.H{
+					"message": "Order details fetched successfully!",
+				})
+			})
+			order.PUT("/:order_id/status", func(c *gin.Context) {
+				c.JSON(200, gin.H{
+					"message": "Order status updated successfully!",
+				})
+			})
+		}
+	}
+
+	// Delivery routes
+	{
+		delivery := v1.Group("/deliveries")
+		{
+			delivery.POST("/", func(c *gin.Context) {
+				c.JSON(200, gin.H{
+					"message": "Delivery created successfully!",
+				})
+			})
+			delivery.GET("/:delivery_id", func(c *gin.Context) {
+				c.JSON(200, gin.H{
+					"message": "Delivery details fetched successfully!",
+				})
+			})
+			delivery.PUT("/:delivery_id/status", func(c *gin.Context) {
+				c.JSON(200, gin.H{
+					"message": "Delivery status updated successfully!",
+				})
+			})
+		}
+	}
+
+	// Payment routes
+	{
+		payment := v1.Group("/payments")
+		{
+			payment.POST("/", func(c *gin.Context) {
+				c.JSON(200, gin.H{
+					"message": "Payment processed successfully!",
+				})
+			})
+			payment.GET("/:payment_id", func(c *gin.Context) {
+				c.JSON(200, gin.H{
+					"message": "Payment details fetched successfully!",
+				})
+			})
+		}
+	}
+
 }
 
 func (s *Server) Run() error {

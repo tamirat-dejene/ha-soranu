@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package order;
+
+option go_package = "github.com/tamirat-dejene/ha-soranu/shared/protos/orderpb;orderpb";
+
+message OrderCreated {
+  string order_id = 1;
+  string customer_id = 2;
+  int64  created_at_unix = 3;
+}

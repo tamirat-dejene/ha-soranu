@@ -101,26 +101,10 @@ func (s *Server) SetupRoutes() {
 			restaurant.PUT("/menu", s.restaurantHandler.UpdateMenuItem)
 			restaurant.DELETE("/menu", s.restaurantHandler.RemoveMenuItem)
 
+			// Order routes for restaurants
 			restaurant.GET("/orders", s.restaurantHandler.GetOrders)
-			// restaurant.PUT("/orders/:order_id/status", s.restaurantHandler.UpdateOrderStatus)
-		}
-	}
-
-	// Order routes
-	{
-		order := v1.Group("/orders")
-		{
-			order.POST("/", s.restaurantHandler.PlaceOrder)
-			order.GET("/:order_id", func(c *gin.Context) {
-				c.JSON(200, gin.H{
-					"message": "Order details fetched successfully!",
-				})
-			})
-			order.PUT("/:order_id/status", func(c *gin.Context) {
-				c.JSON(200, gin.H{
-					"message": "Order status updated successfully!",
-				})
-			})
+			restaurant.POST("/", s.restaurantHandler.PlaceOrder)
+			restaurant.PUT("/:restaurant_id/orders/:order_id/status", s.restaurantHandler.UpdateOrderStatus)
 		}
 	}
 

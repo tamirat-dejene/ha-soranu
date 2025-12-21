@@ -13,6 +13,67 @@ type restaurantRepository struct {
 	db postgres.PostgresClient
 }
 
+// UpdateOrderStatus implements [domain.RestaurantRepository].
+func (r *restaurantRepository) UpdateOrderStatus(ctx context.Context, restaurantID string, orderID string, newStatus string) (*domain.Order, error) {
+	query := `
+		UPDATE orders
+		SET status = $1
+		WHERE order_id = $2 AND restaurant_id = $3
+		RETURNING order_id, customer_id, total_price, status
+	`
+
+	var updatedOrder domain.Order
+
+	err := r.db.QueryRow(
+		ctx,
+		query,
+		newStatus,
+		orderID,
+		restaurantID,
+	).Scan(
+		&updatedOrder.OrderId,
+		&updatedOrder.CustomerID,
+		&updatedOrder.TotalAmount,
+		&updatedOrder.Status,
+	)
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, domain.ErrOrderNotFound
+		}
+		return nil, err
+	}
+
+	updatedOrder.RestaurantID = restaurantID
+
+	// Load order items
+	itemsQuery := `
+		SELECT item_id, quantity
+		FROM order_items
+		WHERE order_id = $1
+	`
+
+	rows, err := r.db.Query(ctx, itemsQuery, orderID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var items []domain.OrderItem
+
+	for rows.Next() {
+		var item domain.OrderItem
+		if err := rows.Scan(&item.ItemId, &item.Quantity); err != nil {
+			return nil, err
+		}
+		items = append(items, item)
+	}
+
+	updatedOrder.Items = items
+
+	return &updatedOrder, nil
+}
+
 // GetOrders implements [domain.RestaurantRepository].
 func (r *restaurantRepository) GetOrders(
 	ctx context.Context,

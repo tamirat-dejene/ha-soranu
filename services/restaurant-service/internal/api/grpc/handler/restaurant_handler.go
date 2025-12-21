@@ -40,8 +40,20 @@ func (r *restaurantHandler) GetOrders(ctx context.Context, req *restaurantpb.Get
 }
 
 // UpdateOrderStatus implements [restaurantpb.RestaurantServiceServer].
-func (r *restaurantHandler) UpdateOrderStatus(context.Context, *restaurantpb.UpdateOrderStatusRequest) (*restaurantpb.Order, error) {
-	panic("unimplemented")
+func (r *restaurantHandler) UpdateOrderStatus(ctx context.Context, req *restaurantpb.UpdateOrderStatusRequest) (*restaurantpb.Order, error) {
+	if req == nil {
+		return nil, domain.ErrInvalidOrderData
+	}
+
+	updatedOrder, err := r.restaurantUsecase.UpdateOrderStatus(ctx, req.RestaurantId, req.OrderId, dto.ProtoOrderStatusToDomain(req.NewStatus))
+	if err != nil {
+		return nil, err
+	}
+
+	logger.Info("updated order status", zap.String("order_id", updatedOrder.OrderId), zap.String("new_status", string(updatedOrder.Status)))
+
+	return dto.DomainOrderToProto(*updatedOrder), nil
+	
 }
 
 // PlaceOrder implements restaurantpb.RestaurantServiceServer.

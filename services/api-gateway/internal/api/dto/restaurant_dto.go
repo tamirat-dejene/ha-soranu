@@ -2,6 +2,7 @@ package dto
 
 import (
 	"github.com/tamirat-dejene/ha-soranu/services/api-gateway/internal/domain"
+	"github.com/tamirat-dejene/ha-soranu/shared/protos/orderpb"
 	"github.com/tamirat-dejene/ha-soranu/shared/protos/restaurantpb"
 )
 
@@ -161,5 +162,26 @@ func OrderResponseFromProto(order *restaurantpb.Order) *domain.Order {
 		Items:        orderItems,
 		TotalAmount:  order.TotalAmount,
 		Status:       order.Status.String(),
+	}
+}
+
+type UpdateOrderStatusDTO struct {
+	Status string `json:"status" binding:"required"`
+}
+
+func StringStatusToProto(status string) orderpb.OrderStatus {
+	switch status {
+	case "PENDING":
+		return orderpb.OrderStatus_PENDING
+	case "PREPARING":
+		return orderpb.OrderStatus_PREPARING
+	case "READY":
+		return orderpb.OrderStatus_READY
+	case "COMPLETED":
+		return orderpb.OrderStatus_COMPLETED
+	case "CANCELLED":
+		return orderpb.OrderStatus_CANCELLED
+	default:
+		return orderpb.OrderStatus_UNKNOWN
 	}
 }

@@ -21,6 +21,14 @@ type restaurantUseCase struct {
 	timeout  time.Duration
 }
 
+// UpdateOrderStatus implements [domain.RestaurantUseCase].
+func (r *restaurantUseCase) UpdateOrderStatus(ctx context.Context, restaurantID string, orderID string, newStatus string) (*domain.Order, error) {
+	c, cancel := context.WithTimeout(ctx, r.timeout)
+	defer cancel()
+
+	return r.repo.UpdateOrderStatus(c, restaurantID, orderID, newStatus)
+}
+
 // GetOrders implements [domain.RestaurantUseCase].
 func (r *restaurantUseCase) GetOrders(ctx context.Context, restaurantID string) ([]domain.Order, error) {
 	c, cancel := context.WithTimeout(ctx, r.timeout)

@@ -21,3 +21,9 @@ message OrderCreated {
     double total_amount = 3;
   	int64  created_at_unix = 4;
 }
+
+message OrderStatusUpdated {
+    string order_id = 1;
+    OrderStatus new_status = 2; 
+    int64 updated_at_unix = 3;
+}

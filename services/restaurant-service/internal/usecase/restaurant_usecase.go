@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/tamirat-dejene/ha-soranu/services/restaurant-service/internal/api/grpc/dto"
 	"github.com/tamirat-dejene/ha-soranu/services/restaurant-service/internal/domain"
 	"github.com/tamirat-dejene/ha-soranu/shared/pkg/events"
 	"github.com/tamirat-dejene/ha-soranu/shared/pkg/logger"
@@ -26,7 +27,54 @@ func (r *restaurantUseCase) UpdateOrderStatus(ctx context.Context, restaurantID 
 	c, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
-	return r.repo.UpdateOrderStatus(c, restaurantID, orderID, newStatus)
+	ord, err := r.repo.UpdateOrderStatus(c, restaurantID, orderID, newStatus)
+	if err != nil {
+		return nil, err
+	}
+
+	// Create domain event for order status update
+	update_event := orderpb.OrderStatusUpdated{
+		OrderId:       ord.OrderId,
+		NewStatus:     dto.DomainOrderStatusToProto(ord.Status),
+		UpdatedAtUnix: time.Now().Unix(),
+	}
+
+	// Serialize event
+	eventData, err := protojson.Marshal(&update_event)
+	if err != nil {
+		logger.Error("failed to marshal order status updated event", zap.Error(err))
+		return nil, err
+	}
+
+	eventEnvelop := &envent_envelope.EventEnvelope{
+		EventId:        uuid.NewString(),
+		OccurredAtUnix: time.Now().Unix(),
+		Payload:        eventData,
+	}
+	envelopeBytes, err := protojson.Marshal(eventEnvelop)
+	if err != nil {
+		logger.Error("failed to marshal event envelope", zap.Error(err))
+		return nil, err
+	}
+
+	// Publish event to Kafka
+	err = r.producer.Publish(c, &kafka.Message{
+		Topic: events.OrderStatusUpdatedEvent,
+		Key:   []byte(ord.OrderId),
+		Value: envelopeBytes,
+		Headers: map[string][]byte{
+			"event_type":   []byte(events.OrderStatusUpdatedEvent),
+			"content_type": []byte("application/x-protobuf"),
+			"producer":     []byte("restaurant-service"),
+		},
+	})
+
+	if err != nil {
+		logger.Error("failed to publish order status updated event", zap.Error(err))
+		return nil, err
+	}
+
+	return ord, nil
 }
 
 // GetOrders implements [domain.RestaurantUseCase].

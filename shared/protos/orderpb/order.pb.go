@@ -151,6 +151,66 @@ func (x *OrderCreated) GetCreatedAtUnix() int64 {
 	return 0
 }
 
+type OrderStatusUpdated struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	OrderId       string                 `protobuf:"bytes,1,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`
+	NewStatus     OrderStatus            `protobuf:"varint,2,opt,name=new_status,json=newStatus,proto3,enum=order.OrderStatus" json:"new_status,omitempty"`
+	UpdatedAtUnix int64                  `protobuf:"varint,3,opt,name=updated_at_unix,json=updatedAtUnix,proto3" json:"updated_at_unix,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *OrderStatusUpdated) Reset() {
+	*x = OrderStatusUpdated{}
+	mi := &file_order_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *OrderStatusUpdated) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*OrderStatusUpdated) ProtoMessage() {}
+
+func (x *OrderStatusUpdated) ProtoReflect() protoreflect.Message {
+	mi := &file_order_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use OrderStatusUpdated.ProtoReflect.Descriptor instead.
+func (*OrderStatusUpdated) Descriptor() ([]byte, []int) {
+	return file_order_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *OrderStatusUpdated) GetOrderId() string {
+	if x != nil {
+		return x.OrderId
+	}
+	return ""
+}
+
+func (x *OrderStatusUpdated) GetNewStatus() OrderStatus {
+	if x != nil {
+		return x.NewStatus
+	}
+	return OrderStatus_PENDING
+}
+
+func (x *OrderStatusUpdated) GetUpdatedAtUnix() int64 {
+	if x != nil {
+		return x.UpdatedAtUnix
+	}
+	return 0
+}
+
 var File_order_proto protoreflect.FileDescriptor
 
 const file_order_proto_rawDesc = "" +
@@ -161,7 +221,12 @@ const file_order_proto_rawDesc = "" +
 	"\vcustomer_id\x18\x02 \x01(\tR\n" +
 	"customerId\x12!\n" +
 	"\ftotal_amount\x18\x03 \x01(\x01R\vtotalAmount\x12&\n" +
-	"\x0fcreated_at_unix\x18\x04 \x01(\x03R\rcreatedAtUnix*l\n" +
+	"\x0fcreated_at_unix\x18\x04 \x01(\x03R\rcreatedAtUnix\"\x8a\x01\n" +
+	"\x12OrderStatusUpdated\x12\x19\n" +
+	"\border_id\x18\x01 \x01(\tR\aorderId\x121\n" +
+	"\n" +
+	"new_status\x18\x02 \x01(\x0e2\x12.order.OrderStatusR\tnewStatus\x12&\n" +
+	"\x0fupdated_at_unix\x18\x03 \x01(\x03R\rupdatedAtUnix*l\n" +
 	"\vOrderStatus\x12\v\n" +
 	"\aPENDING\x10\x00\x12\r\n" +
 	"\tPREPARING\x10\x01\x12\t\n" +
@@ -184,17 +249,19 @@ func file_order_proto_rawDescGZIP() []byte {
 }
 
 var file_order_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_order_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
+var file_order_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_order_proto_goTypes = []any{
-	(OrderStatus)(0),     // 0: order.OrderStatus
-	(*OrderCreated)(nil), // 1: order.OrderCreated
+	(OrderStatus)(0),           // 0: order.OrderStatus
+	(*OrderCreated)(nil),       // 1: order.OrderCreated
+	(*OrderStatusUpdated)(nil), // 2: order.OrderStatusUpdated
 }
 var file_order_proto_depIdxs = []int32{
-	0, // [0:0] is the sub-list for method output_type
-	0, // [0:0] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	0, // 0: order.OrderStatusUpdated.new_status:type_name -> order.OrderStatus
+	1, // [1:1] is the sub-list for method output_type
+	1, // [1:1] is the sub-list for method input_type
+	1, // [1:1] is the sub-list for extension type_name
+	1, // [1:1] is the sub-list for extension extendee
+	0, // [0:1] is the sub-list for field type_name
 }
 
 func init() { file_order_proto_init() }
@@ -208,7 +275,7 @@ func file_order_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_order_proto_rawDesc), len(file_order_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   1,
+			NumMessages:   2,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

@@ -50,21 +50,7 @@ func DomainOrderToProto(order domain.Order) *restaurantpb.Order {
 		})
 	}
 
-	var status orderpb.OrderStatus
-	switch order.Status {
-	case "PENDING":
-		status = orderpb.OrderStatus_PENDING
-	case "PREPARING":
-		status = orderpb.OrderStatus_PREPARING
-	case "READY":
-		status = orderpb.OrderStatus_READY
-	case "COMPLETED":
-		status = orderpb.OrderStatus_COMPLETED
-	case "CANCELLED":
-		status = orderpb.OrderStatus_CANCELLED
-	default:
-		status = orderpb.OrderStatus_UNKNOWN
-	}
+	status := DomainOrderStatusToProto(order.Status)
 	
 
 	return &restaurantpb.Order{
@@ -94,3 +80,19 @@ func ProtoOrderStatusToDomain(status orderpb.OrderStatus) string {
 	}
 }
 
+func DomainOrderStatusToProto(status string) orderpb.OrderStatus {
+	switch status {
+	case "PENDING":
+		return orderpb.OrderStatus_PENDING
+	case "PREPARING":
+		return orderpb.OrderStatus_PREPARING
+	case "READY":
+		return orderpb.OrderStatus_READY
+	case "COMPLETED":
+		return orderpb.OrderStatus_COMPLETED
+	case "CANCELLED":
+		return orderpb.OrderStatus_CANCELLED
+	default:
+		return orderpb.OrderStatus_UNKNOWN
+	}
+}

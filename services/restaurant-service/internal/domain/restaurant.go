@@ -61,6 +61,8 @@ type RestaurantUseCase interface {
 	PlaceOrder(ctx context.Context, order *PlaceOrder) (*Order, error)
 	GetOrders(ctx context.Context, restaurantID string) ([]Order, error)
 	UpdateOrderStatus(ctx context.Context, restaurantID, orderID, newStatus string) (*Order, error)
+
+	ShipOrder(ctx context.Context, restaurantID, orderID string) (string, string, error)
 }
 
 type RestaurantRepository interface {
@@ -77,4 +79,6 @@ type RestaurantRepository interface {
 	PlaceOrder(ctx context.Context, order *PlaceOrder) (*Order, error)
 	GetOrders(ctx context.Context, restaurantID string) ([]Order, error)
 	UpdateOrderStatus(ctx context.Context, restaurantID, orderID, newStatus string) (*Order, error)
+
+	ShipOrder(ctx context.Context, restaurantID, orderID string) (string, string, error)
 }

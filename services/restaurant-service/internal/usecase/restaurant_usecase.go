@@ -22,6 +22,19 @@ type restaurantUseCase struct {
 	timeout  time.Duration
 }
 
+// ShipOrder implements [domain.RestaurantUseCase].
+func (r *restaurantUseCase) ShipOrder(ctx context.Context, restaurantID string, orderID string) (string, string, error) {
+	c, cancel := context.WithTimeout(ctx, r.timeout)
+	defer cancel()
+
+	confirmation, driverID, err := r.repo.ShipOrder(c, restaurantID, orderID)
+	if err != nil {
+		return "", "", err
+	}
+
+	return confirmation, driverID, nil
+}
+
 // UpdateOrderStatus implements [domain.RestaurantUseCase].
 func (r *restaurantUseCase) UpdateOrderStatus(ctx context.Context, restaurantID string, orderID string, newStatus string) (*domain.Order, error) {
 	c, cancel := context.WithTimeout(ctx, r.timeout)

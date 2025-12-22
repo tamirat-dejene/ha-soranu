@@ -13,6 +13,11 @@ type restaurantRepository struct {
 	db postgres.PostgresClient
 }
 
+// ShipOrder implements [domain.RestaurantRepository].
+func (r *restaurantRepository) ShipOrder(ctx context.Context, restaurantID string, orderID string) (string, string, error) {
+	panic("unimplemented")
+}
+
 // UpdateOrderStatus implements [domain.RestaurantRepository].
 func (r *restaurantRepository) UpdateOrderStatus(ctx context.Context, restaurantID string, orderID string, newStatus string) (*domain.Order, error) {
 	query := `

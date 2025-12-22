@@ -16,6 +16,25 @@ type restaurantHandler struct {
 	restaurantUsecase domain.RestaurantUseCase
 }
 
+// ShipOrder implements [restaurantpb.RestaurantServiceServer].
+func (r *restaurantHandler) ShipOrder(ctx context.Context, req *restaurantpb.ShipOrderRequest) (*restaurantpb.ShipOrderResponse, error) {
+	if req == nil {
+		return nil, domain.ErrInvalidOrderData
+	}
+
+	confirmation, driverID, err := r.restaurantUsecase.ShipOrder(ctx, req.RestaurantId, req.OrderId)
+	if err != nil {
+		return nil, err
+	}
+
+	logger.Info("shipped order", zap.String("order_id", req.OrderId), zap.String("driver_id", driverID))
+
+	return &restaurantpb.ShipOrderResponse{
+		ConfirmationMessage: confirmation,
+		DriverId:            driverID,
+	}, nil
+}
+
 // GetOrders implements [restaurantpb.RestaurantServiceServer].
 func (r *restaurantHandler) GetOrders(ctx context.Context, req *restaurantpb.GetOrdersRequest) (*restaurantpb.GetOrdersResponse, error) {
 	if req == nil {
@@ -53,7 +72,7 @@ func (r *restaurantHandler) UpdateOrderStatus(ctx context.Context, req *restaura
 	logger.Info("updated order status", zap.String("order_id", updatedOrder.OrderId), zap.String("new_status", string(updatedOrder.Status)))
 
 	return dto.DomainOrderToProto(*updatedOrder), nil
-	
+
 }
 
 // PlaceOrder implements restaurantpb.RestaurantServiceServer.

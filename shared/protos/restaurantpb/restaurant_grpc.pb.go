@@ -29,6 +29,7 @@ const (
 	RestaurantService_PlaceOrder_FullMethodName         = "/restaurant.RestaurantService/PlaceOrder"
 	RestaurantService_GetOrders_FullMethodName          = "/restaurant.RestaurantService/GetOrders"
 	RestaurantService_UpdateOrderStatus_FullMethodName  = "/restaurant.RestaurantService/UpdateOrderStatus"
+	RestaurantService_ShipOrder_FullMethodName          = "/restaurant.RestaurantService/ShipOrder"
 )
 
 // RestaurantServiceClient is the client API for RestaurantService service.
@@ -45,6 +46,7 @@ type RestaurantServiceClient interface {
 	PlaceOrder(ctx context.Context, in *PlaceOrderRequest, opts ...grpc.CallOption) (*PlaceOrderResponse, error)
 	GetOrders(ctx context.Context, in *GetOrdersRequest, opts ...grpc.CallOption) (*GetOrdersResponse, error)
 	UpdateOrderStatus(ctx context.Context, in *UpdateOrderStatusRequest, opts ...grpc.CallOption) (*Order, error)
+	ShipOrder(ctx context.Context, in *ShipOrderRequest, opts ...grpc.CallOption) (*ShipOrderResponse, error)
 }
 
 type restaurantServiceClient struct {
@@ -164,6 +166,16 @@ func (c *restaurantServiceClient) UpdateOrderStatus(ctx context.Context, in *Upd
 	return out, nil
 }
 
+func (c *restaurantServiceClient) ShipOrder(ctx context.Context, in *ShipOrderRequest, opts ...grpc.CallOption) (*ShipOrderResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ShipOrderResponse)
+	err := c.cc.Invoke(ctx, RestaurantService_ShipOrder_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // RestaurantServiceServer is the server API for RestaurantService service.
 // All implementations must embed UnimplementedRestaurantServiceServer
 // for forward compatibility.
@@ -178,6 +190,7 @@ type RestaurantServiceServer interface {
 	PlaceOrder(context.Context, *PlaceOrderRequest) (*PlaceOrderResponse, error)
 	GetOrders(context.Context, *GetOrdersRequest) (*GetOrdersResponse, error)
 	UpdateOrderStatus(context.Context, *UpdateOrderStatusRequest) (*Order, error)
+	ShipOrder(context.Context, *ShipOrderRequest) (*ShipOrderResponse, error)
 	mustEmbedUnimplementedRestaurantServiceServer()
 }
 
@@ -217,6 +230,9 @@ func (UnimplementedRestaurantServiceServer) GetOrders(context.Context, *GetOrder
 }
 func (UnimplementedRestaurantServiceServer) UpdateOrderStatus(context.Context, *UpdateOrderStatusRequest) (*Order, error) {
 	return nil, status.Error(codes.Unimplemented, "method UpdateOrderStatus not implemented")
+}
+func (UnimplementedRestaurantServiceServer) ShipOrder(context.Context, *ShipOrderRequest) (*ShipOrderResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ShipOrder not implemented")
 }
 func (UnimplementedRestaurantServiceServer) mustEmbedUnimplementedRestaurantServiceServer() {}
 func (UnimplementedRestaurantServiceServer) testEmbeddedByValue()                           {}
@@ -412,6 +428,24 @@ func _RestaurantService_UpdateOrderStatus_Handler(srv interface{}, ctx context.C
 	return interceptor(ctx, in, info, handler)
 }
 
+func _RestaurantService_ShipOrder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ShipOrderRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RestaurantServiceServer).ShipOrder(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RestaurantService_ShipOrder_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RestaurantServiceServer).ShipOrder(ctx, req.(*ShipOrderRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // RestaurantService_ServiceDesc is the grpc.ServiceDesc for RestaurantService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -454,6 +488,10 @@ var RestaurantService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateOrderStatus",
 			Handler:    _RestaurantService_UpdateOrderStatus_Handler,
+		},
+		{
+			MethodName: "ShipOrder",
+			Handler:    _RestaurantService_ShipOrder_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

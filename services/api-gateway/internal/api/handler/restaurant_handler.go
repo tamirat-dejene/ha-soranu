@@ -26,17 +26,24 @@ func NewRestaurantHandler(client *client.RestaurantServiceClient) *RestaurantHan
 	}
 }
 
-/**
-type RestaurantServiceClient interface {
-    Login(ctx context.Context, in *RestaurantLoginRequest, opts ...grpc.CallOption) (*RestaurantLoginResponse, error)
-    RegisterRestaurant(ctx context.Context, in *RegisterRestaurantRequest, opts ...grpc.CallOption) (*RegisterRestaurantResponse, error)
-    GetRestaurant(ctx context.Context, in *GetRestaurantRequest, opts ...grpc.CallOption) (*GetRestaurantResponse, error)
-    ListRestaurants(ctx context.Context, in *ListRestaurantsRequest, opts ...grpc.CallOption) (*ListRestaurantsResponse, error)
-    AddMenuItem(ctx context.Context, in *AddMenuItemRequest, opts ...grpc.CallOption) (*MenuItem, error)
-    RemoveMenuItem(ctx context.Context, in *RemoveMenuItemRequest, opts ...grpc.CallOption) (*MenuItem, error)
-    UpdateMenuItem(ctx context.Context, in *UpdateMenuItemRequest, opts ...grpc.CallOption) (*MenuItem, error)
+func (h *RestaurantHandler) ShipOrder(c *gin.Context) {
+	orderID := c.Param("order_id")
+
+	if orderID == "" {
+		c.JSON(http.StatusBadRequest, errs.NewErrorResponse("order_id is required"))
+		return
+	}
+
+	req := &restaurantpb.ShipOrderRequest{OrderId: orderID}
+
+	resp, err := h.client.RestaurantClient.ShipOrder(c.Request.Context(), req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponseFromGRPCError(err))
+		return
+	}
+
+	c.JSON(http.StatusOK, dto.ShipOrderResponseFromProto(resp))
 }
-*/
 
 func (h *RestaurantHandler) GetOrders(c *gin.Context) {
 	restaurantID := c.Query("restaurant_id")

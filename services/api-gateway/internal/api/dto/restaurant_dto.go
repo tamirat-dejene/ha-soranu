@@ -185,3 +185,15 @@ func StringStatusToProto(status string) orderpb.OrderStatus {
 		return orderpb.OrderStatus_UNKNOWN
 	}
 }
+
+type ShipOrderResponseDTO struct {
+	ConfirmationMessage string `json:"confirmation_message"`
+	DriverID            string `json:"driver_id"`
+}
+
+func ShipOrderResponseFromProto(resp *restaurantpb.ShipOrderResponse) *ShipOrderResponseDTO {
+	return &ShipOrderResponseDTO{
+		ConfirmationMessage: resp.ConfirmationMessage,
+		DriverID:            resp.DriverId,
+	}
+}

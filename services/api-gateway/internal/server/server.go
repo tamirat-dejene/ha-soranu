@@ -83,7 +83,9 @@ func (s *Server) SetupRoutes() {
 
 			user.POST("/be-driver", s.userHandler.BeDriver)
 			user.GET("/drivers", s.userHandler.GetDrivers)
-			user.DELETE("/driver", s.userHandler.RemoveDriver)
+			user.DELETE("/drivers", s.userHandler.RemoveDriver)
+			// user.GET("/drivers/available", s.userHandler.GetAvailableDrivers)
+			// user.PUT("/drivers/:driver_id/availability", s.userHandler.UpdateDriverAvailability)
 		}
 	}
 
@@ -96,15 +98,17 @@ func (s *Server) SetupRoutes() {
 
 			restaurant.GET("/", s.restaurantHandler.GetRestaurant)
 			restaurant.POST("/", s.restaurantHandler.ListRestaurants)
-
+			
+			// Menu routes for restaurants
 			restaurant.POST("/menu", s.restaurantHandler.AddMenuItem)
 			restaurant.PUT("/menu", s.restaurantHandler.UpdateMenuItem)
 			restaurant.DELETE("/menu", s.restaurantHandler.RemoveMenuItem)
 
 			// Order routes for restaurants
 			restaurant.GET("/orders", s.restaurantHandler.GetOrders)
-			restaurant.POST("/", s.restaurantHandler.PlaceOrder)
+			restaurant.POST("/orders", s.restaurantHandler.PlaceOrder)
 			restaurant.PUT("/:restaurant_id/orders/:order_id/status", s.restaurantHandler.UpdateOrderStatus)
+			restaurant.PUT("orders/:order_id/ship", s.restaurantHandler.ShipOrder)
 		}
 	}
 

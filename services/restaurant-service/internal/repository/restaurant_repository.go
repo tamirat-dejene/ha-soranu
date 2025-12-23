@@ -15,7 +15,49 @@ type restaurantRepository struct {
 
 // ShipOrder implements [domain.RestaurantRepository].
 func (r *restaurantRepository) ShipOrder(ctx context.Context, restaurantID string, orderID string) (string, string, error) {
-	panic("unimplemented")
+	// 1. Update order status to SHIPPED
+	updateQuery := `
+		UPDATE orders
+		SET status = $1
+		WHERE order_id = $2 AND restaurant_id = $3
+		RETURNING order_id
+	`
+
+	var retOrderID string
+	err := r.db.QueryRow(
+		ctx,
+		updateQuery,
+		domain.ORDER_STATUS_SHIPPED,
+		orderID,
+		restaurantID,
+	).Scan(&retOrderID)
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return "", "", domain.ErrOrderNotFound
+		}
+		return "", "", err
+	}
+
+	// 2. Select a driver (simple strategy: latest created driver)
+	var driverID string
+	driverQuery := `
+		SELECT driver_id
+		FROM drivers
+		ORDER BY created_at DESC
+		LIMIT 1
+	`
+
+	if derr := r.db.QueryRow(ctx, driverQuery).Scan(&driverID); derr != nil {
+		// If no driver found, proceed with empty driver ID
+		if !errors.Is(derr, sql.ErrNoRows) {
+			return "", "", derr
+		}
+		driverID = ""
+	}
+
+	// 3. Return confirmation message and driver ID
+	return "Order shipped successfully", driverID, nil
 }
 
 // UpdateOrderStatus implements [domain.RestaurantRepository].

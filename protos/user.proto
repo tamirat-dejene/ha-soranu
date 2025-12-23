@@ -7,150 +7,150 @@ option go_package = "github.com/tamirat-dejene/ha-soranu/shared/protos/userpb;us
 
 // Address represents a user's address details.
 message Address {
-  string address_id = 1;
-  string street = 2;
-  string city = 3;
-  string state = 4;
-  uint32 postal_code = 5;
-  string country = 6;
-  float latitude = 7;
-  float longitude = 8;
-  google.protobuf.Timestamp created_at = 9;
+	string                    address_id  = 1;
+	string                    street      = 2;
+	string                    city        = 3;
+	string                    state       = 4;
+	uint32                    postal_code = 5;
+	string                    country     = 6;
+	float                     latitude    = 7;
+	float                     longitude   = 8;
+	google.protobuf.Timestamp created_at  = 9;
 }
 
 // User represents a user in the system.
-message  User {
-  string user_id = 1;
-  string email = 2;
-  string username = 3;
-  string phone_number = 4;
-  repeated Address addresses = 5;
-  google.protobuf.Timestamp created_at = 6;
+message User {
+	string                    user_id      = 1;
+	string                    email        = 2;
+	string                    username     = 3;
+	string                    phone_number = 4;
+	repeated Address          addresses    = 5;
+	google.protobuf.Timestamp created_at   = 6;
 }
 
 // MessageResponse is a generic response message.
 message MessageResponse {
-  string message = 1;
+	string message = 1;
 }
 
 // UserService defines the user-related RPC methods.
 service UserService {
   // Retrieves user information by user ID.
-  rpc GetUser(GetUserRequest) returns (GetUserResponse);
+	rpc GetUser(GetUserRequest) returns (GetUserResponse);
   // Manages user's phone number.
-  rpc GetPhoneNumber(GetPhoneNumberRequest) returns (GetPhoneNumberResponse);
+	rpc GetPhoneNumber(GetPhoneNumberRequest) returns (GetPhoneNumberResponse);
   // Adds, updates, or removes user's phone number.
-  rpc AddPhoneNumber(AddPhoneNumberRequest) returns (MessageResponse);
+	rpc AddPhoneNumber(AddPhoneNumberRequest) returns (MessageResponse);
   // Updates user's phone number.
-  rpc UpdatePhoneNumber(UpdatePhoneNumberRequest) returns (MessageResponse);
+	rpc UpdatePhoneNumber(UpdatePhoneNumberRequest) returns (MessageResponse);
   // Removes user's phone number.
-  rpc RemovePhoneNumber(RemovePhoneNumberRequest) returns (MessageResponse);
+	rpc RemovePhoneNumber(RemovePhoneNumberRequest) returns (MessageResponse);
 
   // Manages user's addresses.
-  rpc GetAddresses(GetAddressesRequest) returns (GetAddressesResponse);
+	rpc GetAddresses(GetAddressesRequest) returns (GetAddressesResponse);
   // Adds a new address for the user.
-  rpc AddAddress(AddAddressRequest) returns (AddAddressResponse);
+	rpc AddAddress(AddAddressRequest) returns (AddAddressResponse);
   // Removes an address from the user.
-  rpc RemoveAddress(RemoveAddressRequest) returns (MessageResponse);
+	rpc RemoveAddress(RemoveAddressRequest) returns (MessageResponse);
 
   // Makes a user a driver.
-  rpc BeDriver(BeDriverRequest) returns (BeDriverResponse);
+	rpc BeDriver(BeDriverRequest) returns (BeDriverResponse);
   // Retrieves drivers within a certain radius.
-  rpc GetDrivers(GetDriversRequest) returns (DriverResponse);
+	rpc GetDrivers(GetDriversRequest) returns (DriverResponse);
   // Removes a driver by driver ID.
-  rpc RemoveDriver(RemoveDriverRequest) returns (MessageResponse);
+	rpc RemoveDriver(RemoveDriverRequest) returns (MessageResponse);
 }
 
 // Requests and Responses for UserService RPC methods.
 message GetUserRequest {
-  string user_id = 1;
+	string user_id = 1;
 }
 
 // GetUserResponse contains the user information.
 message GetUserResponse {
-  User user = 1;
+	User user = 1;
 }
 
 // GetPhoneNumberRequest contains the user ID to retrieve the phone number.
 message GetPhoneNumberRequest {
-  string user_id = 1;
+	string user_id = 1;
 }
 
 // GetPhoneNumberResponse contains the user's phone number.
 message GetPhoneNumberResponse {
-  string user_id = 1;
-  string phone_number = 2;
+	string user_id      = 1;
+	string phone_number = 2;
 }
 
 // Requests for managing user's phone number.
 message AddPhoneNumberRequest {
-  string user_id = 1;
-  string phone_number = 2;
+	string user_id      = 1;
+	string phone_number = 2;
 }
 
 // UpdatePhoneNumberRequest contains the user ID and new phone number.
 message UpdatePhoneNumberRequest {
-  string user_id = 1;
-  string phone_number = 2;
+	string user_id      = 1;
+	string phone_number = 2;
 }
 
 // RemovePhoneNumberRequest contains the user ID to remove the phone number.
 message RemovePhoneNumberRequest {
-  string user_id = 1;
+	string user_id = 1;
 }
 
 // Requests and Responses for managing user's addresses.
 message GetAddressesRequest {
-  string user_id = 1;
+	string user_id = 1;
 }
 
 // GetAddressesResponse contains the list of user's addresses.
 message GetAddressesResponse {
-  repeated Address addresses = 1;
+	repeated Address addresses = 1;
 }
 
 // AddAddressRequest contains the details for adding a new address.
 message AddAddressRequest {
-  string user_id = 1;
-  string street = 2;
-  string city = 3;
-  string state = 4;
-  uint32 postal_code = 5;
-  string country = 6;
-  float latitude = 7;
-  float longitude = 8;
+	string user_id     = 1;
+	string street      = 2;
+	string city        = 3;
+	string state       = 4;
+	uint32 postal_code = 5;
+	string country     = 6;
+	float  latitude    = 7;
+	float  longitude   = 8;
 }
 
 // AddAddressResponse contains the newly added address.
 message AddAddressResponse {
-  Address address = 1;
+	Address address = 1;
 }
 
 // RemoveAddressRequest contains the user ID and address ID to be removed.
 message RemoveAddressRequest {
-  string user_id = 1;
-  string address_id = 2;
+	string user_id    = 1;
+	string address_id = 2;
 }
 
 message BeDriverRequest {
-  string user_id = 1;
+	string user_id = 1;
 }
 
 message BeDriverResponse {
-  string driver_id = 1;
+	string driver_id = 1;
 }
 
 message DriverResponse {
-  string driver_id = 1;
-  repeated User drivers = 2;
+	string        driver_id = 1;
+	repeated User drivers   = 2;
 }
 
 message GetDriversRequest {
-  float latitude = 1;
-  float longitude = 2;
-  float radius_km = 3;
+	float latitude  = 1;
+	float longitude = 2;
+	float radius_km = 3;
 }
 
 message RemoveDriverRequest {
-  string driver_id = 1;
+	string driver_id = 1;
 }

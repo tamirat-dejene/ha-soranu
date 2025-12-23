@@ -181,6 +181,8 @@ func StringStatusToProto(status string) orderpb.OrderStatus {
 		return orderpb.OrderStatus_COMPLETED
 	case "CANCELLED":
 		return orderpb.OrderStatus_CANCELLED
+	case "SHIPPED":
+		return orderpb.OrderStatus_SHIPPED
 	default:
 		return orderpb.OrderStatus_UNKNOWN
 	}

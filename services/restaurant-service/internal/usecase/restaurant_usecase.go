@@ -32,6 +32,49 @@ func (r *restaurantUseCase) ShipOrder(ctx context.Context, restaurantID string, 
 		return "", "", err
 	}
 
+	// Create domain event for order shipped (status becomes SHIPPED)
+	shippedEvent := orderpb.OrderStatusUpdated{
+		OrderId:       orderID,
+		NewStatus:     orderpb.OrderStatus_SHIPPED,
+		UpdatedAtUnix: time.Now().Unix(),
+	}
+
+	// Serialize event
+	eventData, err := protojson.Marshal(&shippedEvent)
+	if err != nil {
+		logger.Error("failed to marshal order shipped event", zap.Error(err))
+		return "", "", err
+	}
+
+	envelope := &envent_envelope.EventEnvelope{
+		EventId:        uuid.NewString(),
+		OccurredAtUnix: time.Now().Unix(),
+		Payload:        eventData,
+	}
+
+	envelopeBytes, err := protojson.Marshal(envelope)
+	if err != nil {
+		logger.Error("failed to marshal event envelope", zap.Error(err))
+		return "", "", err
+	}
+
+	// Publish event to Kafka
+	err = r.producer.Publish(c, &kafka.Message{
+		Topic: events.OrderShippedEvent,
+		Key:   []byte(orderID),
+		Value: envelopeBytes,
+		Headers: map[string][]byte{
+			"event_type":   []byte(events.OrderShippedEvent),
+			"content_type": []byte("application/x-protobuf"),
+			"producer":     []byte("restaurant-service"),
+		},
+	})
+
+	if err != nil {
+		logger.Error("failed to publish order shipped event", zap.Error(err))
+		return "", "", err
+	}
+
 	return confirmation, driverID, nil
 }
 

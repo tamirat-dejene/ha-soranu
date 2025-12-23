@@ -6,24 +6,30 @@ option go_package = "github.com/tamirat-dejene/ha-soranu/shared/protos/orderpb;o
 
 // Order Status Enum
 enum OrderStatus {
-    PENDING = 0;
-    PREPARING = 1;
-    READY = 2;
-    COMPLETED = 3;
-	  SHIPPED = 4;
-    CANCELLED = 5;
-    UNKNOWN = 6;
+	PENDING   = 0;
+	PREPARING = 1;
+	READY     = 2;
+	COMPLETED = 3;
+	SHIPPED   = 4;
+	CANCELLED = 5;
+	UNKNOWN   = 6;
 }
 
 message OrderCreated {
-  	string order_id = 1;
-  	string customer_id = 2;
-    double total_amount = 3;
-  	int64  created_at_unix = 4;
+	string order_id        = 1;
+	string customer_id     = 2;
+	double total_amount    = 3;
+	int64  created_at_unix = 4;
 }
 
 message OrderStatusUpdated {
-    string order_id = 1;
-    OrderStatus new_status = 2; 
-    int64 updated_at_unix = 3;
+	string      order_id        = 1;
+	OrderStatus new_status      = 2;
+	int64       updated_at_unix = 3;
+}
+
+message OrderShipped {
+	string order_id        = 1;
+	string tracking_number = 2;
+	int64  shipped_at_unix = 3;
 }

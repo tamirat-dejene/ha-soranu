@@ -5,133 +5,135 @@ import "order.proto";
 
 option go_package = "github.com/tamirat-dejene/ha-soranu/shared/protos/restaurantpb;restaurantpb";
 
-
 message Restaurant {
-    string restaurant_id = 1;
-    string email = 2;
-    string name = 3;
-    float latitude = 4;
-    float longitude = 5;
-    repeated MenuItem menus = 6;
+	string            restaurant_id = 1;
+	string            email         = 2;
+	string            name          = 3;
+	float             latitude      = 4;
+	float             longitude     = 5;
+	repeated MenuItem menus         = 6;
 }
 
 message MenuItem {
-    string item_id = 1;
-    string name = 2;
-    string description = 3;
-    float price = 4;
+	string item_id     = 1;
+	string name        = 2;
+	string description = 3;
+	float  price       = 4;
 }
+
 service RestaurantService {
-    rpc Login(RestaurantLoginRequest) returns (Restaurant);
-    rpc RegisterRestaurant(RegisterRestaurantRequest) returns (Restaurant);
-    rpc GetRestaurant(GetRestaurantRequest) returns (Restaurant);
-    rpc ListRestaurants(ListRestaurantsRequest) returns (stream Restaurant);
+	rpc Login(RestaurantLoginRequest) returns (Restaurant);
+	rpc RegisterRestaurant(RegisterRestaurantRequest) returns (Restaurant);
+	rpc GetRestaurant(GetRestaurantRequest) returns (Restaurant);
+	rpc ListRestaurants(ListRestaurantsRequest) returns (stream Restaurant);
 
-    rpc AddMenuItem(AddMenuItemRequest) returns (MenuItem);
-    rpc RemoveMenuItem(RemoveMenuItemRequest) returns (MenuItem);
-    rpc UpdateMenuItem(UpdateMenuItemRequest) returns (MenuItem);
+	rpc AddMenuItem(AddMenuItemRequest) returns (MenuItem);
+	rpc RemoveMenuItem(RemoveMenuItemRequest) returns (MenuItem);
+	rpc UpdateMenuItem(UpdateMenuItemRequest) returns (MenuItem);
 
-    rpc PlaceOrder(PlaceOrderRequest) returns (PlaceOrderResponse);
-    rpc GetOrders(GetOrdersRequest) returns (GetOrdersResponse);
-    rpc UpdateOrderStatus(UpdateOrderStatusRequest) returns (Order);
-    rpc ShipOrder(ShipOrderRequest) returns (ShipOrderResponse);
+	rpc PlaceOrder(PlaceOrderRequest) returns (PlaceOrderResponse);
+	rpc GetOrders(GetOrdersRequest) returns (GetOrdersResponse);
+	rpc UpdateOrderStatus(UpdateOrderStatusRequest) returns (Order);
+	rpc ShipOrder(ShipOrderRequest) returns (ShipOrderResponse);
 }
 
 message RestaurantLoginRequest {
-    string email = 1;
-    string secret_key = 2;
+	string email      = 1;
+	string secret_key = 2;
 }
 
 message RegisterRestaurantRequest {
-    string email = 1;
-    string secret_key = 2; // Of the owner, for authentication purposes
-    string name = 3;
-    float latitude = 4;
-    float longitude = 5;
-    repeated RegisterMenuItem menus = 6;
+	string                    email      = 1;
+	string                    secret_key = 2; // Of the owner, for authentication purposes
+	string                    name       = 3;
+	float                     latitude   = 4;
+	float                     longitude  = 5;
+	repeated RegisterMenuItem menus      = 6;
 }
 
 message RegisterMenuItem {
-    string name = 1;
-    string description = 2;
-    float price = 3;
+	string name        = 1;
+	string description = 2;
+	float  price       = 3;
 }
 
 message GetRestaurantRequest {
-    string restaurant_id = 1;
+	string restaurant_id = 1;
 }
 
 message ListRestaurantsRequest {
-    float latitude = 1;
-    float longitude = 2;
-    float radius_km = 3;
+	float latitude  = 1;
+	float longitude = 2;
+	float radius_km = 3;
 }
+
 message AddMenuItemRequest {
-    string restaurant_id = 1;
-    string name = 2;
-    string description = 3;
-    float price = 4;
+	string restaurant_id = 1;
+	string name          = 2;
+	string description   = 3;
+	float  price         = 4;
 }
 
 message RemoveMenuItemRequest {
-    string restaurant_id = 1;
-    string item_id = 2;
+	string restaurant_id = 1;
+	string item_id       = 2;
 }
 
 message UpdateMenuItemRequest {
-    string restaurant_id = 1;
-    string item_id = 2;
-    string name = 3;
-    string description = 4;
-    float price = 5;
+	string restaurant_id = 1;
+	string item_id       = 2;
+	string name          = 3;
+	string description   = 4;
+	float  price         = 5;
 }
 
 // Order related messages
 message Order {
-    string order_id = 1;
-    string customer_id = 2;
-    string restaurant_id = 3;
-    repeated OrderItem items = 4;
-    double total_amount = 5;
-    order.OrderStatus status = 6;
+	string             order_id      = 1;
+	string             customer_id   = 2;
+	string             restaurant_id = 3;
+	repeated OrderItem items         = 4;
+	double             total_amount  = 5;
+	order.OrderStatus  status        = 6;
 }
+
 message PlaceOrderRequest {
-  string customer_id = 1;
-  string restaurant_id = 2;
-  repeated OrderItem items = 3;
+	string             customer_id   = 1;
+	string             restaurant_id = 2;
+	repeated OrderItem items         = 3;
 }
 
 message PlaceOrderResponse {
-  string order_id = 1;
-  double total_amount = 2;
-  string status = 3;
+	string order_id     = 1;
+	double total_amount = 2;
+	string status       = 3;
 }
 
 message OrderItem {
-  string item_id = 1;
-  int32 quantity = 2;
+	string item_id  = 1;
+	int32  quantity = 2;
 }
 
 message GetOrdersRequest {
-  string restaurant_id = 1;
+	string restaurant_id = 1;
 }
 
 message GetOrdersResponse {
-  repeated Order orders = 1;
+	repeated Order orders = 1;
 }
 
 message UpdateOrderStatusRequest {
-  string restaurant_id = 1;
-  string order_id = 2;
-  order.OrderStatus new_status = 3;
+	string            restaurant_id = 1;
+	string            order_id      = 2;
+	order.OrderStatus new_status    = 3;
 }
 
 message ShipOrderRequest {
-  string restaurant_id = 1;
-  string order_id = 2;
+	string restaurant_id = 1;
+	string order_id      = 2;
 }
 
 message ShipOrderResponse {
-  string confirmation_message = 1;
-  string driver_id = 2;
+	string confirmation_message = 1;
+	string driver_id            = 2;
 }

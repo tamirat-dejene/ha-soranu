@@ -11,9 +11,9 @@ func DomainRestaurantToProto(r *domain.Restaurant) *restaurantpb.Restaurant {
 		RestaurantId: r.ID,
 		Name:         r.Name,
 		Email:        r.Email,
-		Latitude: r.Latitude,
-		Longitude: r.Longitude,
-		Menus: 	toProtoMenuItems(r.MenuItems),
+		Latitude:     r.Latitude,
+		Longitude:    r.Longitude,
+		Menus:        toProtoMenuItems(r.MenuItems),
 	}
 }
 func toProtoMenuItems(items []domain.MenuItem) []*restaurantpb.MenuItem {
@@ -51,7 +51,6 @@ func DomainOrderToProto(order domain.Order) *restaurantpb.Order {
 	}
 
 	status := DomainOrderStatusToProto(order.Status)
-	
 
 	return &restaurantpb.Order{
 		OrderId:      order.OrderId,
@@ -61,7 +60,7 @@ func DomainOrderToProto(order domain.Order) *restaurantpb.Order {
 		TotalAmount:  order.TotalAmount,
 		Status:       status,
 	}
-}	
+}
 
 func ProtoOrderStatusToDomain(status orderpb.OrderStatus) string {
 	switch status {
@@ -75,6 +74,8 @@ func ProtoOrderStatusToDomain(status orderpb.OrderStatus) string {
 		return "COMPLETED"
 	case orderpb.OrderStatus_CANCELLED:
 		return "CANCELLED"
+	case orderpb.OrderStatus_SHIPPED:
+		return "SHIPPED"
 	default:
 		return "UNKNOWN"
 	}
@@ -92,6 +93,8 @@ func DomainOrderStatusToProto(status string) orderpb.OrderStatus {
 		return orderpb.OrderStatus_COMPLETED
 	case "CANCELLED":
 		return orderpb.OrderStatus_CANCELLED
+	case "SHIPPED":
+		return orderpb.OrderStatus_SHIPPED
 	default:
 		return orderpb.OrderStatus_UNKNOWN
 	}

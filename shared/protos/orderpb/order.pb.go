@@ -211,6 +211,66 @@ func (x *OrderStatusUpdated) GetUpdatedAtUnix() int64 {
 	return 0
 }
 
+type OrderShipped struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	OrderId        string                 `protobuf:"bytes,1,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`
+	TrackingNumber string                 `protobuf:"bytes,2,opt,name=tracking_number,json=trackingNumber,proto3" json:"tracking_number,omitempty"`
+	ShippedAtUnix  int64                  `protobuf:"varint,3,opt,name=shipped_at_unix,json=shippedAtUnix,proto3" json:"shipped_at_unix,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *OrderShipped) Reset() {
+	*x = OrderShipped{}
+	mi := &file_order_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *OrderShipped) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*OrderShipped) ProtoMessage() {}
+
+func (x *OrderShipped) ProtoReflect() protoreflect.Message {
+	mi := &file_order_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use OrderShipped.ProtoReflect.Descriptor instead.
+func (*OrderShipped) Descriptor() ([]byte, []int) {
+	return file_order_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *OrderShipped) GetOrderId() string {
+	if x != nil {
+		return x.OrderId
+	}
+	return ""
+}
+
+func (x *OrderShipped) GetTrackingNumber() string {
+	if x != nil {
+		return x.TrackingNumber
+	}
+	return ""
+}
+
+func (x *OrderShipped) GetShippedAtUnix() int64 {
+	if x != nil {
+		return x.ShippedAtUnix
+	}
+	return 0
+}
+
 var File_order_proto protoreflect.FileDescriptor
 
 const file_order_proto_rawDesc = "" +
@@ -226,7 +286,11 @@ const file_order_proto_rawDesc = "" +
 	"\border_id\x18\x01 \x01(\tR\aorderId\x121\n" +
 	"\n" +
 	"new_status\x18\x02 \x01(\x0e2\x12.order.OrderStatusR\tnewStatus\x12&\n" +
-	"\x0fupdated_at_unix\x18\x03 \x01(\x03R\rupdatedAtUnix*l\n" +
+	"\x0fupdated_at_unix\x18\x03 \x01(\x03R\rupdatedAtUnix\"z\n" +
+	"\fOrderShipped\x12\x19\n" +
+	"\border_id\x18\x01 \x01(\tR\aorderId\x12'\n" +
+	"\x0ftracking_number\x18\x02 \x01(\tR\x0etrackingNumber\x12&\n" +
+	"\x0fshipped_at_unix\x18\x03 \x01(\x03R\rshippedAtUnix*l\n" +
 	"\vOrderStatus\x12\v\n" +
 	"\aPENDING\x10\x00\x12\r\n" +
 	"\tPREPARING\x10\x01\x12\t\n" +
@@ -249,11 +313,12 @@ func file_order_proto_rawDescGZIP() []byte {
 }
 
 var file_order_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_order_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_order_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
 var file_order_proto_goTypes = []any{
 	(OrderStatus)(0),           // 0: order.OrderStatus
 	(*OrderCreated)(nil),       // 1: order.OrderCreated
 	(*OrderStatusUpdated)(nil), // 2: order.OrderStatusUpdated
+	(*OrderShipped)(nil),       // 3: order.OrderShipped
 }
 var file_order_proto_depIdxs = []int32{
 	0, // 0: order.OrderStatusUpdated.new_status:type_name -> order.OrderStatus
@@ -275,7 +340,7 @@ func file_order_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_order_proto_rawDesc), len(file_order_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   2,
+			NumMessages:   3,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

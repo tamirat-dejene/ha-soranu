@@ -59,3 +59,7 @@ func (c *Consumer) Subscribe(ctx context.Context, topics []string, handler kafka
 		}
 	}
 }
+
+func (c *Consumer) Close() error {
+	return c.group.Close()
+}

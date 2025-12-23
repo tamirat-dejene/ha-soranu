@@ -26,7 +26,8 @@ type Env struct {
 	RedisDB       int    `mapstructure:"REDIS_DB"`
 
 	// Kafka settings
-	KafkaBroker string `mapstructure:"KAFKA_BROKER_URL"`
+	KafkaBroker                   string `mapstructure:"KAFKA_BROKER_URL"`
+	RESTAURANT_SRV_CONSUMER_GROUP string `mapstructure:"RESTAURANT_SRV_CONSUMER_GROUP"`
 }
 
 func getString(key string, defaultValue string) string {
@@ -52,19 +53,20 @@ func getInt(key string, defaultValue int) int {
 
 func GetEnv() (*Env, error) {
 	env := Env{
-		SRV_ENV:             getString("SRV_ENV", "development"),
-		RESTAURANT_SRV_NAME: getString("RESTAURANT_SRV_NAME", "restaurant-service"),
-		RESTAURANT_SRV_PORT: getString("RESTAURANT_SRV_PORT", "9090"),
-		DBHost:              getString("POSTGRES_HOST", "postgres-db"),
-		DBPort:              getString("POSTGRES_PORT", "5432"),
-		DBUser:              getString("POSTGRES_USER", "postgres"),
-		DBPassword:          getString("POSTGRES_PASSWORD", "password"),
-		DBName:              getString("POSTGRES_DB", "restaurant-servicedb"),
-		RedisHOST:           getString("REDIS_HOST", "localhost"),
-		RedisPort:           getInt("REDIS_PORT", 6379),
-		RedisPassword:       getString("REDIS_PASSWORD", ""),
-		RedisDB:             getInt("REDIS_DB", 0),
-		KafkaBroker:         getString("KAFKA_BROKER_URL", "localhost:9092"),
+		SRV_ENV:                       getString("SRV_ENV", "development"),
+		RESTAURANT_SRV_NAME:           getString("RESTAURANT_SRV_NAME", "restaurant-service"),
+		RESTAURANT_SRV_PORT:           getString("RESTAURANT_SRV_PORT", "9090"),
+		DBHost:                        getString("POSTGRES_HOST", "postgres-db"),
+		DBPort:                        getString("POSTGRES_PORT", "5432"),
+		DBUser:                        getString("POSTGRES_USER", "postgres"),
+		DBPassword:                    getString("POSTGRES_PASSWORD", "password"),
+		DBName:                        getString("POSTGRES_DB", "restaurant-servicedb"),
+		RedisHOST:                     getString("REDIS_HOST", "localhost"),
+		RedisPort:                     getInt("REDIS_PORT", 6379),
+		RedisPassword:                 getString("REDIS_PASSWORD", ""),
+		RedisDB:                       getInt("REDIS_DB", 0),
+		KafkaBroker:                   getString("KAFKA_BROKER_URL", "localhost:9092"),
+		RESTAURANT_SRV_CONSUMER_GROUP: getString("RESTAURANT_SRV_CONSUMER_GROUP", "restaurant-service-group"),
 	}
 	return &env, nil
 }

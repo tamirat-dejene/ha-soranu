@@ -61,10 +61,17 @@ func main() {
 		logger.Fatal("failed to create kafka producer", zap.Error(err))
 	}
 	defer producer.Close()
-	
-	// 6. Initialize Repository, Usecase, and register Handler
+
+	// 7. Initialize sarama consumer
+	consumer, err := sarama.NewConsumer([]string{env.KafkaBroker}, env.RESTAURANT_SRV_CONSUMER_GROUP)
+	if err != nil {
+		logger.Fatal("failed to create kafka consumer", zap.Error(err))
+	}
+	defer consumer.Close()
+
+	// 8. Initialize Repository, Usecase, and register Handler
 	restaurant_repo := repository.NewRestaurantRepository(pgClient)
-	restaurant_usecase := usecase.NewRestaurantUseCase(restaurant_repo, producer, 10 * time.Second)
+	restaurant_usecase := usecase.NewRestaurantUseCase(restaurant_repo, producer, consumer, 10*time.Second)
 	handler.NewRestaurantHandler(s, restaurant_usecase)
 
 	logger.Info("Service listening", zap.String("port", env.RESTAURANT_SRV_PORT))

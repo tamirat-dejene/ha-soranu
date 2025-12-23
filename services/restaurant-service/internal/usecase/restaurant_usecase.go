@@ -19,6 +19,7 @@ import (
 type restaurantUseCase struct {
 	repo     domain.RestaurantRepository
 	producer kafka.Producer
+	consumer kafka.Consumer
 	timeout  time.Duration
 }
 
@@ -27,55 +28,7 @@ func (r *restaurantUseCase) ShipOrder(ctx context.Context, restaurantID string, 
 	c, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
-	confirmation, driverID, err := r.repo.ShipOrder(c, restaurantID, orderID)
-	if err != nil {
-		return "", "", err
-	}
-
-	// Create domain event for order shipped (status becomes SHIPPED)
-	shippedEvent := orderpb.OrderStatusUpdated{
-		OrderId:       orderID,
-		NewStatus:     orderpb.OrderStatus_SHIPPED,
-		UpdatedAtUnix: time.Now().Unix(),
-	}
-
-	// Serialize event
-	eventData, err := protojson.Marshal(&shippedEvent)
-	if err != nil {
-		logger.Error("failed to marshal order shipped event", zap.Error(err))
-		return "", "", err
-	}
-
-	envelope := &envent_envelope.EventEnvelope{
-		EventId:        uuid.NewString(),
-		OccurredAtUnix: time.Now().Unix(),
-		Payload:        eventData,
-	}
-
-	envelopeBytes, err := protojson.Marshal(envelope)
-	if err != nil {
-		logger.Error("failed to marshal event envelope", zap.Error(err))
-		return "", "", err
-	}
-
-	// Publish event to Kafka
-	err = r.producer.Publish(c, &kafka.Message{
-		Topic: events.OrderShippedEvent,
-		Key:   []byte(orderID),
-		Value: envelopeBytes,
-		Headers: map[string][]byte{
-			"event_type":   []byte(events.OrderShippedEvent),
-			"content_type": []byte("application/x-protobuf"),
-			"producer":     []byte("restaurant-service"),
-		},
-	})
-
-	if err != nil {
-		logger.Error("failed to publish order shipped event", zap.Error(err))
-		return "", "", err
-	}
-
-	return confirmation, driverID, nil
+	return r.repo.ShipOrder(c, restaurantID, orderID)
 }
 
 // UpdateOrderStatus implements [domain.RestaurantUseCase].
@@ -258,6 +211,8 @@ func (r *restaurantUseCase) UpdateMenuItem(ctx context.Context, restaurantID str
 }
 
 func NewRestaurantUseCase(repo domain.RestaurantRepository,
-	producer kafka.Producer, timeout time.Duration) domain.RestaurantUseCase {
-	return &restaurantUseCase{repo: repo, producer: producer, timeout: timeout}
+	producer kafka.Producer,
+	consumer kafka.Consumer,
+	timeout time.Duration) domain.RestaurantUseCase {
+	return &restaurantUseCase{repo: repo, producer: producer, consumer: consumer, timeout: timeout}
 }

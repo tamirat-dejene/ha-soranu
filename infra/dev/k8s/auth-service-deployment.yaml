@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: auth-service
+  namespace: ha-soranu
 spec:
   selector:
     matchLabels:
@@ -23,7 +24,7 @@ spec:
               memory: "64Mi"
               cpu: "250m"
           ports:
-            - containerPort: 9090
+            - containerPort: 50051
 
           # Load all env variables from K8s
           envFrom:
@@ -36,11 +37,12 @@ apiVersion: v1
 kind: Service
 metadata:
   name: auth-service
+  namespace: ha-soranu
 spec:
   type: ClusterIP
   selector:
     app: auth-service
   ports:
     - name: grpc
-      port: 9090
-      targetPort: 9090
+      port: 50051
+      targetPort: 50051

@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"strings"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 	_ "github.com/lib/pq"
@@ -21,24 +20,9 @@ func NewMigrator(env svc.Env) *migrator {
 }
 
 func (f *migrator) Migrate(ctx context.Context, dir string) error {
-	dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/postgres?sslmode=disable",
-		f.env.DBUser, f.env.DBPassword, f.env.DBHost, f.env.DBPort)
-	db, err := sql.Open("postgres", dsn)
-	if err != nil {
-		return fmt.Errorf("failed to connect to Postgres: %w", err)
-	}
-	defer db.Close()
-	_, err = db.Exec(fmt.Sprintf("CREATE DATABASE %s", f.env.DBName))
-	if err != nil {
-		if !strings.Contains(err.Error(), "already exists") {
-			return fmt.Errorf("failed to create database: %w", err)
-		}
-	}
-	db.Close()
-
-	dsn = fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable",
+	dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable",
 		f.env.DBUser, f.env.DBPassword, f.env.DBHost, f.env.DBPort, f.env.DBName)
-	db, err = sql.Open("postgres", dsn)
+	db, err := sql.Open("postgres", dsn)
 	if err != nil {
 		return fmt.Errorf("failed to connect to DB: %w", err)
 	}

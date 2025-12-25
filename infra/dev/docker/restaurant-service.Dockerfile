@@ -5,5 +5,5 @@ COPY shared /app/shared
 COPY services/restaurant-service/migrations /app/restaurant-svc-migrations
 COPY bin/restaurant-service /app/bin/restaurant-service
 
-EXPOSE 9091
+EXPOSE 50052
 CMD ["/app/bin/restaurant-service"]

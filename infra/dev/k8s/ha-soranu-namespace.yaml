@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ha-soranu
+  labels:
+    name: ha-soranu
+  annotations:
+    istio-injection: enabled
+---

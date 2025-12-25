@@ -55,7 +55,7 @@ func GetEnv() (*Env, error) {
 	env := Env{
 		SRV_ENV:                       getString("SRV_ENV", "development"),
 		RESTAURANT_SRV_NAME:           getString("RESTAURANT_SRV_NAME", "restaurant-service"),
-		RESTAURANT_SRV_PORT:           getString("RESTAURANT_SRV_PORT", "9090"),
+		RESTAURANT_SRV_PORT:           getString("RESTAURANT_SRV_PORT", "7577"),
 		DBHost:                        getString("POSTGRES_HOST", "postgres-db"),
 		DBPort:                        getString("POSTGRES_PORT", "5432"),
 		DBUser:                        getString("POSTGRES_USER", "postgres"),

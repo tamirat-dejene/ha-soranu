@@ -1,7 +1,4 @@
 -- +goose Up
-
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-
 CREATE TABLE IF NOT EXISTS restaurants (
     restaurant_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     email VARCHAR(100) NOT NULL UNIQUE,

@@ -6,7 +6,7 @@ COPY shared /app/shared
 COPY services/auth-service/migrations /app/auth-svc-migrations
 COPY bin/auth-service /app/bin/auth-service
 
-EXPOSE 9090
+EXPOSE 50051
 CMD ["/app/bin/auth-service"]
 
 # Advanced Dockerfile for auth-service with multi-stage build
@@ -38,5 +38,5 @@ CMD ["/app/bin/auth-service"]
 # # Copy migrations folder
 # COPY --from=builder /app/services/auth-service/migrations /app/migrations
 
-# EXPOSE 9090
+# EXPOSE 50051
 # CMD ["/app/bin/auth-service"]

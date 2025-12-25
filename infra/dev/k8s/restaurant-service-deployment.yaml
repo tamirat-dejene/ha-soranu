@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: restaurant-service
+  namespace: ha-soranu
 spec:
   selector:
     matchLabels:
@@ -23,7 +24,7 @@ spec:
               memory: "64Mi"
               cpu: "250m"
           ports:
-            - containerPort: 9091
+            - containerPort: 50052
 
           # Load all env variables from K8s
           envFrom:
@@ -36,11 +37,12 @@ apiVersion: v1
 kind: Service
 metadata:
   name: restaurant-service
+  namespace: ha-soranu
 spec:
   type: ClusterIP
   selector:
     app: restaurant-service
   ports:
     - name: grpc
-      port: 9091
-      targetPort: 9091
+      port: 50052
+      targetPort: 50052

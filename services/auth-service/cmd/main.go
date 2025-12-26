@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/tamirat-dejene/ha-soranu/services/auth-service/migrations"
+	"github.com/tamirat-dejene/ha-soranu/shared/caching/valkey"
 	"github.com/tamirat-dejene/ha-soranu/shared/pkg/logger"
 	"go.uber.org/zap"
 
@@ -18,7 +19,6 @@ import (
 	"github.com/tamirat-dejene/ha-soranu/services/auth-service/internal/repository"
 	"github.com/tamirat-dejene/ha-soranu/services/auth-service/internal/usecase"
 	postgres "github.com/tamirat-dejene/ha-soranu/shared/db/pg"
-	"github.com/tamirat-dejene/ha-soranu/shared/redis"
 )
 
 func main() {
@@ -49,13 +49,15 @@ func main() {
 	}
 	defer pgClient.Close()
 
-	// 5. Initialize Redis
-	redisClient := redis.NewRedisClient(env.RedisHOST, env.RedisPort, env.RedisPassword, env.RedisDB)
-	defer redisClient.Close()
-
+	// 5. Initialize Valkey Redis Client
+	valkeyClient, err := valkey.NewValkeyClient(env.RedisHOST, env.RedisPort, env.RedisPassword, env.RedisDB)
+	if err != nil {
+		logger.Fatal("Failed to connect to Redis", zap.Error(err))
+	}
+	defer valkeyClient.Close()
 	// 6. Initialize Repositories
 	userRepo := repository.NewUserRepository(pgClient)
-	authRepo := repository.NewAuthRepository(redisClient, time.Duration(5)*time.Minute)
+	authRepo := repository.NewAuthRepository(valkeyClient, time.Duration(5)*time.Minute)
 
 	// 7. Initialize Usecases
 	timeout := time.Duration(5) * time.Second // Default timeout

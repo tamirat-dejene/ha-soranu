@@ -37,7 +37,7 @@ func (a *authUsecase) LoginWithEmailAndPassword(ctx context.Context, input domai
 		return nil, nil, errs.ErrInternalServer
 	}
 
-	err = a.authRepo.SaveRefreshToken(input.Email, refreshTokenID)
+	err = a.authRepo.SaveRefreshToken(c, input.Email, refreshTokenID)
 	if err != nil {
 		return nil, nil, errs.ErrInternalServer
 	}
@@ -88,7 +88,7 @@ func (a *authUsecase) LoginWithGoogle(ctx context.Context, input domain.LoginWit
 	}
 
 	// 5. Store refresh token
-	err = a.authRepo.SaveRefreshToken(user.Email, refreshTokenID)
+	err = a.authRepo.SaveRefreshToken(c, user.UserID, refreshTokenID)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -99,7 +99,7 @@ func (a *authUsecase) LoginWithGoogle(ctx context.Context, input domain.LoginWit
 
 // Logout implements domain.AuthUseCase.
 func (a *authUsecase) Logout(ctx context.Context, refreshToken string) error {
-	_, cancel := context.WithTimeout(ctx, a.ctxTimeout)
+	c, cancel := context.WithTimeout(ctx, a.ctxTimeout)
 	defer cancel()
 
 	claims, err := internalutil.ValidateRefreshToken([]byte(a.env.RefreshTokenSecret), refreshToken)
@@ -107,19 +107,19 @@ func (a *authUsecase) Logout(ctx context.Context, refreshToken string) error {
 		return errs.ErrTokenRevoked
 	}
 
-	return a.authRepo.DeleteRefreshToken(claims.TokenID)
+	return a.authRepo.DeleteRefreshToken(c, claims.TokenID)
 }
 
 // RefreshTokens implements domain.AuthUseCase.
 func (a *authUsecase) RefreshTokens(ctx context.Context, refreshToken string) (*domain.AuthTokens, error) {
-	_, cancel := context.WithTimeout(ctx, a.ctxTimeout)
+	c, cancel := context.WithTimeout(ctx, a.ctxTimeout)
 	defer cancel()
 
 	claims, err := internalutil.ValidateRefreshToken([]byte(a.env.RefreshTokenSecret), refreshToken)
 	if err != nil {
 		return nil, errs.ErrTokenRevoked
 	}
-	_, err = a.authRepo.ConsumeRefreshToken(claims.TokenID)
+	_, err = a.authRepo.ConsumeRefreshToken(c, claims.TokenID)
 	if err != nil {
 		return nil, errs.ErrTokenRevoked
 	}
@@ -152,7 +152,7 @@ func (a *authUsecase) Register(ctx context.Context, input domain.UserRegister) (
 		return nil, nil, errs.ErrInternalServer
 	}
 
-	err = a.authRepo.SaveRefreshToken(user.UserID, refreshTokenID)
+	err = a.authRepo.SaveRefreshToken(c, user.UserID, refreshTokenID)
 	if err != nil {
 		return nil, nil, errs.ErrInternalServer
 	}

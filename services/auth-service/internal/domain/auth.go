@@ -32,8 +32,8 @@ type AuthUseCase interface {
 }
 
 type AuthRepository interface {
-    SaveRefreshToken(userID string, tokenId string) error
-    DeleteRefreshToken(tokenId string) error
-    ValidateRefreshToken(tokenId string) (string, error)
-    ConsumeRefreshToken(tokenId string) (string, error)
+    SaveRefreshToken(ctx context.Context, userID string, tokenId string) error
+    DeleteRefreshToken(ctx context.Context, tokenId string) error
+    ValidateRefreshToken(ctx context.Context, tokenId string) (string, error)
+    ConsumeRefreshToken(ctx context.Context, tokenId string) (string, error)
 }

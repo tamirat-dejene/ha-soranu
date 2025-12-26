@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/go-redis/redis"
-	"github.com/tamirat-dejene/ha-soranu/shared/caching"
+	"github.com/tamirat-dejene/ha-soranu/shared/pkg/caching"
 )
 
 type redisClient struct {

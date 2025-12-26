@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/tamirat-dejene/ha-soranu/shared/caching"
+	"github.com/tamirat-dejene/ha-soranu/shared/pkg/caching"
 	"github.com/valkey-io/valkey-go"
 )
 

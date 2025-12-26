@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/tamirat-dejene/ha-soranu/services/auth-service/migrations"
-	"github.com/tamirat-dejene/ha-soranu/shared/caching/valkey"
+	"github.com/tamirat-dejene/ha-soranu/shared/pkg/caching/valkey"
 	"github.com/tamirat-dejene/ha-soranu/shared/pkg/logger"
 	"go.uber.org/zap"
 

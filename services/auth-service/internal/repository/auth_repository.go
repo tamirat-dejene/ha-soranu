@@ -9,7 +9,7 @@ import (
 	"github.com/tamirat-dejene/ha-soranu/services/auth-service/internal/domain"
 	errs "github.com/tamirat-dejene/ha-soranu/services/auth-service/internal/domain/err"
 	internalutil "github.com/tamirat-dejene/ha-soranu/services/auth-service/internal/util"
-	"github.com/tamirat-dejene/ha-soranu/shared/caching"
+	"github.com/tamirat-dejene/ha-soranu/shared/pkg/caching"
 )
 
 type authRepository struct {

@@ -13,6 +13,14 @@ type redisClient struct {
 	client *redis.Client
 }
 
+// Ping implements [caching.CacheClient].
+func (r *redisClient) Ping(ctx context.Context) error {
+	if err := r.client.Ping().Err(); err != nil {
+		return fmt.Errorf("failed to ping redis: %w", err)
+	}
+	return nil
+}
+
 // Close implements [caching.CacheClient].
 func (r *redisClient) Close() error {
 	return r.client.Close()
@@ -85,6 +93,7 @@ func (r *redisClient) Set(ctx context.Context, key string, value any, expiration
 	}
 	return nil
 }
+
 // NewRedisClient initializes the Redis client
 func NewRedisClient(host string, port int, password string, db int) (caching.CacheClient, error) {
 	client := redis.NewClient(&redis.Options{

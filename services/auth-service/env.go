@@ -37,6 +37,7 @@ type Env struct {
 	// Valkey settings
 	ValkeyHOST     string `mapstructure:"VALKEY_HOST"`
 	ValkeyPort     int    `mapstructure:"VALKEY_PORT"`
+	ValkeyUser     string `mapstructure:"VALKEY_USER"`
 	ValkeyPassword string `mapstructure:"VALKEY_PASSWORD"`
 	ValkeyDB       int    `mapstructure:"VALKEY_DB"`
 
@@ -85,7 +86,8 @@ func GetEnv() (*Env, error) {
 		RedisDB:            getInt("REDIS_DB", 0),
 		ValkeyHOST:         getString("VALKEY_HOST", "localhost"),
 		ValkeyPort:         getInt("VALKEY_PORT", 6379),
-		ValkeyPassword:     getString("VALKEY_PASSWORD", ""),
+		ValkeyUser:         getString("VALKEY_USER", "default"),
+		ValkeyPassword:     getString("VALKEY_PASSWORD", "default-password"),
 		ValkeyDB:           getInt("VALKEY_DB", 0),
 	}
 	return &env, nil

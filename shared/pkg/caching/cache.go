@@ -16,4 +16,5 @@ type CacheClient interface {
 	Increment(ctx context.Context, key string) (int64, error)
 	Decrement(ctx context.Context, key string) (int64, error)
 	Expire(ctx context.Context, key string, expiration time.Duration) error
+	Ping(ctx context.Context) error
 }

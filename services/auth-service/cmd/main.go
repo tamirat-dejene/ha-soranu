@@ -50,9 +50,18 @@ func main() {
 	defer pgClient.Close()
 
 	// 5. Initialize Valkey Redis Client
-	valkeyClient, err := valkey.NewValkeyClient(env.ValkeyHOST, env.ValkeyPort, env.ValkeyPassword, env.ValkeyDB)
+	valkeyClient, err := valkey.NewValkeyClient(env.ValkeyHOST, env.ValkeyPort, env.ValkeyUser, env.ValkeyPassword, env.ValkeyDB)
 	if err != nil {
 		logger.Fatal("Failed to connect to Valkey Redis", zap.Error(err))
+	}
+	// Test the Valkey connection
+	{
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		if err := valkeyClient.Ping(ctx); err != nil {
+			logger.Fatal("Failed to ping Valkey Redis", zap.Error(err))
+		}
+		logger.Info("Successfully connected to Valkey Redis")
 	}
 	defer valkeyClient.Close()
 	// 6. Initialize Repositories

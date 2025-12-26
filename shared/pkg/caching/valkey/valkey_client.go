@@ -13,6 +13,16 @@ type valkeyClient struct {
 	client valkey.Client
 }
 
+// Ping implements [caching.CacheClient].
+func (v *valkeyClient) Ping(ctx context.Context) error {
+	cmd := v.client.B().Ping().Build()
+
+	if err := v.client.Do(ctx, cmd).Error(); err != nil {
+		return fmt.Errorf("failed to ping valkey: %w", err)
+	}
+	return nil
+}
+
 // Close implements [caching.CacheClient].
 func (v *valkeyClient) Close() error {
 	v.client.Close()
@@ -22,7 +32,7 @@ func (v *valkeyClient) Close() error {
 // Decrement implements [caching.CacheClient].
 func (v *valkeyClient) Decrement(ctx context.Context, key string) (int64, error) {
 	cmd := v.client.B().Decr().Key(key).Build()
-	
+
 	val, err := v.client.Do(ctx, cmd).ToInt64()
 	if err != nil {
 		return 0, fmt.Errorf("failed to decrement key %s: %w", key, err)
@@ -33,7 +43,7 @@ func (v *valkeyClient) Decrement(ctx context.Context, key string) (int64, error)
 // Delete implements [caching.CacheClient].
 func (v *valkeyClient) Delete(ctx context.Context, key string) error {
 	cmd := v.client.B().Del().Key(key).Build()
-	
+
 	if err := v.client.Do(ctx, cmd).Error(); err != nil {
 		return fmt.Errorf("failed to delete key %s: %w", key, err)
 	}
@@ -43,7 +53,7 @@ func (v *valkeyClient) Delete(ctx context.Context, key string) error {
 // Exists implements [caching.CacheClient].
 func (v *valkeyClient) Exists(ctx context.Context, key string) (bool, error) {
 	cmd := v.client.B().Exists().Key(key).Build()
-	
+
 	count, err := v.client.Do(ctx, cmd).ToInt64()
 	if err != nil {
 		return false, fmt.Errorf("failed to check existence of key %s: %w", key, err)
@@ -65,7 +75,7 @@ func (v *valkeyClient) Expire(ctx context.Context, key string, expiration time.D
 // Get implements [caching.CacheClient].
 func (v *valkeyClient) Get(ctx context.Context, key string) (string, error) {
 	cmd := v.client.B().Get().Key(key).Build()
-	
+
 	val, err := v.client.Do(ctx, cmd).ToString()
 	if err != nil {
 		if valkey.IsValkeyNil(err) {
@@ -84,7 +94,7 @@ func (v *valkeyClient) GetClient() any {
 // Increment implements [caching.CacheClient].
 func (v *valkeyClient) Increment(ctx context.Context, key string) (int64, error) {
 	cmd := v.client.B().Incr().Key(key).Build()
-	
+
 	val, err := v.client.Do(ctx, cmd).ToInt64()
 	if err != nil {
 		return 0, fmt.Errorf("failed to increment key %s: %w", key, err)
@@ -97,7 +107,7 @@ func (v *valkeyClient) Set(ctx context.Context, key string, value any, expiratio
 	strVal := fmt.Sprintf("%v", value)
 
 	cmd := v.client.B().Set().Key(key).Value(strVal).Ex(expiration).Build()
-	
+
 	if err := v.client.Do(ctx, cmd).Error(); err != nil {
 		return fmt.Errorf("failed to set key %s: %w", key, err)
 	}
@@ -105,9 +115,10 @@ func (v *valkeyClient) Set(ctx context.Context, key string, value any, expiratio
 }
 
 // NewValkeyClient initializes the Valkey client
-func NewValkeyClient(host string, port int, password string, db int) (caching.CacheClient, error) {
+func NewValkeyClient(host string, port int, user string, password string, db int) (caching.CacheClient, error) {
 	opts := valkey.ClientOption{
 		InitAddress:  []string{fmt.Sprintf("%s:%d", host, port)},
+		Username:     user,
 		Password:     password,
 		SelectDB:     db,
 		DisableCache: true,

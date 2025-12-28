@@ -8,7 +8,7 @@ The system follows a microservices architecture using **gRPC** for inter-service
 
 ![Ha-Soranu architecture diagram](./docs/hasoranu.png)
 
-*Figure: High-level architecture — API Gateway, Auth & Restaurant services, Postgres, Redis, Kafka.*
+*Figure: High-level architecture — API Gateway, Auth, Restaurant, and Notification services, Postgres, Redis, Kafka.*
 
 ### Core Services
 
@@ -17,6 +17,7 @@ The system follows a microservices architecture using **gRPC** for inter-service
 | **[api-gateway](./services/api-gateway)** | REST API | Entry point for all client requests. Handles routing, transformation (HTTP ↔ gRPC), and initial validation. |
 | **[auth-service](./services/auth-service)** | gRPC | Manages user identity, authentication (JWT, OAuth), and profiles. |
 | **[restaurant-service](./services/restaurant-service)** | gRPC | Manages restaurant profiles, menus, and order processing. Publishes order events to Kafka. |
+| **[notification-service](./services/notification-service)** | gRPC | Handles real-time notifications for users and restaurants. Consumes order events from Kafka. |
 
 ## Tech Stack
 
@@ -27,7 +28,7 @@ The system follows a microservices architecture using **gRPC** for inter-service
   - [gRPC-Go](https://github.com/grpc/grpc-go) (RPC)
 - **Databases**: PostgreSQL (Per-service databases)
 - **Caching**: Redis (Token storage, session management)
-- **Messaging**: Apache Kafka (Event-driven architecture)
+- **Messaging**: Apache Kafka (Event-driven architecture with binary Protobuf serialization)
 - **Infrastructure**: 
   - Docker & Kubernetes (Containerization & Orchestration)
   - [Tilt](https://tilt.dev) (Local Development Environment)
@@ -69,9 +70,10 @@ ha-soranu/
 ├── services/               # Microservices source code
 │   ├── api-gateway/        # REST API Gateway
 │   ├── auth-service/       # Authentication & User Service
-│   └── restaurant-service/ # Restaurant & Menu Service
+│   ├── restaurant-service/ # Restaurant & Menu Service
+│   └── notification-service/ # Notification Service
 ├── protos/                 # Protocol Buffer definitions (gRPC contracts)
-├── shared/                 # Shared libraries (DB packages, Logger, Middleware)
+├── shared/                 # Shared libraries (DB packages, Logger, Middleware, Events)
 ├── infra/                  # Infrastructure configurations (K8s, Docker)
 ├── bin/                    # Compiled binaries (ignored by git)
 ├── Tiltfile                # Tilt configuration for local dev
@@ -95,7 +97,13 @@ ha-soranu/
 - **Order Processing**:
   - Order placement and status tracking.
   - Real-time order updates.
-  - **Event-Driven**: Asynchronous order processing using Kafka.
+  - **Event-Driven**: Asynchronous order processing using Kafka with binary Protobuf serialization.
+  
+- **Notification System**:
+  - Real-time notifications for users and restaurants.
+  - Order placement notifications for restaurants.
+  - Order status update notifications for customers.
+  - **Event-Driven**: Kafka consumer processes order events to create notifications.
 
 ## Development
 

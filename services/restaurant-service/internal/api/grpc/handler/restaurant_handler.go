@@ -99,8 +99,9 @@ func (r *restaurantHandler) PlaceOrder(ctx context.Context, req *restaurantpb.Pl
 	}
 
 	return &restaurantpb.PlaceOrderResponse{
-		OrderId: order.OrderId,
-		Status:  order.Status,
+		OrderId:     order.OrderId,
+		TotalAmount: order.TotalAmount,
+		Status:      order.Status,
 	}, nil
 }
 

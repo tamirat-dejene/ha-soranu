@@ -7,6 +7,8 @@ import (
 
 	"github.com/tamirat-dejene/ha-soranu/services/restaurant-service/internal/domain"
 	postgres "github.com/tamirat-dejene/ha-soranu/shared/db/pg"
+	"github.com/tamirat-dejene/ha-soranu/shared/pkg/logger"
+	"go.uber.org/zap"
 )
 
 type restaurantRepository struct {
@@ -286,10 +288,17 @@ func (r *restaurantRepository) PlaceOrder(ctx context.Context, order *domain.Pla
 		return nil, err
 	}
 
+	logger.Info("placed new order", zap.String("order_id", orderID), zap.String("restaurant_id", order.RestaurantID), zap.Float64("total_price", totalPrice))
+
+	// 5. Return created order
+
 	return &domain.Order{
-		OrderId:     orderID,
-		TotalAmount: totalPrice,
-		Status:      "PENDING",
+		OrderId:      orderID,
+		CustomerID:   order.CustomerID,
+		RestaurantID: order.RestaurantID,
+		Items:        order.Items,
+		TotalAmount:  totalPrice,
+		Status:       "PENDING",
 	}, nil
 }
 
@@ -333,23 +342,58 @@ func (r *restaurantRepository) CreateRestaurant(
 	restaurant *domain.Restaurant,
 ) (*domain.Restaurant, error) {
 
-	query := `
+	tx, err := r.db.BeginTx(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	defer func() {
+		if err != nil {
+			_ = tx.Rollback(ctx)
+		}
+	}()
+
+	createQuery := `
 		INSERT INTO restaurants (email, secret_key, name, latitude, longitude)
 		VALUES ($1, $2, $3, $4, $5)
 		RETURNING restaurant_id
 	`
 
-	err := r.db.QueryRow(
+	err = tx.QueryRow(
 		ctx,
-		query,
+		createQuery,
 		restaurant.Email,
 		restaurant.SecretKey,
 		restaurant.Name,
 		restaurant.Latitude,
 		restaurant.Longitude,
 	).Scan(&restaurant.ID)
-
 	if err != nil {
+		return nil, err
+	}
+
+	// Insert menu items if any
+	insertItemQuery := `
+		INSERT INTO menu_items (restaurant_id, name, description, price)
+		VALUES ($1, $2, $3, $4)
+		RETURNING item_id
+	`
+
+	for i := range restaurant.MenuItems {
+		item := &restaurant.MenuItems[i]
+		if err = tx.QueryRow(
+			ctx,
+			insertItemQuery,
+			restaurant.ID,
+			item.Name,
+			item.Description,
+			item.Price,
+		).Scan(&item.ItemID); err != nil {
+			return nil, err
+		}
+	}
+
+	if err = tx.Commit(ctx); err != nil {
 		return nil, err
 	}
 

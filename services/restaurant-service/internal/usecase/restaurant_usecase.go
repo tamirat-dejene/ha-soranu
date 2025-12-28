@@ -124,6 +124,7 @@ func (r *restaurantUseCase) PlaceOrder(ctx context.Context, order *domain.PlaceO
 		OccurredAtUnix: time.Now().Unix(),
 		Payload:        eventData,
 	}
+
 	envelopeBytes, err := protojson.Marshal(eventEnvelop)
 	if err != nil {
 		logger.Error("failed to marshal event envelope", zap.Error(err))
@@ -131,7 +132,6 @@ func (r *restaurantUseCase) PlaceOrder(ctx context.Context, order *domain.PlaceO
 	}
 
 	// Publish event to Kafka
-
 	err = r.producer.Publish(c, &kafka.Message{
 		Topic: events.OrderPlacedEvent,
 		Key:   []byte(ord.OrderId),
@@ -144,9 +144,11 @@ func (r *restaurantUseCase) PlaceOrder(ctx context.Context, order *domain.PlaceO
 	})
 
 	if err != nil {
-		logger.Log.Error("failed to publish order placed event", zap.Error(err))
+		logger.Error("failed to publish order placed event", zap.Error(err))
 		return nil, err
 	}
+
+	logger.Info("published order placed event", zap.String("order_id", ord.OrderId), zap.String("restaurant_id", ord.RestaurantID), zap.Float64("total_amount", ord.TotalAmount))
 
 	return ord, nil
 }

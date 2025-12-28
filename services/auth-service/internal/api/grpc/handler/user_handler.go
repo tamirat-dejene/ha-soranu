@@ -18,8 +18,24 @@ type userHandler struct {
 }
 
 // GetDrivers implements [userpb.UserServiceServer].
-func (u *userHandler) GetDrivers(context.Context, *userpb.GetDriversRequest) (*userpb.DriverResponse, error) {
-	panic("unimplemented")
+func (u *userHandler) GetDrivers(ctx context.Context, req *userpb.GetDriversRequest) (*userpb.DriverResponse, error) {
+	if req == nil {
+		return nil, errs.ErrInvalidRequest
+	}
+
+	drivers, err := u.userUsecase.GetDrivers(ctx, req.Latitude, req.Longitude, req.RadiusKm)
+	if err != nil {
+		return nil, err
+	}
+
+	var protoDrivers []string
+	for _, driver := range drivers {
+		protoDrivers = append(protoDrivers, driver.DriverID)
+	}
+
+	return &userpb.DriverResponse{
+		DriverIds: protoDrivers,
+	}, nil
 }
 
 // RemoveDriver implements [userpb.UserServiceServer].

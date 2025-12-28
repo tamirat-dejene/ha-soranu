@@ -25,8 +25,9 @@ func (u *userRepository) GetDrivers(ctx context.Context, latitude float32, longi
 		JOIN users u ON d.user_id = u.user_id
 	`
 
-	rows, err := u.db.Query(ctx, query, latitude, longitude, radius)
+	rows, err := u.db.Query(ctx, query)
 	if err != nil {
+		logger.Error("failed to get drivers", zap.Error(err))
 		return nil, errs.OptimizedDbError(err)
 	}
 	defer rows.Close()

@@ -233,24 +233,16 @@ func (gdr *GetDriversRequestDTO) ToProto() *userpb.GetDriversRequest {
 }
 
 type GetDriversResponseDTO struct {
-	DriverId string        `json:"driver_id"`
-	Users    []domain.User `json:"users"`
+	DriverIds []string      `json:"driver_ids"`
 }
 
 func GetDriversResponseFromProto(protoRes *userpb.DriverResponse) *GetDriversResponseDTO {
-	domainUsers := make([]domain.User, len(protoRes.GetDrivers()))
-	for i, pu := range protoRes.GetDrivers() {
-		domainUsers[i] = domain.User{
-			ID:          pu.UserId,
-			Email:       pu.Email,
-			Username:    pu.Username,
-			PhoneNumber: pu.PhoneNumber,
-			Password:    "********",
-			CreatedAt:   pu.CreatedAt.AsTime(),
-		}
+	var driverIds []string
+	for _, driver := range protoRes.GetDriverIds() {
+		driverIds = append(driverIds, driver)
 	}
+
 	return &GetDriversResponseDTO{
-		DriverId: protoRes.GetDriverId(),
-		Users: domainUsers,
+		DriverIds: driverIds,
 	}
 }

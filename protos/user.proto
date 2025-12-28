@@ -141,8 +141,7 @@ message BeDriverResponse {
 }
 
 message DriverResponse {
-	string        driver_id = 1;
-	repeated User drivers   = 2;
+	repeated string driver_ids = 1;
 }
 
 message GetDriversRequest {

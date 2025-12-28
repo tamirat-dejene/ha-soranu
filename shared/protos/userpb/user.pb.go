@@ -979,8 +979,7 @@ func (x *BeDriverResponse) GetDriverId() string {
 
 type DriverResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	DriverId      string                 `protobuf:"bytes,1,opt,name=driver_id,json=driverId,proto3" json:"driver_id,omitempty"`
-	Drivers       []*User                `protobuf:"bytes,2,rep,name=drivers,proto3" json:"drivers,omitempty"`
+	DriverIds     []string               `protobuf:"bytes,1,rep,name=driver_ids,json=driverIds,proto3" json:"driver_ids,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1015,16 +1014,9 @@ func (*DriverResponse) Descriptor() ([]byte, []int) {
 	return file_user_proto_rawDescGZIP(), []int{17}
 }
 
-func (x *DriverResponse) GetDriverId() string {
+func (x *DriverResponse) GetDriverIds() []string {
 	if x != nil {
-		return x.DriverId
-	}
-	return ""
-}
-
-func (x *DriverResponse) GetDrivers() []*User {
-	if x != nil {
-		return x.Drivers
+		return x.DriverIds
 	}
 	return nil
 }
@@ -1203,11 +1195,10 @@ const file_user_proto_rawDesc = "" +
 	"\x0fBeDriverRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\"/\n" +
 	"\x10BeDriverResponse\x12\x1b\n" +
-	"\tdriver_id\x18\x01 \x01(\tR\bdriverId\"S\n" +
-	"\x0eDriverResponse\x12\x1b\n" +
-	"\tdriver_id\x18\x01 \x01(\tR\bdriverId\x12$\n" +
-	"\adrivers\x18\x02 \x03(\v2\n" +
-	".user.UserR\adrivers\"j\n" +
+	"\tdriver_id\x18\x01 \x01(\tR\bdriverId\"/\n" +
+	"\x0eDriverResponse\x12\x1d\n" +
+	"\n" +
+	"driver_ids\x18\x01 \x03(\tR\tdriverIds\"j\n" +
 	"\x11GetDriversRequest\x12\x1a\n" +
 	"\blatitude\x18\x01 \x01(\x02R\blatitude\x12\x1c\n" +
 	"\tlongitude\x18\x02 \x01(\x02R\tlongitude\x12\x1b\n" +
@@ -1272,34 +1263,33 @@ var file_user_proto_depIdxs = []int32{
 	1,  // 3: user.GetUserResponse.user:type_name -> user.User
 	0,  // 4: user.GetAddressesResponse.addresses:type_name -> user.Address
 	0,  // 5: user.AddAddressResponse.address:type_name -> user.Address
-	1,  // 6: user.DriverResponse.drivers:type_name -> user.User
-	3,  // 7: user.UserService.GetUser:input_type -> user.GetUserRequest
-	5,  // 8: user.UserService.GetPhoneNumber:input_type -> user.GetPhoneNumberRequest
-	7,  // 9: user.UserService.AddPhoneNumber:input_type -> user.AddPhoneNumberRequest
-	8,  // 10: user.UserService.UpdatePhoneNumber:input_type -> user.UpdatePhoneNumberRequest
-	9,  // 11: user.UserService.RemovePhoneNumber:input_type -> user.RemovePhoneNumberRequest
-	10, // 12: user.UserService.GetAddresses:input_type -> user.GetAddressesRequest
-	12, // 13: user.UserService.AddAddress:input_type -> user.AddAddressRequest
-	14, // 14: user.UserService.RemoveAddress:input_type -> user.RemoveAddressRequest
-	15, // 15: user.UserService.BeDriver:input_type -> user.BeDriverRequest
-	18, // 16: user.UserService.GetDrivers:input_type -> user.GetDriversRequest
-	19, // 17: user.UserService.RemoveDriver:input_type -> user.RemoveDriverRequest
-	4,  // 18: user.UserService.GetUser:output_type -> user.GetUserResponse
-	6,  // 19: user.UserService.GetPhoneNumber:output_type -> user.GetPhoneNumberResponse
-	2,  // 20: user.UserService.AddPhoneNumber:output_type -> user.MessageResponse
-	2,  // 21: user.UserService.UpdatePhoneNumber:output_type -> user.MessageResponse
-	2,  // 22: user.UserService.RemovePhoneNumber:output_type -> user.MessageResponse
-	11, // 23: user.UserService.GetAddresses:output_type -> user.GetAddressesResponse
-	13, // 24: user.UserService.AddAddress:output_type -> user.AddAddressResponse
-	2,  // 25: user.UserService.RemoveAddress:output_type -> user.MessageResponse
-	16, // 26: user.UserService.BeDriver:output_type -> user.BeDriverResponse
-	17, // 27: user.UserService.GetDrivers:output_type -> user.DriverResponse
-	2,  // 28: user.UserService.RemoveDriver:output_type -> user.MessageResponse
-	18, // [18:29] is the sub-list for method output_type
-	7,  // [7:18] is the sub-list for method input_type
-	7,  // [7:7] is the sub-list for extension type_name
-	7,  // [7:7] is the sub-list for extension extendee
-	0,  // [0:7] is the sub-list for field type_name
+	3,  // 6: user.UserService.GetUser:input_type -> user.GetUserRequest
+	5,  // 7: user.UserService.GetPhoneNumber:input_type -> user.GetPhoneNumberRequest
+	7,  // 8: user.UserService.AddPhoneNumber:input_type -> user.AddPhoneNumberRequest
+	8,  // 9: user.UserService.UpdatePhoneNumber:input_type -> user.UpdatePhoneNumberRequest
+	9,  // 10: user.UserService.RemovePhoneNumber:input_type -> user.RemovePhoneNumberRequest
+	10, // 11: user.UserService.GetAddresses:input_type -> user.GetAddressesRequest
+	12, // 12: user.UserService.AddAddress:input_type -> user.AddAddressRequest
+	14, // 13: user.UserService.RemoveAddress:input_type -> user.RemoveAddressRequest
+	15, // 14: user.UserService.BeDriver:input_type -> user.BeDriverRequest
+	18, // 15: user.UserService.GetDrivers:input_type -> user.GetDriversRequest
+	19, // 16: user.UserService.RemoveDriver:input_type -> user.RemoveDriverRequest
+	4,  // 17: user.UserService.GetUser:output_type -> user.GetUserResponse
+	6,  // 18: user.UserService.GetPhoneNumber:output_type -> user.GetPhoneNumberResponse
+	2,  // 19: user.UserService.AddPhoneNumber:output_type -> user.MessageResponse
+	2,  // 20: user.UserService.UpdatePhoneNumber:output_type -> user.MessageResponse
+	2,  // 21: user.UserService.RemovePhoneNumber:output_type -> user.MessageResponse
+	11, // 22: user.UserService.GetAddresses:output_type -> user.GetAddressesResponse
+	13, // 23: user.UserService.AddAddress:output_type -> user.AddAddressResponse
+	2,  // 24: user.UserService.RemoveAddress:output_type -> user.MessageResponse
+	16, // 25: user.UserService.BeDriver:output_type -> user.BeDriverResponse
+	17, // 26: user.UserService.GetDrivers:output_type -> user.DriverResponse
+	2,  // 27: user.UserService.RemoveDriver:output_type -> user.MessageResponse
+	17, // [17:28] is the sub-list for method output_type
+	6,  // [6:17] is the sub-list for method input_type
+	6,  // [6:6] is the sub-list for extension type_name
+	6,  // [6:6] is the sub-list for extension extendee
+	0,  // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_user_proto_init() }

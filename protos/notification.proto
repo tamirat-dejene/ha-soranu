@@ -33,7 +33,10 @@ message MarkAsReadResponse {
 	bool success = 1;
 }
 
+// Notification Service Definition
 service NotificationService {
+    // Fetch notifications for a user or restaurant
 	rpc GetNotifications(GetNotificationsRequest) returns (GetNotificationsResponse);
+    // Mark a notification as read
 	rpc MarkAsRead(MarkAsReadRequest) returns (MarkAsReadResponse);
 }

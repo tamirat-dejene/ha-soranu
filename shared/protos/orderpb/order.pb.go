@@ -87,8 +87,9 @@ type OrderCreated struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	OrderId       string                 `protobuf:"bytes,1,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`
 	CustomerId    string                 `protobuf:"bytes,2,opt,name=customer_id,json=customerId,proto3" json:"customer_id,omitempty"`
-	TotalAmount   float64                `protobuf:"fixed64,3,opt,name=total_amount,json=totalAmount,proto3" json:"total_amount,omitempty"`
-	CreatedAtUnix int64                  `protobuf:"varint,4,opt,name=created_at_unix,json=createdAtUnix,proto3" json:"created_at_unix,omitempty"`
+	RestaurantId  string                 `protobuf:"bytes,3,opt,name=restaurant_id,json=restaurantId,proto3" json:"restaurant_id,omitempty"`
+	TotalAmount   float64                `protobuf:"fixed64,4,opt,name=total_amount,json=totalAmount,proto3" json:"total_amount,omitempty"`
+	CreatedAtUnix int64                  `protobuf:"varint,5,opt,name=created_at_unix,json=createdAtUnix,proto3" json:"created_at_unix,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -137,6 +138,13 @@ func (x *OrderCreated) GetCustomerId() string {
 	return ""
 }
 
+func (x *OrderCreated) GetRestaurantId() string {
+	if x != nil {
+		return x.RestaurantId
+	}
+	return ""
+}
+
 func (x *OrderCreated) GetTotalAmount() float64 {
 	if x != nil {
 		return x.TotalAmount
@@ -154,8 +162,9 @@ func (x *OrderCreated) GetCreatedAtUnix() int64 {
 type OrderStatusUpdated struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	OrderId       string                 `protobuf:"bytes,1,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`
-	NewStatus     OrderStatus            `protobuf:"varint,2,opt,name=new_status,json=newStatus,proto3,enum=order.OrderStatus" json:"new_status,omitempty"`
-	UpdatedAtUnix int64                  `protobuf:"varint,3,opt,name=updated_at_unix,json=updatedAtUnix,proto3" json:"updated_at_unix,omitempty"`
+	CustomerId    string                 `protobuf:"bytes,2,opt,name=customer_id,json=customerId,proto3" json:"customer_id,omitempty"`
+	NewStatus     OrderStatus            `protobuf:"varint,3,opt,name=new_status,json=newStatus,proto3,enum=order.OrderStatus" json:"new_status,omitempty"`
+	UpdatedAtUnix int64                  `protobuf:"varint,4,opt,name=updated_at_unix,json=updatedAtUnix,proto3" json:"updated_at_unix,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -193,6 +202,13 @@ func (*OrderStatusUpdated) Descriptor() ([]byte, []int) {
 func (x *OrderStatusUpdated) GetOrderId() string {
 	if x != nil {
 		return x.OrderId
+	}
+	return ""
+}
+
+func (x *OrderStatusUpdated) GetCustomerId() string {
+	if x != nil {
+		return x.CustomerId
 	}
 	return ""
 }
@@ -275,18 +291,21 @@ var File_order_proto protoreflect.FileDescriptor
 
 const file_order_proto_rawDesc = "" +
 	"\n" +
-	"\vorder.proto\x12\x05order\"\x95\x01\n" +
+	"\vorder.proto\x12\x05order\"\xba\x01\n" +
 	"\fOrderCreated\x12\x19\n" +
 	"\border_id\x18\x01 \x01(\tR\aorderId\x12\x1f\n" +
 	"\vcustomer_id\x18\x02 \x01(\tR\n" +
-	"customerId\x12!\n" +
-	"\ftotal_amount\x18\x03 \x01(\x01R\vtotalAmount\x12&\n" +
-	"\x0fcreated_at_unix\x18\x04 \x01(\x03R\rcreatedAtUnix\"\x8a\x01\n" +
+	"customerId\x12#\n" +
+	"\rrestaurant_id\x18\x03 \x01(\tR\frestaurantId\x12!\n" +
+	"\ftotal_amount\x18\x04 \x01(\x01R\vtotalAmount\x12&\n" +
+	"\x0fcreated_at_unix\x18\x05 \x01(\x03R\rcreatedAtUnix\"\xab\x01\n" +
 	"\x12OrderStatusUpdated\x12\x19\n" +
-	"\border_id\x18\x01 \x01(\tR\aorderId\x121\n" +
+	"\border_id\x18\x01 \x01(\tR\aorderId\x12\x1f\n" +
+	"\vcustomer_id\x18\x02 \x01(\tR\n" +
+	"customerId\x121\n" +
 	"\n" +
-	"new_status\x18\x02 \x01(\x0e2\x12.order.OrderStatusR\tnewStatus\x12&\n" +
-	"\x0fupdated_at_unix\x18\x03 \x01(\x03R\rupdatedAtUnix\"z\n" +
+	"new_status\x18\x03 \x01(\x0e2\x12.order.OrderStatusR\tnewStatus\x12&\n" +
+	"\x0fupdated_at_unix\x18\x04 \x01(\x03R\rupdatedAtUnix\"z\n" +
 	"\fOrderShipped\x12\x19\n" +
 	"\border_id\x18\x01 \x01(\tR\aorderId\x12'\n" +
 	"\x0ftracking_number\x18\x02 \x01(\tR\x0etrackingNumber\x12&\n" +

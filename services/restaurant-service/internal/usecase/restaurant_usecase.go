@@ -4,23 +4,18 @@ import (
 	"context"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/tamirat-dejene/ha-soranu/services/restaurant-service/internal/api/grpc/dto"
 	"github.com/tamirat-dejene/ha-soranu/services/restaurant-service/internal/domain"
 	"github.com/tamirat-dejene/ha-soranu/shared/pkg/events"
 	"github.com/tamirat-dejene/ha-soranu/shared/pkg/logger"
-	"github.com/tamirat-dejene/ha-soranu/shared/pkg/messaging/kafka"
-	envent_envelope "github.com/tamirat-dejene/ha-soranu/shared/protos/envent_envelopepb"
 	"github.com/tamirat-dejene/ha-soranu/shared/protos/orderpb"
 	"go.uber.org/zap"
-	"google.golang.org/protobuf/encoding/protojson"
 )
 
 type restaurantUseCase struct {
-	repo     domain.RestaurantRepository
-	producer kafka.Producer
-	consumer kafka.Consumer
-	timeout  time.Duration
+	repo      domain.RestaurantRepository
+	publisher events.EventPublisher
+	timeout   time.Duration
 }
 
 // ShipOrder implements [domain.RestaurantUseCase].
@@ -41,44 +36,15 @@ func (r *restaurantUseCase) UpdateOrderStatus(ctx context.Context, restaurantID 
 		return nil, err
 	}
 
-	// Create domain event for order status update
+	// Create and publish domain event
 	update_event := orderpb.OrderStatusUpdated{
 		OrderId:       ord.OrderId,
+		CustomerId:    ord.CustomerID,
 		NewStatus:     dto.DomainOrderStatusToProto(ord.Status),
 		UpdatedAtUnix: time.Now().Unix(),
 	}
 
-	// Serialize event
-	eventData, err := protojson.Marshal(&update_event)
-	if err != nil {
-		logger.Error("failed to marshal order status updated event", zap.Error(err))
-		return nil, err
-	}
-
-	eventEnvelop := &envent_envelope.EventEnvelope{
-		EventId:        uuid.NewString(),
-		OccurredAtUnix: time.Now().Unix(),
-		Payload:        eventData,
-	}
-	envelopeBytes, err := protojson.Marshal(eventEnvelop)
-	if err != nil {
-		logger.Error("failed to marshal event envelope", zap.Error(err))
-		return nil, err
-	}
-
-	// Publish event to Kafka
-	err = r.producer.Publish(c, &kafka.Message{
-		Topic: events.OrderStatusUpdatedEvent,
-		Key:   []byte(ord.OrderId),
-		Value: envelopeBytes,
-		Headers: map[string][]byte{
-			"event_type":   []byte(events.OrderStatusUpdatedEvent),
-			"content_type": []byte("application/x-protobuf"),
-			"producer":     []byte("restaurant-service"),
-		},
-	})
-
-	if err != nil {
+	if err := r.publisher.PublishOrderStatusUpdated(c, &update_event); err != nil {
 		logger.Error("failed to publish order status updated event", zap.Error(err))
 		return nil, err
 	}
@@ -104,51 +70,21 @@ func (r *restaurantUseCase) PlaceOrder(ctx context.Context, order *domain.PlaceO
 		return nil, err
 	}
 
-	// Create domain event
+	// Create and publish domain event
 	create_event := orderpb.OrderCreated{
 		OrderId:       ord.OrderId,
 		CustomerId:    order.CustomerID,
+		RestaurantId:  ord.RestaurantID,
 		TotalAmount:   ord.TotalAmount,
 		CreatedAtUnix: time.Now().Unix(),
 	}
 
-	// Serialize event
-	eventData, err := protojson.Marshal(&create_event)
-	if err != nil {
-		logger.Error("failed to marshal order created event", zap.Error(err))
+	if err := r.publisher.PublishOrderCreated(c, &create_event); err != nil {
+		logger.Error("failed to publish order created event", zap.Error(err))
 		return nil, err
 	}
 
-	eventEnvelop := &envent_envelope.EventEnvelope{
-		EventId:        uuid.NewString(),
-		OccurredAtUnix: time.Now().Unix(),
-		Payload:        eventData,
-	}
-
-	envelopeBytes, err := protojson.Marshal(eventEnvelop)
-	if err != nil {
-		logger.Error("failed to marshal event envelope", zap.Error(err))
-		return nil, err
-	}
-
-	// Publish event to Kafka
-	err = r.producer.Publish(c, &kafka.Message{
-		Topic: events.OrderPlacedEvent,
-		Key:   []byte(ord.OrderId),
-		Value: envelopeBytes,
-		Headers: map[string][]byte{
-			"event_type":   []byte(events.OrderPlacedEvent),
-			"content_type": []byte("application/x-protobuf"),
-			"producer":     []byte("restaurant-service"),
-		},
-	})
-
-	if err != nil {
-		logger.Error("failed to publish order placed event", zap.Error(err))
-		return nil, err
-	}
-
-	logger.Info("published order placed event", zap.String("order_id", ord.OrderId), zap.String("restaurant_id", ord.RestaurantID), zap.Float64("total_amount", ord.TotalAmount))
+	logger.Info("published order created event", zap.String("order_id", ord.OrderId), zap.String("restaurant_id", ord.RestaurantID), zap.Float64("total_amount", ord.TotalAmount))
 
 	return ord, nil
 }
@@ -213,8 +149,7 @@ func (r *restaurantUseCase) UpdateMenuItem(ctx context.Context, restaurantID str
 }
 
 func NewRestaurantUseCase(repo domain.RestaurantRepository,
-	producer kafka.Producer,
-	consumer kafka.Consumer,
+	publisher events.EventPublisher,
 	timeout time.Duration) domain.RestaurantUseCase {
-	return &restaurantUseCase{repo: repo, producer: producer, consumer: consumer, timeout: timeout}
+	return &restaurantUseCase{repo: repo, publisher: publisher, timeout: timeout}
 }

@@ -195,6 +195,30 @@ func (r *restaurantRepository) GetOrders(
 	return orders, nil
 }
 
+// GetOrder implements domain.RestaurantRepository.
+func (r *restaurantRepository) GetOrder(ctx context.Context, orderID string) (*domain.Order, error) {
+	query := `
+		SELECT order_id, restaurant_id, customer_id, total_price, status
+		FROM orders
+		WHERE order_id = $1
+	`
+	var ord domain.Order
+	err := r.db.QueryRow(ctx, query, orderID).Scan(
+		&ord.OrderId,
+		&ord.RestaurantID,
+		&ord.CustomerID,
+		&ord.TotalAmount,
+		&ord.Status,
+	)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, domain.ErrOrderNotFound
+		}
+		return nil, err
+	}
+	return &ord, nil
+}
+
 func calculateTotalPrice(ctx context.Context, tx postgres.Tx, restaurantID string, items []domain.OrderItem) (float64, error) {
 	var total float64
 

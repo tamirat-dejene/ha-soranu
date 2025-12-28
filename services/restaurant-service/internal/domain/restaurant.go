@@ -80,5 +80,6 @@ type RestaurantRepository interface {
 	GetOrders(ctx context.Context, restaurantID string) ([]Order, error)
 	UpdateOrderStatus(ctx context.Context, restaurantID, orderID, newStatus string) (*Order, error)
 
+	GetOrder(ctx context.Context, orderID string) (*Order, error)
 	ShipOrder(ctx context.Context, restaurantID, orderID string) (string, string, error)
 }

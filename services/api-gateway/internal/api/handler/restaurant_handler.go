@@ -88,7 +88,7 @@ func (h *RestaurantHandler) UpdateOrderStatus(c *gin.Context) {
 	updateProto := &restaurantpb.UpdateOrderStatusRequest{
 		RestaurantId: restaurantID,
 		OrderId:      orderID,
-		NewStatus:       dto.StringStatusToProto(req.Status),
+		NewStatus:    dto.StringStatusToProto(req.Status),
 	}
 
 	resp, err := h.client.RestaurantClient.UpdateOrderStatus(c.Request.Context(), updateProto)

@@ -10,7 +10,7 @@ import (
 
 type RestaurantServiceClient struct {
 	RestaurantClient restaurantpb.RestaurantServiceClient
-	conn *grpc.ClientConn
+	conn             *grpc.ClientConn
 }
 
 func NewRestaurantServiceClient(addr string) (*RestaurantServiceClient, error) {

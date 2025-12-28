@@ -24,8 +24,9 @@ const (
 type EventEnvelope struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
 	EventId        string                 `protobuf:"bytes,1,opt,name=event_id,json=eventId,proto3" json:"event_id,omitempty"`
-	OccurredAtUnix int64                  `protobuf:"varint,2,opt,name=occurred_at_unix,json=occurredAtUnix,proto3" json:"occurred_at_unix,omitempty"`
-	Payload        []byte                 `protobuf:"bytes,3,opt,name=payload,proto3" json:"payload,omitempty"`
+	EventType      string                 `protobuf:"bytes,2,opt,name=event_type,json=eventType,proto3" json:"event_type,omitempty"`
+	OccurredAtUnix int64                  `protobuf:"varint,3,opt,name=occurred_at_unix,json=occurredAtUnix,proto3" json:"occurred_at_unix,omitempty"`
+	Payload        []byte                 `protobuf:"bytes,4,opt,name=payload,proto3" json:"payload,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
@@ -67,6 +68,13 @@ func (x *EventEnvelope) GetEventId() string {
 	return ""
 }
 
+func (x *EventEnvelope) GetEventType() string {
+	if x != nil {
+		return x.EventType
+	}
+	return ""
+}
+
 func (x *EventEnvelope) GetOccurredAtUnix() int64 {
 	if x != nil {
 		return x.OccurredAtUnix
@@ -85,11 +93,13 @@ var File_envent_envelope_proto protoreflect.FileDescriptor
 
 const file_envent_envelope_proto_rawDesc = "" +
 	"\n" +
-	"\x15envent_envelope.proto\x12\x06common\"n\n" +
+	"\x15envent_envelope.proto\x12\x06common\"\x8d\x01\n" +
 	"\rEventEnvelope\x12\x19\n" +
-	"\bevent_id\x18\x01 \x01(\tR\aeventId\x12(\n" +
-	"\x10occurred_at_unix\x18\x02 \x01(\x03R\x0eoccurredAtUnix\x12\x18\n" +
-	"\apayload\x18\x03 \x01(\fR\apayloadBWZUgithub.com/tamirat-dejene/ha-soranu/shared/protos/envent_envelopepb;envent_envelopepbb\x06proto3"
+	"\bevent_id\x18\x01 \x01(\tR\aeventId\x12\x1d\n" +
+	"\n" +
+	"event_type\x18\x02 \x01(\tR\teventType\x12(\n" +
+	"\x10occurred_at_unix\x18\x03 \x01(\x03R\x0eoccurredAtUnix\x12\x18\n" +
+	"\apayload\x18\x04 \x01(\fR\apayloadBWZUgithub.com/tamirat-dejene/ha-soranu/shared/protos/envent_envelopepb;envent_envelopepbb\x06proto3"
 
 var (
 	file_envent_envelope_proto_rawDescOnce sync.Once

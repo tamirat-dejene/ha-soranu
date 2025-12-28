@@ -9,14 +9,15 @@ import (
 )
 
 type Server struct {
-	router      *gin.Engine
-	authHandler *handler.AuthHandler
-	userHandler *handler.UserHandler
-	restaurantHandler *handler.RestaurantHandler
-	config      apigateway.Env
+	router              *gin.Engine
+	authHandler         *handler.AuthHandler
+	userHandler         *handler.UserHandler
+	restaurantHandler   *handler.RestaurantHandler
+	notificationHandler *handler.NotificationHandler
+	config              apigateway.Env
 }
 
-func NewServer(cfg *apigateway.Env, uaClient *client.UAServiceClient, restaurantClient *client.RestaurantServiceClient) *Server {
+func NewServer(cfg *apigateway.Env, uaClient *client.UAServiceClient, restaurantClient *client.RestaurantServiceClient, notificationClient *client.NotificationServiceClient) *Server {
 	router := gin.New()
 	router.Use(gin.Recovery())
 	router.Use(GinLogger())
@@ -29,13 +30,15 @@ func NewServer(cfg *apigateway.Env, uaClient *client.UAServiceClient, restaurant
 	authHandler := handler.NewAuthHandler(uaClient)
 	userHandler := handler.NewUserHandler(uaClient)
 	restaurantHandler := handler.NewRestaurantHandler(restaurantClient)
-	
+	notificationHandler := handler.NewNotificationHandler(notificationClient)
+
 	return &Server{
-		router:      router,
-		authHandler: authHandler,
-		userHandler: userHandler,
-		restaurantHandler: restaurantHandler,
-		config:      *cfg,
+		router:              router,
+		authHandler:         authHandler,
+		userHandler:         userHandler,
+		restaurantHandler:   restaurantHandler,
+		notificationHandler: notificationHandler,
+		config:              *cfg,
 	}
 }
 
@@ -84,8 +87,9 @@ func (s *Server) SetupRoutes() {
 			user.POST("/be-driver", s.userHandler.BeDriver)
 			user.POST("/drivers", s.userHandler.GetDrivers)
 			user.DELETE("/drivers", s.userHandler.RemoveDriver)
-			// user.GET("/drivers/available", s.userHandler.GetAvailableDrivers)
-			// user.PUT("/drivers/:driver_id/availability", s.userHandler.UpdateDriverAvailability)
+
+			// User Notifications
+			user.GET("/:user_id/notifications", s.notificationHandler.GetUserNotifications)
 		}
 	}
 
@@ -98,7 +102,7 @@ func (s *Server) SetupRoutes() {
 
 			restaurant.GET("/", s.restaurantHandler.GetRestaurant)
 			restaurant.POST("/", s.restaurantHandler.ListRestaurants)
-			
+
 			// Menu routes for restaurants
 			restaurant.POST("/menu", s.restaurantHandler.AddMenuItem)
 			restaurant.PUT("/menu", s.restaurantHandler.UpdateMenuItem)
@@ -109,6 +113,17 @@ func (s *Server) SetupRoutes() {
 			restaurant.POST("/orders", s.restaurantHandler.PlaceOrder)
 			restaurant.PUT("/:restaurant_id/orders/:order_id/status", s.restaurantHandler.UpdateOrderStatus)
 			restaurant.PUT("orders/:order_id/ship", s.restaurantHandler.ShipOrder)
+
+			// Restaurant Notifications
+			restaurant.GET("/:restaurant_id/notifications", s.notificationHandler.GetRestaurantNotifications)
+		}
+	}
+
+	// Notification routes
+	{
+		notification := v1.Group("/notifications")
+		{
+			notification.PUT("/:notification_id/read", s.notificationHandler.MarkAsRead)
 		}
 	}
 

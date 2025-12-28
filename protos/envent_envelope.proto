@@ -6,6 +6,7 @@ option go_package = "github.com/tamirat-dejene/ha-soranu/shared/protos/envent_en
 
 message EventEnvelope {
 	string event_id         = 1;
-	int64  occurred_at_unix = 2;
-	bytes  payload          = 3;
+	string event_type       = 2;
+	int64  occurred_at_unix = 3;
+	bytes  payload          = 4;
 }

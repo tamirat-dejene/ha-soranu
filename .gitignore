@@ -36,4 +36,4 @@ go.work.sum
 *.local.yaml
 secrets.yaml
 
-web
+tests/venv

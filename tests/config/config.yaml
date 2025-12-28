@@ -1,0 +1,20 @@
+api_gateway:
+  base_url: "http://localhost:8080"
+  timeout: 30
+
+# Performance targets for Order Placement
+performance_targets:
+  order_placement:
+    max_response_time_p95: 500
+    max_error_rate: 0.01
+
+# Default load configuration
+load_test:
+  users: 50
+  spawn_rate: 5
+  duration: 120 # 2 minutes
+
+# Seeding parameters
+test_data:
+  seed:
+    restaurants: 25

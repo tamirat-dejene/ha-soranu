@@ -4,6 +4,7 @@ metadata:
   name: notification-service
   namespace: ha-soranu
 spec:
+  replicas: 2
   selector:
     matchLabels:
       app: notification-service

@@ -98,3 +98,15 @@ func (r *notificationRepository) MarkAsRead(ctx context.Context, notificationID 
 
 	return nil
 }
+
+func (r *notificationRepository) DeleteNotification(ctx context.Context, notificationID string) error {
+	query := `DELETE FROM notifications WHERE id = $1`
+
+	_, err := r.db.Exec(ctx, query, notificationID)
+	if err != nil {
+		logger.Error("failed to delete notification", zap.Error(err))
+		return err
+	}
+
+	return nil
+}

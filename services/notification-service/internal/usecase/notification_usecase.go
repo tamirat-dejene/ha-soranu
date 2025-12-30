@@ -142,3 +142,10 @@ func (uc *notificationUseCase) MarkAsRead(ctx context.Context, notificationID st
 
 	return uc.repo.MarkAsRead(c, notificationID)
 }
+
+func (uc *notificationUseCase) DeleteNotification(ctx context.Context, notificationID string) error {
+	c, cancel := context.WithTimeout(ctx, uc.timeout)
+	defer cancel()
+
+	return uc.repo.DeleteNotification(c, notificationID)
+}

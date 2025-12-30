@@ -21,10 +21,12 @@ type NotificationRepository interface {
 	CreateNotification(ctx context.Context, notification *Notification) error
 	GetNotifications(ctx context.Context, recipientID string, recipientType string) ([]*Notification, error)
 	MarkAsRead(ctx context.Context, notificationID string) error
+	DeleteNotification(ctx context.Context, notificationID string) error
 }
 
 type NotificationUseCase interface {
 	StartConsumer(ctx context.Context) error
 	GetNotifications(ctx context.Context, recipientID string, recipientType string) ([]*Notification, error)
 	MarkAsRead(ctx context.Context, notificationID string) error
+	DeleteNotification(ctx context.Context, notificationID string) error
 }

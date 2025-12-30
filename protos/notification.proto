@@ -33,10 +33,20 @@ message MarkAsReadResponse {
 	bool success = 1;
 }
 
+message DeleteNotificationRequest {
+    string notification_id = 1;
+}
+
+message DeleteNotificationResponse {
+    bool success = 1;
+}
+
 // Notification Service Definition
 service NotificationService {
     // Fetch notifications for a user or restaurant
 	rpc GetNotifications(GetNotificationsRequest) returns (GetNotificationsResponse);
     // Mark a notification as read
 	rpc MarkAsRead(MarkAsReadRequest) returns (MarkAsReadResponse);
+    // Delete a notification
+    rpc DeleteNotification(DeleteNotificationRequest) returns (DeleteNotificationResponse);
 }

@@ -69,3 +69,18 @@ func (h *notificationHandler) MarkAsRead(ctx context.Context, req *notificationp
 
 	return &notificationpb.MarkAsReadResponse{Success: true}, nil
 }
+
+func (h *notificationHandler) DeleteNotification(ctx context.Context, req *notificationpb.DeleteNotificationRequest) (*notificationpb.DeleteNotificationResponse, error) {
+	if req == nil || req.NotificationId == "" {
+		logger.Error("invalid request")
+		return nil, domain.ErrInvalidRequest
+	}
+
+	err := h.usecase.DeleteNotification(ctx, req.NotificationId)
+	if err != nil {
+		logger.Error("failed to delete notification", zap.Error(err))
+		return &notificationpb.DeleteNotificationResponse{Success: false}, err
+	}
+
+	return &notificationpb.DeleteNotificationResponse{Success: true}, nil
+}

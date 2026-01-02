@@ -26,6 +26,29 @@ func NewRestaurantHandler(client *client.RestaurantServiceClient) *RestaurantHan
 	}
 }
 
+func (h *RestaurantHandler) GetOrder(c *gin.Context) {
+	orderID := c.Param("order_id")
+
+	if orderID == "" {
+		c.JSON(http.StatusBadRequest, errs.NewErrorResponse("order_id is required"))
+		return
+	}
+
+	req := &restaurantpb.GetOrderRequest{OrderId: orderID}
+
+	resp, err := h.client.RestaurantClient.GetOrder(c.Request.Context(), req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponseFromGRPCError(err))
+		return
+	}
+
+	order := dto.OrderResponseFromProto(resp)
+
+	logger.Info("Fetched order", zap.String("order_id", order.OrderId))
+
+	c.JSON(http.StatusOK, order)
+}
+
 func (h *RestaurantHandler) ShipOrder(c *gin.Context) {
 	orderID := c.Param("order_id")
 

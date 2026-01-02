@@ -113,6 +113,7 @@ func (s *Server) SetupRoutes() {
 			restaurant.POST("/orders", s.restaurantHandler.PlaceOrder)
 			restaurant.PUT("/:restaurant_id/orders/:order_id/status", s.restaurantHandler.UpdateOrderStatus)
 			restaurant.PUT("orders/:order_id/ship", s.restaurantHandler.ShipOrder)
+			restaurant.GET("/orders/:order_id", s.restaurantHandler.GetOrder)
 
 			// Restaurant Notifications
 			restaurant.GET("/:restaurant_id/notifications", s.notificationHandler.GetRestaurantNotifications)

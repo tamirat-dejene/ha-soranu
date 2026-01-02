@@ -1179,6 +1179,50 @@ func (x *ShipOrderResponse) GetDriverId() string {
 	return ""
 }
 
+type GetOrderRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	OrderId       string                 `protobuf:"bytes,1,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetOrderRequest) Reset() {
+	*x = GetOrderRequest{}
+	mi := &file_restaurant_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetOrderRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetOrderRequest) ProtoMessage() {}
+
+func (x *GetOrderRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_restaurant_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetOrderRequest.ProtoReflect.Descriptor instead.
+func (*GetOrderRequest) Descriptor() ([]byte, []int) {
+	return file_restaurant_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *GetOrderRequest) GetOrderId() string {
+	if x != nil {
+		return x.OrderId
+	}
+	return ""
+}
+
 var File_restaurant_proto protoreflect.FileDescriptor
 
 const file_restaurant_proto_rawDesc = "" +
@@ -1268,7 +1312,9 @@ const file_restaurant_proto_rawDesc = "" +
 	"\border_id\x18\x02 \x01(\tR\aorderId\"c\n" +
 	"\x11ShipOrderResponse\x121\n" +
 	"\x14confirmation_message\x18\x01 \x01(\tR\x13confirmationMessage\x12\x1b\n" +
-	"\tdriver_id\x18\x02 \x01(\tR\bdriverId2\xd3\x06\n" +
+	"\tdriver_id\x18\x02 \x01(\tR\bdriverId\",\n" +
+	"\x0fGetOrderRequest\x12\x19\n" +
+	"\border_id\x18\x01 \x01(\tR\aorderId2\x8f\a\n" +
 	"\x11RestaurantService\x12C\n" +
 	"\x05Login\x12\".restaurant.RestaurantLoginRequest\x1a\x16.restaurant.Restaurant\x12S\n" +
 	"\x12RegisterRestaurant\x12%.restaurant.RegisterRestaurantRequest\x1a\x16.restaurant.Restaurant\x12I\n" +
@@ -1281,7 +1327,8 @@ const file_restaurant_proto_rawDesc = "" +
 	"PlaceOrder\x12\x1d.restaurant.PlaceOrderRequest\x1a\x1e.restaurant.PlaceOrderResponse\x12H\n" +
 	"\tGetOrders\x12\x1c.restaurant.GetOrdersRequest\x1a\x1d.restaurant.GetOrdersResponse\x12L\n" +
 	"\x11UpdateOrderStatus\x12$.restaurant.UpdateOrderStatusRequest\x1a\x11.restaurant.Order\x12H\n" +
-	"\tShipOrder\x12\x1c.restaurant.ShipOrderRequest\x1a\x1d.restaurant.ShipOrderResponseBMZKgithub.com/tamirat-dejene/ha-soranu/shared/protos/restaurantpb;restaurantpbb\x06proto3"
+	"\tShipOrder\x12\x1c.restaurant.ShipOrderRequest\x1a\x1d.restaurant.ShipOrderResponse\x12:\n" +
+	"\bGetOrder\x12\x1b.restaurant.GetOrderRequest\x1a\x11.restaurant.OrderBMZKgithub.com/tamirat-dejene/ha-soranu/shared/protos/restaurantpb;restaurantpbb\x06proto3"
 
 var (
 	file_restaurant_proto_rawDescOnce sync.Once
@@ -1295,7 +1342,7 @@ func file_restaurant_proto_rawDescGZIP() []byte {
 	return file_restaurant_proto_rawDescData
 }
 
-var file_restaurant_proto_msgTypes = make([]protoimpl.MessageInfo, 19)
+var file_restaurant_proto_msgTypes = make([]protoimpl.MessageInfo, 20)
 var file_restaurant_proto_goTypes = []any{
 	(*Restaurant)(nil),                // 0: restaurant.Restaurant
 	(*MenuItem)(nil),                  // 1: restaurant.MenuItem
@@ -1316,16 +1363,17 @@ var file_restaurant_proto_goTypes = []any{
 	(*UpdateOrderStatusRequest)(nil),  // 16: restaurant.UpdateOrderStatusRequest
 	(*ShipOrderRequest)(nil),          // 17: restaurant.ShipOrderRequest
 	(*ShipOrderResponse)(nil),         // 18: restaurant.ShipOrderResponse
-	(orderpb.OrderStatus)(0),          // 19: order.OrderStatus
+	(*GetOrderRequest)(nil),           // 19: restaurant.GetOrderRequest
+	(orderpb.OrderStatus)(0),          // 20: order.OrderStatus
 }
 var file_restaurant_proto_depIdxs = []int32{
 	1,  // 0: restaurant.Restaurant.menus:type_name -> restaurant.MenuItem
 	4,  // 1: restaurant.RegisterRestaurantRequest.menus:type_name -> restaurant.RegisterMenuItem
 	13, // 2: restaurant.Order.items:type_name -> restaurant.OrderItem
-	19, // 3: restaurant.Order.status:type_name -> order.OrderStatus
+	20, // 3: restaurant.Order.status:type_name -> order.OrderStatus
 	13, // 4: restaurant.PlaceOrderRequest.items:type_name -> restaurant.OrderItem
 	10, // 5: restaurant.GetOrdersResponse.orders:type_name -> restaurant.Order
-	19, // 6: restaurant.UpdateOrderStatusRequest.new_status:type_name -> order.OrderStatus
+	20, // 6: restaurant.UpdateOrderStatusRequest.new_status:type_name -> order.OrderStatus
 	2,  // 7: restaurant.RestaurantService.Login:input_type -> restaurant.RestaurantLoginRequest
 	3,  // 8: restaurant.RestaurantService.RegisterRestaurant:input_type -> restaurant.RegisterRestaurantRequest
 	5,  // 9: restaurant.RestaurantService.GetRestaurant:input_type -> restaurant.GetRestaurantRequest
@@ -1337,19 +1385,21 @@ var file_restaurant_proto_depIdxs = []int32{
 	14, // 15: restaurant.RestaurantService.GetOrders:input_type -> restaurant.GetOrdersRequest
 	16, // 16: restaurant.RestaurantService.UpdateOrderStatus:input_type -> restaurant.UpdateOrderStatusRequest
 	17, // 17: restaurant.RestaurantService.ShipOrder:input_type -> restaurant.ShipOrderRequest
-	0,  // 18: restaurant.RestaurantService.Login:output_type -> restaurant.Restaurant
-	0,  // 19: restaurant.RestaurantService.RegisterRestaurant:output_type -> restaurant.Restaurant
-	0,  // 20: restaurant.RestaurantService.GetRestaurant:output_type -> restaurant.Restaurant
-	0,  // 21: restaurant.RestaurantService.ListRestaurants:output_type -> restaurant.Restaurant
-	1,  // 22: restaurant.RestaurantService.AddMenuItem:output_type -> restaurant.MenuItem
-	1,  // 23: restaurant.RestaurantService.RemoveMenuItem:output_type -> restaurant.MenuItem
-	1,  // 24: restaurant.RestaurantService.UpdateMenuItem:output_type -> restaurant.MenuItem
-	12, // 25: restaurant.RestaurantService.PlaceOrder:output_type -> restaurant.PlaceOrderResponse
-	15, // 26: restaurant.RestaurantService.GetOrders:output_type -> restaurant.GetOrdersResponse
-	10, // 27: restaurant.RestaurantService.UpdateOrderStatus:output_type -> restaurant.Order
-	18, // 28: restaurant.RestaurantService.ShipOrder:output_type -> restaurant.ShipOrderResponse
-	18, // [18:29] is the sub-list for method output_type
-	7,  // [7:18] is the sub-list for method input_type
+	19, // 18: restaurant.RestaurantService.GetOrder:input_type -> restaurant.GetOrderRequest
+	0,  // 19: restaurant.RestaurantService.Login:output_type -> restaurant.Restaurant
+	0,  // 20: restaurant.RestaurantService.RegisterRestaurant:output_type -> restaurant.Restaurant
+	0,  // 21: restaurant.RestaurantService.GetRestaurant:output_type -> restaurant.Restaurant
+	0,  // 22: restaurant.RestaurantService.ListRestaurants:output_type -> restaurant.Restaurant
+	1,  // 23: restaurant.RestaurantService.AddMenuItem:output_type -> restaurant.MenuItem
+	1,  // 24: restaurant.RestaurantService.RemoveMenuItem:output_type -> restaurant.MenuItem
+	1,  // 25: restaurant.RestaurantService.UpdateMenuItem:output_type -> restaurant.MenuItem
+	12, // 26: restaurant.RestaurantService.PlaceOrder:output_type -> restaurant.PlaceOrderResponse
+	15, // 27: restaurant.RestaurantService.GetOrders:output_type -> restaurant.GetOrdersResponse
+	10, // 28: restaurant.RestaurantService.UpdateOrderStatus:output_type -> restaurant.Order
+	18, // 29: restaurant.RestaurantService.ShipOrder:output_type -> restaurant.ShipOrderResponse
+	10, // 30: restaurant.RestaurantService.GetOrder:output_type -> restaurant.Order
+	19, // [19:31] is the sub-list for method output_type
+	7,  // [7:19] is the sub-list for method input_type
 	7,  // [7:7] is the sub-list for extension type_name
 	7,  // [7:7] is the sub-list for extension extendee
 	0,  // [0:7] is the sub-list for field type_name
@@ -1366,7 +1416,7 @@ func file_restaurant_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_restaurant_proto_rawDesc), len(file_restaurant_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   19,
+			NumMessages:   20,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

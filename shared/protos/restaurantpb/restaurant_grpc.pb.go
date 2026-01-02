@@ -30,6 +30,7 @@ const (
 	RestaurantService_GetOrders_FullMethodName          = "/restaurant.RestaurantService/GetOrders"
 	RestaurantService_UpdateOrderStatus_FullMethodName  = "/restaurant.RestaurantService/UpdateOrderStatus"
 	RestaurantService_ShipOrder_FullMethodName          = "/restaurant.RestaurantService/ShipOrder"
+	RestaurantService_GetOrder_FullMethodName           = "/restaurant.RestaurantService/GetOrder"
 )
 
 // RestaurantServiceClient is the client API for RestaurantService service.
@@ -47,6 +48,7 @@ type RestaurantServiceClient interface {
 	GetOrders(ctx context.Context, in *GetOrdersRequest, opts ...grpc.CallOption) (*GetOrdersResponse, error)
 	UpdateOrderStatus(ctx context.Context, in *UpdateOrderStatusRequest, opts ...grpc.CallOption) (*Order, error)
 	ShipOrder(ctx context.Context, in *ShipOrderRequest, opts ...grpc.CallOption) (*ShipOrderResponse, error)
+	GetOrder(ctx context.Context, in *GetOrderRequest, opts ...grpc.CallOption) (*Order, error)
 }
 
 type restaurantServiceClient struct {
@@ -176,6 +178,16 @@ func (c *restaurantServiceClient) ShipOrder(ctx context.Context, in *ShipOrderRe
 	return out, nil
 }
 
+func (c *restaurantServiceClient) GetOrder(ctx context.Context, in *GetOrderRequest, opts ...grpc.CallOption) (*Order, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Order)
+	err := c.cc.Invoke(ctx, RestaurantService_GetOrder_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // RestaurantServiceServer is the server API for RestaurantService service.
 // All implementations must embed UnimplementedRestaurantServiceServer
 // for forward compatibility.
@@ -191,6 +203,7 @@ type RestaurantServiceServer interface {
 	GetOrders(context.Context, *GetOrdersRequest) (*GetOrdersResponse, error)
 	UpdateOrderStatus(context.Context, *UpdateOrderStatusRequest) (*Order, error)
 	ShipOrder(context.Context, *ShipOrderRequest) (*ShipOrderResponse, error)
+	GetOrder(context.Context, *GetOrderRequest) (*Order, error)
 	mustEmbedUnimplementedRestaurantServiceServer()
 }
 
@@ -233,6 +246,9 @@ func (UnimplementedRestaurantServiceServer) UpdateOrderStatus(context.Context, *
 }
 func (UnimplementedRestaurantServiceServer) ShipOrder(context.Context, *ShipOrderRequest) (*ShipOrderResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ShipOrder not implemented")
+}
+func (UnimplementedRestaurantServiceServer) GetOrder(context.Context, *GetOrderRequest) (*Order, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetOrder not implemented")
 }
 func (UnimplementedRestaurantServiceServer) mustEmbedUnimplementedRestaurantServiceServer() {}
 func (UnimplementedRestaurantServiceServer) testEmbeddedByValue()                           {}
@@ -446,6 +462,24 @@ func _RestaurantService_ShipOrder_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _RestaurantService_GetOrder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetOrderRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RestaurantServiceServer).GetOrder(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RestaurantService_GetOrder_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RestaurantServiceServer).GetOrder(ctx, req.(*GetOrderRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // RestaurantService_ServiceDesc is the grpc.ServiceDesc for RestaurantService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -492,6 +526,10 @@ var RestaurantService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ShipOrder",
 			Handler:    _RestaurantService_ShipOrder_Handler,
+		},
+		{
+			MethodName: "GetOrder",
+			Handler:    _RestaurantService_GetOrder_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

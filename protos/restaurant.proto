@@ -35,6 +35,7 @@ service RestaurantService {
 	rpc GetOrders(GetOrdersRequest) returns (GetOrdersResponse);
 	rpc UpdateOrderStatus(UpdateOrderStatusRequest) returns (Order);
 	rpc ShipOrder(ShipOrderRequest) returns (ShipOrderResponse);
+    rpc GetOrder(GetOrderRequest) returns (Order);
 }
 
 message RestaurantLoginRequest {
@@ -136,4 +137,8 @@ message ShipOrderRequest {
 message ShipOrderResponse {
 	string confirmation_message = 1;
 	string driver_id            = 2;
+}
+
+message GetOrderRequest {
+    string order_id = 1;
 }

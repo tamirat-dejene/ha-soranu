@@ -15,6 +15,56 @@ type restaurantRepository struct {
 	db postgres.PostgresClient
 }
 
+// GetOrderByID implements [domain.RestaurantRepository].
+func (r *restaurantRepository) GetOrderByID(ctx context.Context, orderID string) (*domain.Order, error) {
+	query := `
+		SELECT order_id, restaurant_id, customer_id, total_price, status
+		FROM orders
+		WHERE order_id = $1
+	`
+	var ord domain.Order
+	err := r.db.QueryRow(ctx, query, orderID).Scan(
+		&ord.OrderId,
+		&ord.RestaurantID,
+		&ord.CustomerID,
+		&ord.TotalAmount,
+		&ord.Status,
+	)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, domain.ErrOrderNotFound
+		}
+		return nil, err
+	}
+
+	// Load order items
+	itemsQuery := `
+		SELECT item_id, quantity
+		FROM order_items
+		WHERE order_id = $1
+	`
+
+	rows, err := r.db.Query(ctx, itemsQuery, orderID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var items []domain.OrderItem
+
+	for rows.Next() {
+		var item domain.OrderItem
+		if err := rows.Scan(&item.ItemId, &item.Quantity); err != nil {
+			return nil, err
+		}
+		items = append(items, item)
+	}
+
+	ord.Items = items
+
+	return &ord, nil
+}
+
 // ShipOrder implements [domain.RestaurantRepository].
 func (r *restaurantRepository) ShipOrder(ctx context.Context, restaurantID string, orderID string) (string, string, error) {
 	// 1. Update order status to SHIPPED

@@ -2,7 +2,6 @@ package jwtvalidator
 
 import (
 	"crypto/rsa"
-	"encoding/base64"
 	"errors"
 	"fmt"
 	"strings"
@@ -23,26 +22,21 @@ type RefreshClaims struct {
 	jwt.RegisteredClaims
 }
 
-func decodePEMOrBase64(value string) ([]byte, error) {
+func decodePEM(value string) ([]byte, error) {
 	cleaned := strings.TrimSpace(value)
 	if cleaned == "" {
 		return nil, errors.New("key is empty")
 	}
 
-	if strings.Contains(cleaned, "-----BEGIN") {
-		return []byte(cleaned), nil
+	if !strings.Contains(cleaned, "-----BEGIN") {
+		return nil, errors.New("key is not a valid PEM block")
 	}
 
-	decoded, err := base64.StdEncoding.DecodeString(cleaned)
-	if err == nil && len(decoded) > 0 {
-		return decoded, nil
-	}
-
-	return nil, errors.New("key must be a PEM block or base64-encoded PEM")
+	return []byte(cleaned), nil
 }
 
 func ParseRSAPrivateKeyFromString(key string) (*rsa.PrivateKey, error) {
-	pemBytes, err := decodePEMOrBase64(key)
+	pemBytes, err := decodePEM(key)
 	if err != nil {
 		return nil, err
 	}
@@ -56,7 +50,7 @@ func ParseRSAPrivateKeyFromString(key string) (*rsa.PrivateKey, error) {
 }
 
 func ParseRSAPublicKeyFromString(key string) (*rsa.PublicKey, error) {
-	pemBytes, err := decodePEMOrBase64(key)
+	pemBytes, err := decodePEM(key)
 	if err != nil {
 		return nil, err
 	}
@@ -104,7 +98,7 @@ func validateRefreshTokenWithKey(publicKey *rsa.PublicKey, tokenStr string) (*Re
 		}
 		return publicKey, nil
 	})
-	
+
 	if err != nil {
 		return nil, err
 	}

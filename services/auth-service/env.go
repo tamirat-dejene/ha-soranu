@@ -16,10 +16,12 @@ type Env struct {
 	GoogleClientID string `mapstructure:"GOOGLE_CLIENT_ID"`
 
 	// JWT settings
-	AccessTokenSecret  string `mapstructure:"ACCESS_TOKEN_SECRET"`
-	RefreshTokenSecret string `mapstructure:"REFRESH_TOKEN_SECRET"`
-	AccessTokenTTL     string `mapstructure:"ACCESS_TOKEN_TTL"`
-	RefreshTokenTTL    string `mapstructure:"REFRESH_TOKEN_TTL"`
+	AccessTokenPrivateKey  string `mapstructure:"ACCESS_TOKEN_PRIVATE_KEY"`
+	AccessTokenPublicKey   string `mapstructure:"ACCESS_TOKEN_PUBLIC_KEY"`
+	RefreshTokenPrivateKey string `mapstructure:"REFRESH_TOKEN_PRIVATE_KEY"`
+	RefreshTokenPublicKey  string `mapstructure:"REFRESH_TOKEN_PUBLIC_KEY"`
+	AccessTokenTTL         string `mapstructure:"ACCESS_TOKEN_TTL"`
+	RefreshTokenTTL        string `mapstructure:"REFRESH_TOKEN_TTL"`
 
 	// Database settings
 	DBHost     string `mapstructure:"POSTGRES_HOST"`
@@ -67,28 +69,30 @@ func getInt(key string, defaultValue int) int {
 
 func GetEnv() (*Env, error) {
 	env := Env{
-		SRV_ENV:            getString("SRV_ENV", "development"),
-		AUTH_SRV_NAME:      getString("AUTH_SRV_NAME", "auth-service"),
-		AUTH_SRV_PORT:      getString("AUTH_SRV_PORT", "9090"),
-		GoogleClientID:     getString("GOOGLE_CLIENT_ID", ""),
-		AccessTokenSecret:  getString("ACCESS_TOKEN_SECRET", "default_access_secret"),
-		RefreshTokenSecret: getString("REFRESH_TOKEN_SECRET", "default_refresh_secret"),
-		AccessTokenTTL:     getString("ACCESS_TOKEN_TTL", "15m"),
-		RefreshTokenTTL:    getString("REFRESH_TOKEN_TTL", "7d"),
-		DBHost:             getString("POSTGRES_HOST", "postgres-db-"),
-		DBPort:             getString("POSTGRES_PORT", "5432"),
-		DBUser:             getString("POSTGRES_USER", "postgres"),
-		DBPassword:         getString("POSTGRES_PASSWORD", "password"),
-		DBName:             getString("POSTGRES_DB", "authdb"),
-		RedisHOST:          getString("REDIS_HOST", "localhost"),
-		RedisPort:          getInt("REDIS_PORT", 6379),
-		RedisPassword:      getString("REDIS_PASSWORD", ""),
-		RedisDB:            getInt("REDIS_DB", 0),
-		ValkeyHOST:         getString("VALKEY_HOST", "localhost"),
-		ValkeyPort:         getInt("VALKEY_PORT", 6379),
-		ValkeyUser:         getString("VALKEY_USER", "default"),
-		ValkeyPassword:     getString("VALKEY_PASSWORD", "default-password"),
-		ValkeyDB:           getInt("VALKEY_DB", 0),
+		SRV_ENV:                getString("SRV_ENV", "development"),
+		AUTH_SRV_NAME:          getString("AUTH_SRV_NAME", "auth-service"),
+		AUTH_SRV_PORT:          getString("AUTH_SRV_PORT", "9090"),
+		GoogleClientID:         getString("GOOGLE_CLIENT_ID", ""),
+		AccessTokenPrivateKey:  getString("ACCESS_TOKEN_PRIVATE_KEY", ""),
+		AccessTokenPublicKey:   getString("ACCESS_TOKEN_PUBLIC_KEY", ""),
+		RefreshTokenPrivateKey: getString("REFRESH_TOKEN_PRIVATE_KEY", ""),
+		RefreshTokenPublicKey:  getString("REFRESH_TOKEN_PUBLIC_KEY", ""),
+		AccessTokenTTL:         getString("ACCESS_TOKEN_TTL", "15m"),
+		RefreshTokenTTL:        getString("REFRESH_TOKEN_TTL", "7d"),
+		DBHost:                 getString("POSTGRES_HOST", "postgres-db-"),
+		DBPort:                 getString("POSTGRES_PORT", "5432"),
+		DBUser:                 getString("POSTGRES_USER", "postgres"),
+		DBPassword:             getString("POSTGRES_PASSWORD", "password"),
+		DBName:                 getString("POSTGRES_DB", "authdb"),
+		RedisHOST:              getString("REDIS_HOST", "localhost"),
+		RedisPort:              getInt("REDIS_PORT", 6379),
+		RedisPassword:          getString("REDIS_PASSWORD", ""),
+		RedisDB:                getInt("REDIS_DB", 0),
+		ValkeyHOST:             getString("VALKEY_HOST", "localhost"),
+		ValkeyPort:             getInt("VALKEY_PORT", 6379),
+		ValkeyUser:             getString("VALKEY_USER", "default"),
+		ValkeyPassword:         getString("VALKEY_PASSWORD", "default-password"),
+		ValkeyDB:               getInt("VALKEY_DB", 0),
 	}
 	return &env, nil
 }

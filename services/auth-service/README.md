@@ -332,8 +332,10 @@ Defined in [`env.go`](file:///home/tamirat-dejene/Documents/dis-sys/ha-soranu/se
 | **Google OAuth** | | |
 | `GOOGLE_CLIENT_ID` | Google OAuth 2.0 Client ID | `""` (empty) |
 | **JWT Settings** | | |
-| `ACCESS_TOKEN_SECRET` | Secret for signing access tokens | `default_access_secret` |
-| `REFRESH_TOKEN_SECRET` | Secret for signing refresh tokens | `default_refresh_secret` |
+| `ACCESS_TOKEN_PRIVATE_KEY` | RSA private key (PEM or base64-encoded PEM) for signing access tokens | `""` |
+| `ACCESS_TOKEN_PUBLIC_KEY` | RSA public key (PEM or base64-encoded PEM) for verifying access tokens | `""` |
+| `REFRESH_TOKEN_PRIVATE_KEY` | RSA private key (PEM or base64-encoded PEM) for signing refresh tokens | `""` |
+| `REFRESH_TOKEN_PUBLIC_KEY` | RSA public key (PEM or base64-encoded PEM) for verifying refresh tokens | `""` |
 | `ACCESS_TOKEN_TTL` | Access token lifetime | `15m` |
 | `REFRESH_TOKEN_TTL` | Refresh token lifetime | `7d` |
 | **PostgreSQL** | | |
@@ -490,8 +492,10 @@ export POSTGRES_PASSWORD=password
 export POSTGRES_DB=authdb
 export REDIS_HOST=localhost
 export REDIS_PORT=6379
-export ACCESS_TOKEN_SECRET=your-secret-key
-export REFRESH_TOKEN_SECRET=your-refresh-secret
+export ACCESS_TOKEN_PRIVATE_KEY="$(cat /path/to/access_private.pem)"
+export ACCESS_TOKEN_PUBLIC_KEY="$(cat /path/to/access_public.pem)"
+export REFRESH_TOKEN_PRIVATE_KEY="$(cat /path/to/refresh_private.pem)"
+export REFRESH_TOKEN_PUBLIC_KEY="$(cat /path/to/refresh_public.pem)"
 export GOOGLE_CLIENT_ID=your-google-client-id
 
 # Run the service

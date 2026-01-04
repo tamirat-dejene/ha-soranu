@@ -8,6 +8,7 @@ import (
 	"github.com/tamirat-dejene/ha-soranu/services/auth-service/internal/domain"
 	errs "github.com/tamirat-dejene/ha-soranu/services/auth-service/internal/domain/err"
 	internalutil "github.com/tamirat-dejene/ha-soranu/services/auth-service/internal/util"
+	jwtvalidator "github.com/tamirat-dejene/ha-soranu/shared/pkg/auth/jwtvalidator"
 )
 
 type authUsecase struct {
@@ -102,7 +103,7 @@ func (a *authUsecase) Logout(ctx context.Context, refreshToken string) error {
 	c, cancel := context.WithTimeout(ctx, a.ctxTimeout)
 	defer cancel()
 
-	claims, err := internalutil.ValidateRefreshToken([]byte(a.env.RefreshTokenSecret), refreshToken)
+	claims, err := jwtvalidator.ValidateRefreshToken(a.env.RefreshTokenPublicKey, refreshToken)
 	if err != nil {
 		return errs.ErrTokenRevoked
 	}
@@ -115,7 +116,7 @@ func (a *authUsecase) RefreshTokens(ctx context.Context, refreshToken string) (*
 	c, cancel := context.WithTimeout(ctx, a.ctxTimeout)
 	defer cancel()
 
-	claims, err := internalutil.ValidateRefreshToken([]byte(a.env.RefreshTokenSecret), refreshToken)
+	claims, err := jwtvalidator.ValidateRefreshToken(a.env.RefreshTokenPublicKey, refreshToken)
 	if err != nil {
 		return nil, errs.ErrTokenRevoked
 	}
@@ -145,7 +146,7 @@ func (a *authUsecase) Register(ctx context.Context, input domain.UserRegister) (
 
 	user, err := a.userRepo.CreateUser(c, &input)
 	if err != nil {
-		return nil, nil, errs.ErrInternalServer	
+		return nil, nil, errs.ErrInternalServer
 	}
 	authToken, refreshTokenID, err := internalutil.SignUser(user.Email, &a.env, nil)
 	if err != nil {

@@ -2,6 +2,7 @@ package internalutil
 
 import (
 	"context"
+	"crypto/rsa"
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
@@ -13,20 +14,8 @@ import (
 	"github.com/google/uuid"
 	authservice "github.com/tamirat-dejene/ha-soranu/services/auth-service"
 	"github.com/tamirat-dejene/ha-soranu/services/auth-service/internal/domain"
+	jwtvalidator "github.com/tamirat-dejene/ha-soranu/shared/pkg/auth/jwtvalidator"
 )
-
-type AccessClaims struct {
-	UserEmail string
-	Extra     map[string]any
-	jwt.RegisteredClaims
-}
-
-type RefreshClaims struct {
-	TokenID   string
-	UserEmail string
-	Extra     map[string]any
-	jwt.RegisteredClaims
-}
 
 func HashToken(token string) string {
 	sum := sha256.Sum256([]byte(token))
@@ -37,9 +26,9 @@ func GetRefreshKey(tokenID string) string {
 	return fmt.Sprintf("refresh:%s", HashToken(tokenID))
 }
 
-func CreateAccessToken(secret []byte, userEmail string, ttl time.Duration, issuer string, extra map[string]any) (string, error) {
+func CreateAccessToken(privateKey *rsa.PrivateKey, userEmail string, ttl time.Duration, issuer string, extra map[string]any) (string, error) {
 	now := time.Now()
-	claims := AccessClaims{
+	claims := jwtvalidator.AccessClaims{
 		UserEmail: userEmail,
 		Extra:     extra,
 		RegisteredClaims: jwt.RegisteredClaims{
@@ -48,15 +37,15 @@ func CreateAccessToken(secret []byte, userEmail string, ttl time.Duration, issue
 			Issuer:    issuer,
 		},
 	}
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString(secret)
+	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
+	return token.SignedString(privateKey)
 }
 
-func CreateRefreshToken(secret []byte, userEmail string, ttl time.Duration, issuer string, extra map[string]any) (*RefreshClaims, string, error) {
+func CreateRefreshToken(privateKey *rsa.PrivateKey, userEmail string, ttl time.Duration, issuer string, extra map[string]any) (*jwtvalidator.RefreshClaims, string, error) {
 	now := time.Now()
 	tokenID := uuid.New().String()
 
-	claims := RefreshClaims{
+	claims := jwtvalidator.RefreshClaims{
 		TokenID:   tokenID,
 		UserEmail: userEmail,
 		Extra:     extra,
@@ -67,51 +56,13 @@ func CreateRefreshToken(secret []byte, userEmail string, ttl time.Duration, issu
 		},
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	signedToken, err := token.SignedString(secret)
+	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
+	signedToken, err := token.SignedString(privateKey)
 	if err != nil {
 		return nil, "", err
 	}
 
 	return &claims, signedToken, nil
-}
-
-func ValidateAccessToken(secret []byte, tokenStr string) (*AccessClaims, error) {
-	token, err := jwt.ParseWithClaims(tokenStr, &AccessClaims{}, func(t *jwt.Token) (any, error) {
-		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, jwt.ErrTokenSignatureInvalid
-		}
-		return secret, nil
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	claims, ok := token.Claims.(*AccessClaims)
-	if !ok || !token.Valid {
-		return nil, jwt.ErrTokenInvalidClaims
-	}
-
-	return claims, nil
-}
-
-func ValidateRefreshToken(secret []byte, tokenStr string) (*RefreshClaims, error) {
-	token, err := jwt.ParseWithClaims(tokenStr, &RefreshClaims{}, func(t *jwt.Token) (any, error) {
-		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, jwt.ErrTokenSignatureInvalid
-		}
-		return secret, nil
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	claims, ok := token.Claims.(*RefreshClaims)
-	if !ok || !token.Valid {
-		return nil, jwt.ErrTokenInvalidClaims
-	}
-
-	return claims, nil
 }
 
 func SignUser(userEmail string, env *authservice.Env, extra map[string]any) (*domain.AuthTokens, string, error) {
@@ -125,12 +76,22 @@ func SignUser(userEmail string, env *authservice.Env, extra map[string]any) (*do
 		return nil, "", fmt.Errorf("invalid refresh token TTL: %w", err)
 	}
 
-	accessToken, err := CreateAccessToken([]byte(env.AccessTokenSecret), userEmail, attl, env.AUTH_SRV_NAME, extra)
+	accessPrivateKey, err := jwtvalidator.ParseRSAPrivateKeyFromString(env.AccessTokenPrivateKey)
+	if err != nil {
+		return nil, "", fmt.Errorf("invalid access token private key: %w", err)
+	}
+
+	refreshPrivateKey, err := jwtvalidator.ParseRSAPrivateKeyFromString(env.RefreshTokenPrivateKey)
+	if err != nil {
+		return nil, "", fmt.Errorf("invalid refresh token private key: %w", err)
+	}
+
+	accessToken, err := CreateAccessToken(accessPrivateKey, userEmail, attl, env.AUTH_SRV_NAME, extra)
 	if err != nil {
 		return nil, "", fmt.Errorf("failed to create access token: %w", err)
 	}
 
-	refreshClaims, refreshToken, err := CreateRefreshToken([]byte(env.RefreshTokenSecret), userEmail, rttl, env.AUTH_SRV_NAME, extra)
+	refreshClaims, refreshToken, err := CreateRefreshToken(refreshPrivateKey, userEmail, rttl, env.AUTH_SRV_NAME, extra)
 	if err != nil {
 		return nil, "", fmt.Errorf("failed to create refresh token: %w", err)
 	}
@@ -158,7 +119,6 @@ func ValidateGoogleIDToken(ctx context.Context, client_id, id_token string) (dom
 	user := domain.User{
 		Email:    email,
 		Username: name,
-
 	}
 
 	return user, nil

@@ -95,7 +95,7 @@ func (s *Server) SetupRoutes() {
 
 	// Restaurant routes
 	{
-		restaurant := v1.Group("/restaurants")
+		restaurant := v1.Group("/restaurants", AuthMiddleware(&s.config))
 		{
 			restaurant.POST("/login", s.restaurantHandler.Login)
 			restaurant.POST("/register", s.restaurantHandler.RegisterRestaurant)
@@ -122,7 +122,7 @@ func (s *Server) SetupRoutes() {
 
 	// Notification routes
 	{
-		notification := v1.Group("/notifications")
+		notification := v1.Group("/notifications", AuthMiddleware(&s.config))
 		{
 			notification.PUT("/:notification_id/read", s.notificationHandler.MarkAsRead)
 		}
@@ -152,7 +152,7 @@ func (s *Server) SetupRoutes() {
 
 	// Payment routes
 	{
-		payment := v1.Group("/payments")
+		payment := v1.Group("/payments", AuthMiddleware(&s.config))
 		{
 			payment.POST("/", func(c *gin.Context) {
 				c.JSON(200, gin.H{

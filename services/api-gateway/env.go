@@ -22,6 +22,10 @@ type Env struct {
 	// Notification Service settings
 	NOTIFICATION_SRV_NAME string `mapstructure:"NOTIFICATION_SRV_NAME"`
 	NOTIFICATION_SRV_PORT string `mapstructure:"NOTIFICATION_SRV_PORT"`
+
+	// JWT Public Keys
+	ACCESS_TOKEN_PUBLIC_KEY  string `mapstructure:"ACCESS_TOKEN_PUBLIC_KEY"`
+	REFRESH_TOKEN_PUBLIC_KEY string `mapstructure:"REFRESH_TOKEN_PUBLIC_KEY"`
 }
 
 func getString(key string, defaultValue string) string {
@@ -57,6 +61,9 @@ func GetEnv() (*Env, error) {
 
 		NOTIFICATION_SRV_NAME: getString("NOTIFICATION_SRV_NAME", "notification-service"),
 		NOTIFICATION_SRV_PORT: getString("NOTIFICATION_SRV_PORT", "50053"),
+
+		ACCESS_TOKEN_PUBLIC_KEY:  getString("ACCESS_TOKEN_PUBLIC_KEY", ""),
+		REFRESH_TOKEN_PUBLIC_KEY: getString("REFRESH_TOKEN_PUBLIC_KEY", ""),
 	}
 
 	return &env, nil

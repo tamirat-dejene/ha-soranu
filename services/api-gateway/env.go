@@ -23,6 +23,10 @@ type Env struct {
 	NOTIFICATION_SRV_NAME string `mapstructure:"NOTIFICATION_SRV_NAME"`
 	NOTIFICATION_SRV_PORT string `mapstructure:"NOTIFICATION_SRV_PORT"`
 
+	// Payment Service (HTTP) settings
+	PAYMENT_SRV_NAME  string `mapstructure:"PAYMENT_SRV_NAME"`
+	PAYMENT_HTTP_PORT string `mapstructure:"PAYMENT_HTTP_PORT"`
+
 	// JWT Public Keys
 	ACCESS_TOKEN_PUBLIC_KEY  string `mapstructure:"ACCESS_TOKEN_PUBLIC_KEY"`
 	REFRESH_TOKEN_PUBLIC_KEY string `mapstructure:"REFRESH_TOKEN_PUBLIC_KEY"`
@@ -61,6 +65,9 @@ func GetEnv() (*Env, error) {
 
 		NOTIFICATION_SRV_NAME: getString("NOTIFICATION_SRV_NAME", "notification-service"),
 		NOTIFICATION_SRV_PORT: getString("NOTIFICATION_SRV_PORT", "50053"),
+
+		PAYMENT_SRV_NAME:  getString("PAYMENT_SRV_NAME", "payment-service"),
+		PAYMENT_HTTP_PORT: getString("PAYMENT_HTTP_PORT", "8081"),
 
 		ACCESS_TOKEN_PUBLIC_KEY:  getString("ACCESS_TOKEN_PUBLIC_KEY", ""),
 		REFRESH_TOKEN_PUBLIC_KEY: getString("REFRESH_TOKEN_PUBLIC_KEY", ""),

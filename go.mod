@@ -5,6 +5,7 @@ go 1.25.1
 require (
 	cloud.google.com/go/auth v0.17.0
 	github.com/google/uuid v1.6.0
+	github.com/stripe/stripe-go/v78 v78.12.0
 	go.uber.org/zap v1.27.1
 	google.golang.org/grpc v1.77.0
 	google.golang.org/protobuf v1.36.10

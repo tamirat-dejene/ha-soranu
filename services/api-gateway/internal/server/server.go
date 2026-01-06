@@ -14,10 +14,11 @@ type Server struct {
 	userHandler         *handler.UserHandler
 	restaurantHandler   *handler.RestaurantHandler
 	notificationHandler *handler.NotificationHandler
+	paymentHandler      *handler.PaymentHandler
 	config              apigateway.Env
 }
 
-func NewServer(cfg *apigateway.Env, uaClient *client.UAServiceClient, restaurantClient *client.RestaurantServiceClient, notificationClient *client.NotificationServiceClient) *Server {
+func NewServer(cfg *apigateway.Env, uaClient *client.UAServiceClient, restaurantClient *client.RestaurantServiceClient, notificationClient *client.NotificationServiceClient, paymentClient *client.PaymentClient) *Server {
 	router := gin.New()
 	router.Use(gin.Recovery())
 	router.Use(GinLogger())
@@ -31,6 +32,7 @@ func NewServer(cfg *apigateway.Env, uaClient *client.UAServiceClient, restaurant
 	userHandler := handler.NewUserHandler(uaClient)
 	restaurantHandler := handler.NewRestaurantHandler(restaurantClient)
 	notificationHandler := handler.NewNotificationHandler(notificationClient)
+	paymentHandler := handler.NewPaymentHandler(paymentClient)
 
 	return &Server{
 		router:              router,
@@ -38,6 +40,7 @@ func NewServer(cfg *apigateway.Env, uaClient *client.UAServiceClient, restaurant
 		userHandler:         userHandler,
 		restaurantHandler:   restaurantHandler,
 		notificationHandler: notificationHandler,
+		paymentHandler:      paymentHandler,
 		config:              *cfg,
 	}
 }
@@ -154,16 +157,7 @@ func (s *Server) SetupRoutes() {
 	{
 		payment := v1.Group("/payments", AuthMiddleware(&s.config))
 		{
-			payment.POST("/", func(c *gin.Context) {
-				c.JSON(200, gin.H{
-					"message": "Payment processed successfully!",
-				})
-			})
-			payment.GET("/:payment_id", func(c *gin.Context) {
-				c.JSON(200, gin.H{
-					"message": "Payment details fetched successfully!",
-				})
-			})
+			payment.POST("/intent", s.paymentHandler.CreatePaymentIntent)
 		}
 	}
 

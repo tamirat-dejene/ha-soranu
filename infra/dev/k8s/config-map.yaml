@@ -38,6 +38,9 @@ data:
 
   NOTIFICATION_SRV_NAME: "notification-service"
   NOTIFICATION_SRV_PORT: "50053"
+  
+  PAYMENT_SRV_NAME: "payment-service"
+  PAYMENT_HTTP_PORT: "8081"
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -75,4 +78,19 @@ data:
   POSTGRES_DB: "notification_db"
   KAFKA_BROKER_URL: "my-cluster-kafka-bootstrap.kafka:9092"
   NOTIFICATION_SRV_CONSUMER_GROUP: "notification-service-group"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: payment-service-config
+  namespace: ha-soranu
+data:
+  SRV_ENV: "development"
+  PAYMENT_SRV_NAME: "payment-service"
+  PAYMENT_SRV_PORT: "9090"
+  PAYMENT_HTTP_PORT: "8081"
+  POSTGRES_HOST: "pg-db-rw.pg-database"
+  POSTGRES_PORT: "5432"
+  POSTGRES_DB: "payment_db"
+  KAFKA_BROKER_URL: "my-cluster-kafka-bootstrap.kafka:9092"
 ---

@@ -45,8 +45,11 @@ func main() {
 	logger.Info("Connected to Notification Service", zap.String("addr", cfg.NOTIFICATION_SRV_NAME+":"+cfg.NOTIFICATION_SRV_PORT))
 	defer notificationServiceClient.Close()
 
-	// 6. Initialize and Run Server
-	srv := server.NewServer(cfg, uaServiceClient, restaurantServiceClient, notificationServiceClient)
+	// 6. Initialize Payment HTTP Client
+	paymentClient := client.NewPaymentClient(cfg.PAYMENT_SRV_NAME, cfg.PAYMENT_HTTP_PORT)
+
+	// 7. Initialize and Run Server
+	srv := server.NewServer(cfg, uaServiceClient, restaurantServiceClient, notificationServiceClient, paymentClient)
 	srv.SetupRoutes()
 
 	logger.Info("API Gateway listening", zap.String("port", cfg.API_GATEWAY_PORT))

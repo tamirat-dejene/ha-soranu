@@ -8,7 +8,7 @@ The system follows a microservices architecture using **gRPC** for inter-service
 
 ![Ha-Soranu architecture diagram](./docs/hasoranu.png)
 
-*Figure: High-level architecture — API Gateway, Auth, Restaurant, and Notification services, Postgres, Redis, Kafka.*
+*Figure: High-level architecture — API Gateway, Auth, Restaurant, Payment, and Notification services, Postgres, Redis, Kafka.*
 
 ### Core Services
 
@@ -18,6 +18,7 @@ The system follows a microservices architecture using **gRPC** for inter-service
 | **[auth-service](./services/auth-service)** | gRPC | Manages user identity, authentication (JWT, OAuth), and profiles. |
 | **[restaurant-service](./services/restaurant-service)** | gRPC | Manages restaurant profiles, menus, and order processing. Publishes order events to Kafka. |
 | **[notification-service](./services/notification-service)** | gRPC | Handles real-time notifications for users and restaurants. Consumes order events from Kafka. |
+| **[payment-service](./services/payment-service)** | gRPC | Processes payments and refunds. Integrates with payment providers, records transactions, and emits payment events.
 
 ## Tech Stack
 
@@ -71,7 +72,8 @@ ha-soranu/
 │   ├── api-gateway/        # REST API Gateway
 │   ├── auth-service/       # Authentication & User Service
 │   ├── restaurant-service/ # Restaurant & Menu Service
-│   └── notification-service/ # Notification Service
+│   ├── notification-service/ # Notification Service
+│   └── payment-service/    # Payment & Transaction Service
 ├── protos/                 # Protocol Buffer definitions (gRPC contracts)
 ├── shared/                 # Shared libraries (DB packages, Logger, Middleware, Events)
 ├── infra/                  # Infrastructure configurations (K8s, Docker)
@@ -104,6 +106,12 @@ ha-soranu/
   - Order placement notifications for restaurants.
   - Order status update notifications for customers.
   - **Event-Driven**: Kafka consumer processes order events to create notifications.
+
+- **Payment System**:
+  - Payment intent creation, capture, and refund flows.
+  - Integration with payment providers (e.g., Stripe-like gateways).
+  - Secure tokenized processing, idempotent operations, and audit logs.
+  - **Event-Driven**: Emits payment events and reacts to order lifecycle updates.
 
 ## Development
 

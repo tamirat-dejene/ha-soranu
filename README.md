@@ -1,134 +1,168 @@
 # Ha-Soranu 🍱
 
-**Ha-Soranu** is a scalable, microservices-based online food delivery platform built with Go. It enables users to browse restaurants, view menus, and place orders through a modern, distributed architecture.
+Ha-Soranu is a scalable, event-driven food delivery platform built with Go. Users can browse restaurants, place orders, receive notifications, and complete payments through a modern microservices architecture.
 
 ## Architecture
 
-The system follows a microservices architecture using **gRPC** for inter-service communication and an **API Gateway** to expose RESTful endpoints to clients.
+The system uses gRPC for service-to-service communication and an API Gateway to expose REST endpoints to clients. Kafka powers asynchronous event flows; Postgres backs service state; Redis/Valkey supports caching and tokens.
 
 ![Ha-Soranu architecture diagram](./docs/hasoranu.png)
 
-*Figure: High-level architecture — API Gateway, Auth, Restaurant, Payment, and Notification services, Postgres, Redis, Kafka.*
+Figure: API Gateway, Auth, Restaurant, Notification, and Payment services with Postgres, Redis/Valkey, and Kafka.
 
 ### Core Services
 
 | Service | Type | Description |
-|---------|------|-------------|
-| **[api-gateway](./services/api-gateway)** | REST API | Entry point for all client requests. Handles routing, transformation (HTTP ↔ gRPC), and initial validation. |
-| **[auth-service](./services/auth-service)** | gRPC | Manages user identity, authentication (JWT, OAuth), and profiles. |
-| **[restaurant-service](./services/restaurant-service)** | gRPC | Manages restaurant profiles, menus, and order processing. Publishes order events to Kafka. |
-| **[notification-service](./services/notification-service)** | gRPC | Handles real-time notifications for users and restaurants. Consumes order events from Kafka. |
-| **[payment-service](./services/payment-service)** | gRPC | Processes payments and refunds. Integrates with payment providers, records transactions, and emits payment events.
+|---|---|---|
+| [services/api-gateway](./services/api-gateway) | REST | Client entry point; HTTP ↔ gRPC mapping, routing, validation. |
+| [services/auth-service](./services/auth-service) | gRPC | Identity, JWT/OAuth, token issuance and verification. |
+| [services/restaurant-service](./services/restaurant-service) | gRPC | Restaurants, menus, and order lifecycle; emits order events. |
+| [services/notification-service](./services/notification-service) | gRPC | Consumes order/payment events and sends user/restaurant notifications. |
+| [services/payment-service](./services/payment-service) | HTTP | Payment intents, captures, refunds; integrates with providers; emits events. |
 
 ## Tech Stack
 
-- **Language**: Go (Golang)
-- **Communication**: gRPC (Inter-service), REST (Client-facing)
-- **Frameworks**: 
-  - [Gin](https://github.com/gin-gonic/gin) (HTTP Gateway)
-  - [gRPC-Go](https://github.com/grpc/grpc-go) (RPC)
-- **Databases**: PostgreSQL (Per-service databases)
-- **Caching**: Redis (Token storage, session management)
-- **Messaging**: Apache Kafka (Event-driven architecture with binary Protobuf serialization)
-- **Infrastructure**: 
-  - Docker & Kubernetes (Containerization & Orchestration)
-  - [Tilt](https://tilt.dev) (Local Development Environment)
-- **Tooling**: Make, Goose (Migrations)
-
-## Getting Started
-
-The easiest way to run the entire platform locally is using **Tilt**.
-
-### Prerequisites
-
-- [Go 1.21+](https://go.dev/dl/)
-- [Docker](https://www.docker.com/)
-- [Kubernetes Cluster](https://kubernetes.io/) (Minikube)
-- [Tilt](https://docs.tilt.dev/install.html)
-- [Make](https://www.gnu.org/software/make/)
-
-### Running Locally
-
-1. **Start your Kubernetes cluster** (if not running):
-   ```bash
-   minikube start
-   ```
-
-2. **Run Tilt**:
-   ```bash
-   tilt up
-   ```
-   This will build all services, deploy them to Kubernetes, and set up port forwarding.
-
-3. **Access the Application**:
-   - **API Gateway**: `http://localhost:8080`
-   - **Tilt UI**: `http://localhost:10350` (to monitor logs and status)
+- Language: Go (go 1.25+)
+- Communication: gRPC (internal), REST (external)
+- Data: PostgreSQL (per service), Redis/Valkey
+- Messaging: Apache Kafka (Protobuf payloads)
+- Infra: Docker, Kubernetes, Tilt (local dev)
+- Tooling: Make, protoc, Goose (migrations), Zap (logging)
 
 ## Project Structure
 
 ```bash
 ha-soranu/
-├── services/               # Microservices source code
-│   ├── api-gateway/        # REST API Gateway
-│   ├── auth-service/       # Authentication & User Service
-│   ├── restaurant-service/ # Restaurant & Menu Service
-│   ├── notification-service/ # Notification Service
-│   └── payment-service/    # Payment & Transaction Service
-├── protos/                 # Protocol Buffer definitions (gRPC contracts)
-├── shared/                 # Shared libraries (DB packages, Logger, Middleware, Events)
-├── infra/                  # Infrastructure configurations (K8s, Docker)
-├── bin/                    # Compiled binaries (ignored by git)
-├── Tiltfile                # Tilt configuration for local dev
-├── Makefile                # Global build and run commands
-└── go.mod                  # Go module definition (Workspace mode)
+├── services/                 # Microservices code
+│   ├── api-gateway/          # REST API Gateway (OpenAPI in docs/swagger.yaml)
+│   ├── auth-service/         # Auth & user management (+ migrations)
+│   ├── restaurant-service/   # Restaurants, menus, orders (+ migrations)
+│   ├── notification-service/ # Notifications (+ migrations)
+│   └── payment-service/      # Payments
+├── protos/                   # Protobuf contracts (source .proto)
+├── shared/                   # Shared libs: db, logger, events, config, utils, protos/*pb
+├── infra/                    # Dockerfiles and Kubernetes manifests (dev/prod)
+├── bin/                      # Built binaries (local dev)
+├── tests/                    # Load tests and harness
+├── Tiltfile                  # Tilt configuration
+├── Makefile                  # Proto generation
+└── go.mod                    # Go module
 ```
 
+## Quick Start (Tilt)
 
-## Key Features
+Tilt orchestrates local builds and Kubernetes deploys.
 
-- **Authentication System**:
-  - Secure Email/Password login.
-  - **Google OAuth 2.0** integration.
-  - JWT-based session management with Access & Refresh tokens.
-  
-- **Restaurant Management**:
-  - Restaurant registration and profile management.
-  - Menu CRUD operations (Items, prices, descriptions).
-  - Geospatial discovery (Streaming API).
-  
-- **Order Processing**:
-  - Order placement and status tracking.
-  - Real-time order updates.
-  - **Event-Driven**: Asynchronous order processing using Kafka with binary Protobuf serialization.
-  
-- **Notification System**:
-  - Real-time notifications for users and restaurants.
-  - Order placement notifications for restaurants.
-  - Order status update notifications for customers.
-  - **Event-Driven**: Kafka consumer processes order events to create notifications.
+### Prerequisites
 
-- **Payment System**:
-  - Payment intent creation, capture, and refund flows.
-  - Integration with payment providers (e.g., Stripe-like gateways).
-  - Secure tokenized processing, idempotent operations, and audit logs.
-  - **Event-Driven**: Emits payment events and reacts to order lifecycle updates.
+- Go 1.25+
+- Docker
+- kubectl + a local Kubernetes cluster (e.g., Minikube)
+- Tilt
+- protoc and plugins: `protoc-gen-go`, `protoc-gen-go-grpc`
 
-## Development
+Install protoc plugins (if needed):
 
-### Working with Protos
+```bash
+go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+```
 
-Protocol buffers are the contract between services. If you modify files in `protos/`, you must regenerate the Go code:
+### Run
+
+```bash
+# Start your local Kubernetes (example)
+minikube start
+
+# From repo root, launch the dev environment
+tilt up
+```
+
+Tilt builds the services to ./bin, builds images with live-update, applies manifests under infra/dev/k8s, and port-forwards:
+
+- API Gateway: http://localhost:8080
+- Auth gRPC: localhost:50051
+- Restaurant gRPC: localhost:50052
+- Notification gRPC: localhost:50053
+
+Note: Payment service manifests exist but aren’t wired into Tilt by default. See infra/dev/k8s/payment-service-deployment.yaml if you want to include it.
+
+## Without Tilt (service-by-service)
+
+You can run a service directly if dependencies are available (Postgres, Redis/Kafka where applicable) and env vars are set. Example (auth-service):
+
+```bash
+export SRV_ENV=development
+export AUTH_SRV_NAME=auth-service
+export AUTH_SRV_PORT=9090
+export POSTGRES_HOST=localhost
+export POSTGRES_PORT=5432
+export POSTGRES_USER=postgres
+export POSTGRES_PASSWORD=password
+export POSTGRES_DB=authdb
+go run ./services/auth-service/cmd
+```
+
+See each service’s `env.go` for defaults and required variables.
+
+## Protobufs
+
+After changing files in protos/, regenerate Go stubs:
 
 ```bash
 make proto
 ```
 
-### Database Migrations
+This uses the root Makefile to invoke protoc with module-aware paths and writes generated code into the module per import paths (see shared/protos/*pb for existing packages).
 
-Each service manages its own database schema using **Goose**.
+## Database & Migrations
+
+Each service owns its schema under services/<service>/migrations.
+
+- Strategy: Pressly Goose. Some services embed/run migrations programmatically at startup.
+- Manual usage example (auth-service):
 
 ```bash
-# Example: Create a new migration for auth-service
+# Using Goose CLI (adjust DSN and migration name)
 cd services/auth-service
-goose -dir migrations postgres "user=postgres dbname=authdb sslmode=disable" create add_new_table sql
+go install github.com/pressly/goose/v3/cmd/goose@latest
+goose -dir migrations create add_new_table sql
 ```
+
+## Testing & Load
+
+Load tests live under tests/ and target the end-to-end order flow (API Gateway → Restaurant → Postgres → Kafka).
+
+```bash
+cd tests
+make setup           # create venv and install deps
+source venv/bin/activate
+make seed            # seed test data
+make run             # run with Locust UI
+# or
+./run_tests.sh all   # headless run
+```
+
+Reports are written to tests/reports/.
+
+## API Documentation
+
+- OpenAPI spec: services/api-gateway/docs/swagger.yaml (import into Swagger UI/Editor to explore)
+
+## Configuration & Secrets
+
+- Kubernetes dev manifests: infra/dev/k8s/*.yaml (config-map.yaml, secrets.yaml, per-service deployments)
+- Environment variables: see each service’s env.go for defaults and required keys (JWT keys, DB, Redis/Valkey, ports)
+
+## Troubleshooting
+
+- protoc not found / stub generation fails: Install protoc and the Go plugins, then run make proto.
+- Tilt doesn’t see changes: Ensure binaries under ./bin update (Tilt live-update syncs ./bin/* and ./shared/ into running containers).
+- Ports already in use: Stop conflicting processes or adjust port_forwards in Tiltfile.
+- Payment not reachable in dev: It’s not enabled in Tilt by default; deploy its manifest or add it to Tiltfile.
+
+## Contributing
+
+- Keep changes focused and incremental.
+- Update protos and regenerate stubs when contracts change.
+- Include or update migrations when persisting new state.

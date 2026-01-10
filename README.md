@@ -6,6 +6,8 @@ Ha-Soranu is a scalable, event-driven food delivery platform built with Go. User
 
 The system uses gRPC for service-to-service communication and an API Gateway to expose REST endpoints to clients. Kafka powers asynchronous event flows; Postgres backs service state; Redis/Valkey supports caching and tokens.
 
+> **[Read detailed Architecture Docs](./docs/ARCHITECTURE.md)**
+
 ![Ha-Soranu architecture diagram](./docs/hasoranu.png)
 
 Figure: API Gateway, Auth, Restaurant, Notification, and Payment services with Postgres, Redis/Valkey, and Kafka.
@@ -19,6 +21,15 @@ Figure: API Gateway, Auth, Restaurant, Notification, and Payment services with P
 | [services/restaurant-service](./services/restaurant-service) | gRPC | Restaurants, menus, and order lifecycle; emits order events. |
 | [services/notification-service](./services/notification-service) | gRPC | Consumes order/payment events and sends user/restaurant notifications. |
 | [services/payment-service](./services/payment-service) | HTTP | Payment intents, captures, refunds; integrates with providers; emits events. |
+
+## Documentation
+
+- **[Architecture](./docs/ARCHITECTURE.md)**: System design and communication patterns.
+- **[API Reference](./docs/API.md)**: REST, gRPC, and Event API details.
+- **[Databases](./docs/DATABASES.md)**: Schema management and persistence.
+- **[Deployment](./docs/DEPLOYMENT.md)**: Docker, Kubernetes, and infrastructure.
+- **[Development](./docs/DEVELOPMENT.md)**: Setup, testing, and contribution guide.
+- **[Tools](./docs/TOOLS.md)**: CLI tools and scripts used.
 
 ## Tech Stack
 

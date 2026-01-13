@@ -21,21 +21,34 @@ message MenuItem {
 	float  price       = 4;
 }
 
+// RestaurantService provides methods for restaurants to authenticate, manage menus, and handle orders.
 service RestaurantService {
+	// Login authenticates a restaurant using email and secret_key and returns the Restaurant record.
 	rpc Login(RestaurantLoginRequest) returns (Restaurant);
+	// RegisterRestaurant registers a new restaurant and returns the created Restaurant.
 	rpc RegisterRestaurant(RegisterRestaurantRequest) returns (Restaurant);
+	// GetRestaurant returns the Restaurant identified by restaurant_id.
 	rpc GetRestaurant(GetRestaurantRequest) returns (Restaurant);
+	// ListRestaurants streams restaurants within a radius of the given location.
 	rpc ListRestaurants(ListRestaurantsRequest) returns (stream Restaurant);
 
+	// AddMenuItem adds a new menu item to the specified restaurant and returns the created MenuItem.
 	rpc AddMenuItem(AddMenuItemRequest) returns (MenuItem);
+	// RemoveMenuItem removes a menu item from the specified restaurant and returns the removed MenuItem.
 	rpc RemoveMenuItem(RemoveMenuItemRequest) returns (MenuItem);
+	// UpdateMenuItem updates an existing menu item and returns the updated MenuItem.
 	rpc UpdateMenuItem(UpdateMenuItemRequest) returns (MenuItem);
 
+	// PlaceOrder places a new order for a restaurant and returns order details.
 	rpc PlaceOrder(PlaceOrderRequest) returns (PlaceOrderResponse);
+	// GetOrders returns all orders for a restaurant.
 	rpc GetOrders(GetOrdersRequest) returns (GetOrdersResponse);
+	// UpdateOrderStatus updates the status of an order and returns the updated Order.
 	rpc UpdateOrderStatus(UpdateOrderStatusRequest) returns (Order);
+	// ShipOrder marks an order as shipped and returns a shipping confirmation.
 	rpc ShipOrder(ShipOrderRequest) returns (ShipOrderResponse);
-    rpc GetOrder(GetOrderRequest) returns (Order);
+	// GetOrder returns a single Order by order_id.
+	rpc GetOrder(GetOrderRequest) returns (Order);
 }
 
 message RestaurantLoginRequest {

@@ -59,14 +59,17 @@ func (p *pgClient) LogConnectionInfo() {
 	)
 }
 
+// --- Row ---
 type pgRow struct {
 	row pgx.Row
 }
 
+// --- Rows ---
 type pgRows struct {
 	rows pgx.Rows
 }
 
+// --- Tx ---
 type pgTx struct {
 	tx pgx.Tx
 }

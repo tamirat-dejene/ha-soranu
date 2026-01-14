@@ -22,6 +22,7 @@ type RefreshClaims struct {
 	jwt.RegisteredClaims
 }
 
+// decodePEM cleans and decodes a PEM formatted string.
 func decodePEM(value string) ([]byte, error) {
 	cleaned := strings.TrimSpace(value)
 	if cleaned == "" {
@@ -35,6 +36,7 @@ func decodePEM(value string) ([]byte, error) {
 	return []byte(cleaned), nil
 }
 
+// ParseRSAPrivateKeyFromString parses an RSA private key from a PEM formatted string.
 func ParseRSAPrivateKeyFromString(key string) (*rsa.PrivateKey, error) {
 	pemBytes, err := decodePEM(key)
 	if err != nil {
@@ -49,6 +51,7 @@ func ParseRSAPrivateKeyFromString(key string) (*rsa.PrivateKey, error) {
 	return privateKey, nil
 }
 
+// ParseRSAPublicKeyFromString parses an RSA public key from a PEM formatted string.
 func ParseRSAPublicKeyFromString(key string) (*rsa.PublicKey, error) {
 	pemBytes, err := decodePEM(key)
 	if err != nil {
@@ -63,6 +66,7 @@ func ParseRSAPublicKeyFromString(key string) (*rsa.PublicKey, error) {
 	return publicKey, nil
 }
 
+// validateAccessTokenWithKey validates an access token using the provided RSA public key.
 func validateAccessTokenWithKey(publicKey *rsa.PublicKey, tokenStr string) (*AccessClaims, error) {
 	token, err := jwt.ParseWithClaims(tokenStr, &AccessClaims{}, func(t *jwt.Token) (any, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodRSA); !ok {
@@ -82,6 +86,7 @@ func validateAccessTokenWithKey(publicKey *rsa.PublicKey, tokenStr string) (*Acc
 	return claims, nil
 }
 
+// ValidateAccessToken validates an access token using the provided PEM formatted RSA public key string.
 func ValidateAccessToken(publicKeyPEM string, tokenStr string) (*AccessClaims, error) {
 	publicKey, err := ParseRSAPublicKeyFromString(publicKeyPEM)
 	if err != nil {
@@ -91,6 +96,7 @@ func ValidateAccessToken(publicKeyPEM string, tokenStr string) (*AccessClaims, e
 	return validateAccessTokenWithKey(publicKey, tokenStr)
 }
 
+// validateRefreshTokenWithKey validates a refresh token using the provided RSA public key.
 func validateRefreshTokenWithKey(publicKey *rsa.PublicKey, tokenStr string) (*RefreshClaims, error) {
 	token, err := jwt.ParseWithClaims(tokenStr, &RefreshClaims{}, func(t *jwt.Token) (any, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodRSA); !ok {
@@ -111,6 +117,7 @@ func validateRefreshTokenWithKey(publicKey *rsa.PublicKey, tokenStr string) (*Re
 	return claims, nil
 }
 
+// ValidateRefreshToken validates a refresh token using the provided PEM formatted RSA public key string.
 func ValidateRefreshToken(publicKeyPEM string, tokenStr string) (*RefreshClaims, error) {
 	publicKey, err := ParseRSAPublicKeyFromString(publicKeyPEM)
 	if err != nil {
